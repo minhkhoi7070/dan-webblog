@@ -29,6 +29,10 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'role' => 'viewer',
+            'avatar' => null,
+            'bio' => fake()->optional()->sentence(),
+            'is_locked' => false,
             'remember_token' => Str::random(10),
         ];
     }
@@ -40,6 +44,46 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Create an admin user.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
+        ]);
+    }
+
+    /**
+     * Create an author user.
+     */
+    public function author(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'author',
+        ]);
+    }
+
+    /**
+     * Create a viewer user.
+     */
+    public function viewer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'viewer',
+        ]);
+    }
+
+    /**
+     * Create a locked user.
+     */
+    public function locked(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_locked' => true,
         ]);
     }
 }
