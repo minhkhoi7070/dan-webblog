@@ -1,15 +1,15 @@
 <x-guest-layout>
-    <div class="mb-6 text-center">
-        <h2 class="text-xl font-bold text-[var(--color-text)]">Đăng ký tài khoản</h2>
-        <p class="text-xs text-[var(--color-text-secondary)] mt-1">Tham gia cùng các tác giả và độc giả tại BlogMNM</p>
+    <div class="mb-4 text-center">
+        <h2 class="h5 fw-bold text-theme">Đăng ký tài khoản</h2>
+        <p class="small text-theme-secondary mb-0">Tham gia cùng các tác giả và độc giả tại BlogMNM</p>
     </div>
 
-    <form method="POST" action="{{ route('register') }}" class="space-y-4">
+    <form method="POST" action="{{ route('register') }}">
         @csrf
 
         <!-- Name -->
-        <div>
-            <label for="name" class="block text-xs font-semibold text-[var(--color-text)] mb-1.5">
+        <div class="mb-3">
+            <label for="name" class="form-label small fw-semibold text-theme mb-1">
                 Họ và tên
             </label>
             <input
@@ -21,14 +21,14 @@
                 autofocus
                 autocomplete="name"
                 placeholder="Nguyễn Văn A"
-                class="w-full px-4 py-2.5 text-sm bg-[var(--color-input)] border @error('name') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl text-[var(--color-text)] placeholder-[var(--color-text-secondary)] focus:ring-1 focus:ring-indigo-500 transition"
+                class="form-control @error('name') is-invalid @enderror"
             >
-            <x-input-error :messages="$errors->get('name')" class="mt-1.5 text-xs text-rose-400" />
+            <x-input-error :messages="$errors->get('name')" />
         </div>
 
         <!-- Email Address -->
-        <div>
-            <label for="email" class="block text-xs font-semibold text-[var(--color-text)] mb-1.5">
+        <div class="mb-3">
+            <label for="email" class="form-label small fw-semibold text-theme mb-1">
                 Email
             </label>
             <input
@@ -39,14 +39,14 @@
                 required
                 autocomplete="username"
                 placeholder="ten@example.com"
-                class="w-full px-4 py-2.5 text-sm bg-[var(--color-input)] border @error('email') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl text-[var(--color-text)] placeholder-[var(--color-text-secondary)] focus:ring-1 focus:ring-indigo-500 transition"
+                class="form-control @error('email') is-invalid @enderror"
             >
-            <x-input-error :messages="$errors->get('email')" class="mt-1.5 text-xs text-rose-400" />
+            <x-input-error :messages="$errors->get('email')" />
         </div>
 
         <!-- Password -->
-        <div>
-            <label for="password" class="block text-xs font-semibold text-[var(--color-text)] mb-1.5">
+        <div class="mb-3">
+            <label for="password" class="form-label small fw-semibold text-theme mb-1">
                 Mật khẩu
             </label>
             <input
@@ -56,14 +56,14 @@
                 required
                 autocomplete="new-password"
                 placeholder="Tối thiểu 8 ký tự"
-                class="w-full px-4 py-2.5 text-sm bg-[var(--color-input)] border @error('password') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl text-[var(--color-text)] placeholder-[var(--color-text-secondary)] focus:ring-1 focus:ring-indigo-500 transition"
+                class="form-control @error('password') is-invalid @enderror"
             >
-            <x-input-error :messages="$errors->get('password')" class="mt-1.5 text-xs text-rose-400" />
+            <x-input-error :messages="$errors->get('password')" />
         </div>
 
         <!-- Confirm Password -->
-        <div>
-            <label for="password_confirmation" class="block text-xs font-semibold text-[var(--color-text)] mb-1.5">
+        <div class="mb-4">
+            <label for="password_confirmation" class="form-label small fw-semibold text-theme mb-1">
                 Xác nhận mật khẩu
             </label>
             <input
@@ -73,22 +73,22 @@
                 required
                 autocomplete="new-password"
                 placeholder="Nhập lại mật khẩu"
-                class="w-full px-4 py-2.5 text-sm bg-[var(--color-input)] border @error('password_confirmation') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl text-[var(--color-text)] placeholder-[var(--color-text-secondary)] focus:ring-1 focus:ring-indigo-500 transition"
+                class="form-control @error('password_confirmation') is-invalid @enderror"
             >
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1.5 text-xs text-rose-400" />
+            <x-input-error :messages="$errors->get('password_confirmation')" />
         </div>
 
         <!-- Submit Button -->
-        <div class="pt-2">
-            <button type="submit" class="w-full py-2.5 px-4 rounded-full text-xs font-bold bg-[var(--color-text)] text-[var(--color-bg)] hover:opacity-90 active:scale-[0.98] transition shadow-md">
+        <div class="mb-4">
+            <button type="submit" class="btn btn-primary rounded-pill w-100 py-2 fw-bold small shadow-sm">
                 Đăng ký tài khoản
             </button>
         </div>
 
         <!-- Already Registered Link -->
-        <div class="pt-4 text-center border-t border-[var(--color-border)] text-xs text-[var(--color-text-secondary)]">
+        <div class="pt-3 text-center border-theme-top small text-theme-secondary">
             Đã có tài khoản?
-            <a href="{{ route('login') }}" class="font-semibold text-indigo-400 hover:text-indigo-300 transition ml-1">
+            <a href="{{ route('login') }}" class="fw-semibold text-decoration-none ms-1" style="color: #818cf8;">
                 Đăng nhập ngay
             </a>
         </div>

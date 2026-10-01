@@ -1,32 +1,32 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-xl text-[var(--color-text)] leading-tight">
+        <h2 class="fw-bold fs-4 text-body m-0">
             {{ __('Cài đặt tài khoản') }}
         </h2>
     </x-slot>
 
-    <div class="space-y-6">
+    <div class="d-flex flex-column gap-4">
         <!-- Appearance / Theme Settings -->
-        <div class="p-6 sm:p-8 bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xl rounded-2xl">
-            <div class="max-w-2xl">
+        <div class="card p-4 p-md-5 border shadow-sm">
+            <div style="max-width: 700px;">
                 @include('profile.partials.appearance-settings')
             </div>
         </div>
 
-        <div class="p-6 sm:p-8 bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xl rounded-2xl">
-            <div class="max-w-xl">
+        <div class="card p-4 p-md-5 border shadow-sm">
+            <div style="max-width: 600px;">
                 @include('profile.partials.update-profile-information-form')
             </div>
         </div>
 
-        <div class="p-6 sm:p-8 bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xl rounded-2xl">
-            <div class="max-w-xl">
+        <div class="card p-4 p-md-5 border shadow-sm">
+            <div style="max-width: 600px;">
                 @include('profile.partials.update-password-form')
             </div>
         </div>
 
-        <div class="p-6 sm:p-8 bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xl rounded-2xl">
-            <div class="max-w-xl">
+        <div class="card p-4 p-md-5 border shadow-sm">
+            <div style="max-width: 600px;">
                 @include('profile.partials.delete-user-form')
             </div>
         </div>

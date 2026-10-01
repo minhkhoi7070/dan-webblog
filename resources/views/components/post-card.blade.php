@@ -1,42 +1,42 @@
 @props(['post'])
 
-<article class="group relative px-4 py-4 sm:px-5 sm:py-5 border-b border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] transition-colors flex gap-3.5 sm:gap-4">
+<article class="p-3 p-sm-4 border-theme-bottom d-flex gap-3 text-theme transition-colors">
     <!-- Left Column: Circular Avatar & Thread Line Effect -->
-    <div class="shrink-0 flex flex-col items-center">
-        <a href="{{ route('authors.show', $post->user) }}" class="block group/avatar" aria-label="Xem trang cá nhân của {{ $post->user->name }}">
-            <x-avatar :user="$post->user" size="md" class="group-hover/avatar:opacity-90 transition-opacity" />
+    <div class="d-flex flex-column align-items-center flex-shrink-0">
+        <a href="{{ route('authors.show', $post->user) }}" class="d-block text-decoration-none" aria-label="Xem trang cá nhân của {{ $post->user->name }}">
+            <x-avatar :user="$post->user" size="md" />
         </a>
-        <div class="w-[1.5px] bg-[var(--color-border)] flex-grow mt-2.5 rounded-full hidden sm:block"></div>
+        <div class="d-none d-sm-block bg-theme border-theme-left flex-grow-1 mt-2" style="width: 1px;"></div>
     </div>
 
     <!-- Right Column: Content Body -->
-    <div class="flex-1 min-w-0">
+    <div class="flex-grow-1 min-w-0">
         <!-- Author Row: Name, Timestamp, Category -->
-        <div class="flex items-center justify-between gap-2 mb-1.5">
-            <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                <a href="{{ route('authors.show', $post->user) }}" class="font-semibold text-sm sm:text-base text-[var(--color-text)] hover:text-indigo-400 truncate hover:underline">
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+            <div class="d-flex align-items-center gap-2 min-w-0">
+                <a href="{{ route('authors.show', $post->user) }}" class="fw-semibold small text-theme text-decoration-none text-truncate">
                     {{ $post->user->name }}
                 </a>
-                <span class="text-[var(--color-text-secondary)] text-xs select-none opacity-60">&bull;</span>
-                <span class="text-[var(--color-text-secondary)] text-xs select-none shrink-0" title="{{ $post->published_at ? $post->published_at->format('d/m/Y H:i') : $post->created_at->format('d/m/Y H:i') }}">
+                <span class="text-theme-secondary small user-select-none opacity-50">&bull;</span>
+                <span class="text-theme-secondary small user-select-none flex-shrink-0" style="font-size: 11px;" title="{{ $post->published_at ? $post->published_at->format('d/m/Y H:i') : $post->created_at->format('d/m/Y H:i') }}">
                     {{ $post->published_at ? $post->published_at->diffForHumans(null, true, true) : $post->created_at->diffForHumans(null, true, true) }}
                 </span>
             </div>
 
             <!-- Category Pill -->
             <a href="{{ route('posts.index', ['category' => $post->category->slug]) }}"
-               class="shrink-0 text-[11px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text)] bg-[var(--color-surface-hover)] border border-[var(--color-border)] px-2.5 py-0.5 rounded-full transition-colors">
+               class="badge bg-theme-surface text-theme-secondary border border-theme rounded-pill text-decoration-none small flex-shrink-0">
                 {{ $post->category->name }}
             </a>
         </div>
 
         <!-- Post Title & Excerpt -->
         <div class="mt-1">
-            <a href="{{ route('posts.show', $post->slug) }}" class="block group/text">
-                <h2 class="text-base sm:text-lg font-bold text-[var(--color-text)] group-hover/text:text-indigo-400 transition-colors leading-snug mb-1.5">
+            <a href="{{ route('posts.show', $post->slug) }}" class="text-decoration-none text-theme d-block">
+                <h2 class="h5 fw-bold text-theme mb-1 lh-sm">
                     {{ $post->title }}
                 </h2>
-                <p class="text-sm sm:text-[15px] text-[var(--color-text-secondary)] leading-relaxed line-clamp-3 sm:line-clamp-4">
+                <p class="small text-theme-secondary mb-2 line-clamp-3 lh-base">
                     {{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body), 220) }}
                 </p>
             </a>
@@ -44,22 +44,24 @@
 
         <!-- Thumbnail Image (if present) -->
         @if($post->thumbnail)
-            <div class="mt-3.5">
-                <a href="{{ route('posts.show', $post->slug) }}" class="block w-full rounded-2xl overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)] group/img">
+            <div class="my-3">
+                <a href="{{ route('posts.show', $post->slug) }}" class="d-block overflow-hidden border-theme rounded-4">
                     <img src="{{ asset($post->thumbnail) }}"
                          alt="{{ $post->title }}"
                          loading="lazy"
-                         class="w-full h-auto max-h-80 sm:max-h-96 object-cover group-hover/img:scale-[1.01] transition-transform duration-300">
+                         class="img-fluid w-100"
+                         style="max-height: 380px; object-fit: cover;">
                 </a>
             </div>
         @endif
 
         <!-- Tags List -->
         @if($post->tags->isNotEmpty())
-            <div class="mt-3 flex flex-wrap gap-1.5">
+            <div class="d-flex flex-wrap gap-1 my-2">
                 @foreach($post->tags as $tag)
                     <a href="{{ route('posts.index', ['tag' => $tag->slug]) }}"
-                       class="text-xs font-medium text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-2.5 py-0.5 rounded-md transition-colors">
+                       class="badge rounded-pill text-decoration-none small"
+                       style="background-color: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.2);">
                         #{{ $tag->name }}
                     </a>
                 @endforeach
@@ -67,7 +69,7 @@
         @endif
 
         <!-- Bottom Action Bar -->
-        <div class="mt-4 pt-1">
+        <div class="mt-3 pt-1">
             <x-post-action-bar :post="$post" />
         </div>
     </div>
