@@ -1,50 +1,50 @@
 @extends('layouts.public')
 
 @section('content')
-<div class="bg-[var(--color-surface)]/90 border-b border-[var(--color-border)] sticky top-0 sm:top-auto z-20 backdrop-blur-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div class="bg-theme-surface border-theme-bottom sticky-top py-3 user-select-none" style="z-index: 1020;">
+    <div class="container-fluid px-3 px-sm-4">
+        <div class="d-flex flex-column flex-md-row md-align-items-center justify-content-between gap-3">
             <div>
-                <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge" style="background-color: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">
                         Admin Control Center
                     </span>
-                    <span class="text-xs text-[var(--color-text-secondary)]">Hệ thống quản trị & kiểm duyệt nội dung BlogMNM</span>
+                    <span class="small text-theme-secondary">Hệ thống quản trị & kiểm duyệt nội dung BlogMNM</span>
                 </div>
-                <h1 class="text-lg sm:text-xl font-black tracking-tight text-[var(--color-text)] mt-1">
+                <h1 class="h5 fw-bold text-theme mb-0 mt-1">
                     @yield('admin_title', 'Bảng điều khiển Quản trị')
                 </h1>
             </div>
 
             <!-- Admin Sub-navigation Links -->
-            <nav class="flex flex-wrap items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <nav class="d-flex flex-wrap align-items-center gap-2 overflow-x-auto no-scrollbar py-1">
                 <a
                     href="{{ route('admin.dashboard') }}"
-                    class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition {{ request()->routeIs('admin.dashboard') ? 'bg-[var(--color-text)] text-[var(--color-bg)] font-bold shadow-sm' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]' }}"
+                    class="btn btn-sm rounded-pill {{ request()->routeIs('admin.dashboard') ? 'btn-primary' : 'btn-outline-theme' }}"
                 >
                     Tổng quan
                 </a>
                 <a
                     href="{{ route('admin.posts.index') }}"
-                    class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition {{ request()->routeIs('admin.posts.*') ? 'bg-[var(--color-text)] text-[var(--color-bg)] font-bold shadow-sm' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]' }}"
+                    class="btn btn-sm rounded-pill {{ request()->routeIs('admin.posts.*') ? 'btn-primary' : 'btn-outline-theme' }}"
                 >
                     Bài viết
                 </a>
                 <a
                     href="{{ route('admin.users.index') }}"
-                    class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition {{ request()->routeIs('admin.users.*') ? 'bg-[var(--color-text)] text-[var(--color-bg)] font-bold shadow-sm' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]' }}"
+                    class="btn btn-sm rounded-pill {{ request()->routeIs('admin.users.*') ? 'btn-primary' : 'btn-outline-theme' }}"
                 >
                     Người dùng
                 </a>
                 <a
                     href="{{ route('admin.categories.index') }}"
-                    class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition {{ request()->routeIs('admin.categories.*') ? 'bg-[var(--color-text)] text-[var(--color-bg)] font-bold shadow-sm' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]' }}"
+                    class="btn btn-sm rounded-pill {{ request()->routeIs('admin.categories.*') ? 'btn-primary' : 'btn-outline-theme' }}"
                 >
                     Chuyên mục
                 </a>
                 <a
                     href="{{ route('admin.comments.index') }}"
-                    class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition {{ request()->routeIs('admin.comments.*') ? 'bg-[var(--color-text)] text-[var(--color-bg)] font-bold shadow-sm' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]' }}"
+                    class="btn btn-sm rounded-pill {{ request()->routeIs('admin.comments.*') ? 'btn-primary' : 'btn-outline-theme' }}"
                 >
                     Bình luận
                 </a>
@@ -53,12 +53,12 @@
     </div>
 </div>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full flex-1">
+<div class="container-fluid px-3 px-sm-4 py-4 flex-grow-1">
     <!-- Success Alert -->
     @if(session('success'))
-        <div class="mb-6 p-4 rounded-2xl bg-emerald-950/60 border border-emerald-800/60 text-emerald-200 text-sm flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-                <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="alert alert-success d-flex align-items-center justify-content-between mb-4 shadow-sm" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
                 <span>{{ session('success') }}</span>
@@ -68,9 +68,9 @@
 
     <!-- Error Alert -->
     @if(session('error'))
-        <div class="mb-6 p-4 rounded-2xl bg-rose-950/60 border border-rose-800/60 text-rose-200 text-sm flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-                <svg class="w-5 h-5 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="alert alert-danger d-flex align-items-center justify-content-between mb-4 shadow-sm" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <span>{{ session('error') }}</span>

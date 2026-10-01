@@ -5,24 +5,24 @@
 
 @php
     $variantClasses = match($variant) {
-        'category' => 'bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] border border-[var(--color-border)]',
-        'tag' => 'bg-indigo-500/10 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/20 border border-indigo-500/20',
-        'status-draft' => 'bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)] border border-[var(--color-border)]',
-        'status-pending' => 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
-        'status-published' => 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
-        'status-rejected' => 'bg-rose-500/15 text-rose-400 border border-rose-500/30',
-        'active' => 'bg-[var(--color-text)] text-[var(--color-bg)] font-semibold shadow-xs',
-        default => 'bg-[var(--color-surface-hover)] text-[var(--color-text)] border border-[var(--color-border)]',
+        'category' => 'bg-theme-surface text-theme-secondary border border-theme',
+        'tag' => 'badge-status-pending',
+        'status-draft' => 'badge-status-draft',
+        'status-pending' => 'badge-status-pending',
+        'status-published' => 'badge-status-published',
+        'status-rejected' => 'badge-status-rejected',
+        'active' => 'btn-primary text-decoration-none',
+        default => 'bg-theme-surface-hover text-theme border border-theme',
     };
 
     $sizeClasses = match($size) {
-        'xs' => 'text-[11px] px-2 py-0.5',
-        'sm' => 'text-xs px-2.5 py-1',
-        'md' => 'text-sm px-3.5 py-1.5',
-        default => 'text-xs px-2.5 py-1',
+        'xs' => 'py-0 px-2',
+        'sm' => 'py-1 px-2',
+        'md' => 'py-1 px-3 fs-6',
+        default => 'py-1 px-2',
     };
 @endphp
 
-<span {{ $attributes->merge(['class' => "inline-flex items-center font-medium rounded-full transition-colors duration-150 {$sizeClasses} {$variantClasses}"]) }}>
+<span {{ $attributes->merge(['class' => "badge rounded-pill fw-medium d-inline-flex align-items-center gap-1 small {$sizeClasses} {$variantClasses}"]) }}>
     {{ $slot }}
 </span>

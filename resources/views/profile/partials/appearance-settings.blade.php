@@ -1,99 +1,103 @@
 <section id="appearance">
     <header>
-        <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-            <h2 class="text-lg font-bold text-[var(--color-text)]">
+        <div class="d-flex align-items-center gap-2">
+            <span class="d-inline-block rounded-circle bg-primary" style="width: 8px; height: 8px;"></span>
+            <h2 class="h5 fw-bold text-body m-0">
                 {{ __('Giao diện hiển thị (Appearance)') }}
             </h2>
         </div>
 
-        <p class="mt-1 text-sm text-[var(--color-text-secondary)]">
+        <p class="small text-secondary mt-1 mb-0">
             {{ __('Chọn chế độ màu sắc hiển thị phù hợp với bạn. Thiết lập được lưu và áp dụng ngay lập tức trên toàn bộ ứng dụng.') }}
         </p>
     </header>
 
-    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4" id="theme-radio-cards" role="radiogroup" aria-label="Lựa chọn giao diện">
+    <div class="row g-3 mt-3" id="theme-radio-cards" role="radiogroup" aria-label="Lựa chọn giao diện">
         <!-- Dark Theme Card (Default) -->
-        <label for="theme-option-dark"
-               id="theme-card-dark"
-               class="relative flex flex-col p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 select-none group border-[var(--color-border)] hover:border-indigo-400/50 bg-[var(--color-surface)]">
-            <input type="radio"
-                   id="theme-option-dark"
-                   name="theme_mode"
-                   value="dark"
-                   class="sr-only"
-                   onchange="window.BlogMNMTheme && window.BlogMNMTheme.setTheme('dark')">
+        <div class="col-12 col-sm-6">
+            <label for="theme-option-dark"
+                   id="theme-card-dark"
+                   class="card h-100 p-3 p-md-4 rounded-3 border cursor-pointer select-none text-decoration-none">
+                <input type="radio"
+                       id="theme-option-dark"
+                       name="theme_mode"
+                       value="dark"
+                       class="d-none"
+                       onchange="window.BlogMNMTheme && window.BlogMNMTheme.setTheme('dark')">
 
-            <!-- Card Header: Radio & Title -->
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2.5">
-                    <div class="theme-radio-indicator w-5 h-5 rounded-full border-2 border-[var(--color-border)] flex items-center justify-center transition-colors">
-                        <div class="w-2.5 h-2.5 rounded-full bg-indigo-500 opacity-0 transition-opacity"></div>
+                <!-- Card Header: Radio & Title -->
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="theme-radio-indicator rounded-circle border d-flex align-items-center justify-content-center" style="width: 20px; height: 20px;">
+                            <div class="rounded-circle bg-primary opacity-0" style="width: 10px; height: 10px; transition: opacity 0.2s;"></div>
+                        </div>
+                        <span class="fw-bold small text-body">{{ __('Tối (Dark)') }}</span>
                     </div>
-                    <span class="font-bold text-sm text-[var(--color-text)]">{{ __('Tối (Dark)') }}</span>
+                    <span class="theme-active-badge badge bg-primary-subtle text-primary border border-primary-subtle opacity-0" style="transition: opacity 0.2s;">
+                        {{ __('Đang dùng') }}
+                    </span>
                 </div>
-                <span class="theme-active-badge text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 opacity-0 transition-opacity">
-                    {{ __('Đang dùng') }}
-                </span>
-            </div>
 
-            <!-- Visual Mockup: Dark Preview -->
-            <div class="w-full h-24 rounded-xl bg-black border border-zinc-800 p-2.5 flex flex-col gap-2 mb-3 pointer-events-none shadow-inner">
-                <div class="flex items-center justify-between">
-                    <div class="w-16 h-2 rounded bg-zinc-800"></div>
-                    <div class="w-4 h-4 rounded-full bg-indigo-600"></div>
+                <!-- Visual Mockup: Dark Preview -->
+                <div class="w-100 rounded-3 bg-black border border-secondary border-opacity-25 p-3 d-flex flex-column gap-2 mb-3 shadow-sm pointer-events-none" style="height: 100px;">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="bg-secondary rounded" style="width: 60px; height: 8px;"></div>
+                        <div class="rounded-circle bg-primary" style="width: 14px; height: 14px;"></div>
+                    </div>
+                    <div class="rounded bg-dark border border-secondary border-opacity-25 p-2 d-flex flex-column justify-content-center gap-1">
+                        <div class="bg-secondary rounded" style="width: 75%; height: 6px;"></div>
+                        <div class="bg-secondary opacity-50 rounded" style="width: 50%; height: 5px;"></div>
+                    </div>
                 </div>
-                <div class="h-10 rounded-lg bg-zinc-900 border border-zinc-800/80 p-2 flex flex-col justify-center gap-1.5">
-                    <div class="w-3/4 h-2 rounded bg-zinc-700"></div>
-                    <div class="w-1/2 h-1.5 rounded bg-zinc-800"></div>
-                </div>
-            </div>
 
-            <p class="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-                {{ __('Giao diện tối chuẩn BlogMNM, dịu mắt, độ tương phản sâu và tập trung tối đa vào nội dung.') }}
-            </p>
-        </label>
+                <p class="small text-secondary mb-0" style="font-size: 0.8rem;">
+                    {{ __('Giao diện tối chuẩn BlogMNM, dịu mắt, độ tương phản sâu và tập trung tối đa vào nội dung.') }}
+                </p>
+            </label>
+        </div>
 
         <!-- Light Theme Card -->
-        <label for="theme-option-light"
-               id="theme-card-light"
-               class="relative flex flex-col p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 select-none group border-[var(--color-border)] hover:border-indigo-400/50 bg-[var(--color-surface)]">
-            <input type="radio"
-                   id="theme-option-light"
-                   name="theme_mode"
-                   value="light"
-                   class="sr-only"
-                   onchange="window.BlogMNMTheme && window.BlogMNMTheme.setTheme('light')">
+        <div class="col-12 col-sm-6">
+            <label for="theme-option-light"
+                   id="theme-card-light"
+                   class="card h-100 p-3 p-md-4 rounded-3 border cursor-pointer select-none text-decoration-none">
+                <input type="radio"
+                       id="theme-option-light"
+                       name="theme_mode"
+                       value="light"
+                       class="d-none"
+                       onchange="window.BlogMNMTheme && window.BlogMNMTheme.setTheme('light')">
 
-            <!-- Card Header: Radio & Title -->
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2.5">
-                    <div class="theme-radio-indicator w-5 h-5 rounded-full border-2 border-[var(--color-border)] flex items-center justify-center transition-colors">
-                        <div class="w-2.5 h-2.5 rounded-full bg-indigo-500 opacity-0 transition-opacity"></div>
+                <!-- Card Header: Radio & Title -->
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="theme-radio-indicator rounded-circle border d-flex align-items-center justify-content-center" style="width: 20px; height: 20px;">
+                            <div class="rounded-circle bg-primary opacity-0" style="width: 10px; height: 10px; transition: opacity 0.2s;"></div>
+                        </div>
+                        <span class="fw-bold small text-body">{{ __('Sáng (Light)') }}</span>
                     </div>
-                    <span class="font-bold text-sm text-[var(--color-text)]">{{ __('Sáng (Light)') }}</span>
+                    <span class="theme-active-badge badge bg-primary-subtle text-primary border border-primary-subtle opacity-0" style="transition: opacity 0.2s;">
+                        {{ __('Đang dùng') }}
+                    </span>
                 </div>
-                <span class="theme-active-badge text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 opacity-0 transition-opacity">
-                    {{ __('Đang dùng') }}
-                </span>
-            </div>
 
-            <!-- Visual Mockup: Light Preview -->
-            <div class="w-full h-24 rounded-xl bg-white border border-zinc-200 p-2.5 flex flex-col gap-2 mb-3 pointer-events-none shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div class="w-16 h-2 rounded bg-zinc-200"></div>
-                    <div class="w-4 h-4 rounded-full bg-indigo-600"></div>
+                <!-- Visual Mockup: Light Preview -->
+                <div class="w-100 rounded-3 bg-white border p-3 d-flex flex-column gap-2 mb-3 shadow-sm pointer-events-none" style="height: 100px;">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="bg-secondary bg-opacity-25 rounded" style="width: 60px; height: 8px;"></div>
+                        <div class="rounded-circle bg-primary" style="width: 14px; height: 14px;"></div>
+                    </div>
+                    <div class="rounded bg-light border p-2 d-flex flex-column justify-content-center gap-1">
+                        <div class="bg-dark rounded" style="width: 75%; height: 6px;"></div>
+                        <div class="bg-secondary bg-opacity-50 rounded" style="width: 50%; height: 5px;"></div>
+                    </div>
                 </div>
-                <div class="h-10 rounded-lg bg-zinc-50 border border-zinc-200/80 p-2 flex flex-col justify-center gap-1.5">
-                    <div class="w-3/4 h-2 rounded bg-zinc-800"></div>
-                    <div class="w-1/2 h-1.5 rounded bg-zinc-300"></div>
-                </div>
-            </div>
 
-            <p class="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-                {{ __('Giao diện sáng thanh lịch, độ tương phản cao, tươi mới và dễ nhìn trong môi trường đủ sáng.') }}
-            </p>
-        </label>
+                <p class="small text-secondary mb-0" style="font-size: 0.8rem;">
+                    {{ __('Giao diện sáng thanh lịch, độ tương phản cao, tươi mới và dễ nhìn trong môi trường đủ sáng.') }}
+                </p>
+            </label>
+        </div>
     </div>
 
     <!-- Live Sync Script for Settings Radios -->
@@ -112,31 +116,27 @@
                 if (current === 'dark') {
                     if (darkInput) darkInput.checked = true;
                     // Dark active
-                    darkCard.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/20');
-                    darkCard.classList.remove('border-[var(--color-border)]');
-                    darkCard.querySelector('.theme-radio-indicator').classList.add('border-indigo-500');
+                    darkCard.classList.add('border-primary', 'shadow');
+                    darkCard.querySelector('.theme-radio-indicator').classList.add('border-primary');
                     darkCard.querySelector('.theme-radio-indicator div').classList.remove('opacity-0');
                     darkCard.querySelector('.theme-active-badge').classList.remove('opacity-0');
 
                     // Light inactive
-                    lightCard.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/20');
-                    lightCard.classList.add('border-[var(--color-border)]');
-                    lightCard.querySelector('.theme-radio-indicator').classList.remove('border-indigo-500');
+                    lightCard.classList.remove('border-primary', 'shadow');
+                    lightCard.querySelector('.theme-radio-indicator').classList.remove('border-primary');
                     lightCard.querySelector('.theme-radio-indicator div').classList.add('opacity-0');
                     lightCard.querySelector('.theme-active-badge').classList.add('opacity-0');
                 } else {
                     if (lightInput) lightInput.checked = true;
                     // Light active
-                    lightCard.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/20');
-                    lightCard.classList.remove('border-[var(--color-border)]');
-                    lightCard.querySelector('.theme-radio-indicator').classList.add('border-indigo-500');
+                    lightCard.classList.add('border-primary', 'shadow');
+                    lightCard.querySelector('.theme-radio-indicator').classList.add('border-primary');
                     lightCard.querySelector('.theme-radio-indicator div').classList.remove('opacity-0');
                     lightCard.querySelector('.theme-active-badge').classList.remove('opacity-0');
 
                     // Dark inactive
-                    darkCard.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/20');
-                    darkCard.classList.add('border-[var(--color-border)]');
-                    darkCard.querySelector('.theme-radio-indicator').classList.remove('border-indigo-500');
+                    darkCard.classList.remove('border-primary', 'shadow');
+                    darkCard.querySelector('.theme-radio-indicator').classList.remove('border-primary');
                     darkCard.querySelector('.theme-radio-indicator div').classList.add('opacity-0');
                     darkCard.querySelector('.theme-active-badge').classList.add('opacity-0');
                 }

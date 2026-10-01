@@ -1,33 +1,33 @@
 @extends('layouts.public')
 
 @section('content')
-<div class="w-full flex justify-center px-0 sm:px-4 py-0 sm:py-6">
-    <div class="w-full max-w-[660px] min-h-screen sm:min-h-0 bg-[var(--color-surface)] border-0 sm:border border-[var(--color-border)] sm:rounded-3xl overflow-hidden shadow-xl">
+<div class="w-100 d-flex justify-content-center px-0 px-sm-3 py-0 py-sm-4">
+    <div class="w-100 feed-container card border-0 border-sm border-theme shadow-lg overflow-hidden" style="border-radius: 1.5rem;">
         
         <!-- Header -->
-        <div class="p-5 border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-surface)]/90 backdrop-blur-xl z-30 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+        <div class="p-3 p-sm-4 border-theme-bottom sticky-top bg-theme-surface d-flex align-items-center justify-content-between" style="z-index: 1020;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">
+                    <svg style="width: 20px; height: 20px;" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-base sm:text-lg font-bold text-[var(--color-text)]">
+                    <h1 class="h6 fw-bold text-theme mb-0">
                         Bài viết đã lưu
                     </h1>
-                    <p class="text-xs text-[var(--color-text-secondary)]">
+                    <p class="small text-theme-secondary mb-0" style="font-size: 11px;">
                         Danh sách các bài viết bạn đã bookmark ({{ $posts->total() }} bài viết)
                     </p>
                 </div>
             </div>
-            <a href="{{ route('posts.index') }}" class="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition">
+            <a href="{{ route('posts.index') }}" class="small text-theme-secondary text-decoration-none">
                 Khám phá thêm
             </a>
         </div>
 
         <!-- Feed of Saved Posts -->
-        <div class="flex flex-col divide-y divide-[var(--color-border)]">
+        <div class="d-flex flex-column">
             @forelse($posts as $post)
                 <x-post-card :post="$post" />
             @empty
@@ -38,7 +38,7 @@
                     action-label="Khám phá bài viết ngay"
                 >
                     <x-slot:icon>
-                        <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg style="width: 24px; height: 24px;" class="text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                         </svg>
                     </x-slot:icon>
@@ -48,7 +48,7 @@
 
         <!-- Pagination -->
         @if($posts->hasPages())
-            <div class="p-5 border-t border-[var(--color-border)] bg-[var(--color-surface)]">
+            <div class="p-3 p-sm-4 border-theme-top bg-theme-surface d-flex justify-content-center">
                 {{ $posts->links() }}
             </div>
         @endif
