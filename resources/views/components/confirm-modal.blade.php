@@ -1,5 +1,5 @@
 <div class="modal fade" id="global-confirm-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="global-confirm-modal-header" aria-describedby="confirm-modal-message">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down confirm-modal-dialog">
         <div class="modal-content border-theme bg-theme-surface shadow-lg text-theme" style="border-radius: 1.25rem;">
             <!-- Header -->
             <div class="modal-header border-theme-bottom d-flex align-items-center justify-content-between px-4 py-3">

@@ -16,7 +16,7 @@ class BootstrapModalConfirmationTest extends TestCase
     public function test_admin_users_view_renders_bootstrap_confirm_modal_and_toast(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $viewer = User::factory()->create(['role' => 'viewer', 'is_locked' => false]);
+        $viewer = User::factory()->create(['name' => 'Viewer User', 'role' => 'viewer', 'is_locked' => false]);
         $lockedAuthor = User::factory()->create(['role' => 'author', 'is_locked' => true]);
 
         $response = $this->actingAs($admin)->get(route('admin.users.index'));

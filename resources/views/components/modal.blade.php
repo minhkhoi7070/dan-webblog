@@ -14,7 +14,7 @@ $modalSize = match($maxWidth) {
 @endphp
 
 <div class="modal fade {{ $show ? 'show d-block' : '' }}" id="{{ $name }}" tabindex="-1" aria-labelledby="{{ $name }}-label" aria-hidden="{{ $show ? 'false' : 'true' }}">
-    <div class="modal-dialog {{ $modalSize }} modal-dialog-centered">
+    <div class="modal-dialog {{ $modalSize }} modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
         <div class="modal-content border-theme bg-theme-surface shadow-lg p-3 p-sm-4" style="border-radius: 1.25rem;">
             {{ $slot }}
         </div>

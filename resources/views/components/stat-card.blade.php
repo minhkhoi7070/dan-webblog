@@ -25,7 +25,7 @@
             </div>
         @endif
     </div>
-    <div class="h3 fw-bold tracking-tight mb-0 {{ $accentColor }}">
+    <div class="h3 fw-bold tracking-tight mb-0 metric-number {{ $accentColor }}">
         {{ $value }}
     </div>
     @if($subtitle)

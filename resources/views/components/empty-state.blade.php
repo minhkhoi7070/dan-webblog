@@ -20,7 +20,7 @@
     @endif
     @if($actionUrl && $actionLabel)
         <div class="mt-4">
-            <a href="{{ $actionUrl }}" class="btn btn-sm btn-primary rounded-pill px-4">
+            <a href="{{ $actionUrl }}" class="btn btn-sm btn-editorial-primary rounded-pill px-4">
                 {{ $actionLabel }}
             </a>
         </div>
