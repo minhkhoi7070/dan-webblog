@@ -24,6 +24,15 @@ class Comment extends Model
     ];
 
     /**
+     * The model's default values for attributes.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'status' => 'approved',
+    ];
+
+    /**
      * The post this comment belongs to.
      */
     public function post(): BelongsTo
@@ -64,5 +73,51 @@ class Comment extends Model
     public function scopeApproved(Builder $query): Builder
     {
         return $query->where('status', 'approved');
+    }
+
+    /**
+     * Scope a query to only include spam comments.
+     *
+     * @param  Builder<Comment>  $query
+     * @return Builder<Comment>
+     */
+    public function scopeSpam(Builder $query): Builder
+    {
+        return $query->where('status', 'spam');
+    }
+
+    /**
+     * Scope a query to only include pending comments.
+     *
+     * @param  Builder<Comment>  $query
+     * @return Builder<Comment>
+     */
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('status', 'pending');
+    }
+
+    /**
+     * Check if comment is approved and visible publicly.
+     */
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    /**
+     * Check if comment is marked as spam.
+     */
+    public function isSpam(): bool
+    {
+        return $this->status === 'spam';
+    }
+
+    /**
+     * Check if comment is pending moderation.
+     */
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
     }
 }

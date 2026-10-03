@@ -1,7 +1,7 @@
 @if ($paginator->hasPages())
-    <nav class="d-flex justify-items-center justify-content-between">
-        <div class="d-flex justify-content-between flex-fill d-sm-none">
-            <ul class="pagination">
+    <nav class="d-flex justify-content-between align-items-center w-100 flex-wrap gap-2" role="navigation" aria-label="Pagination Navigation">
+        <div class="d-flex justify-content-between flex-fill d-sm-none align-items-center">
+            <ul class="pagination gap-1 mb-0">
                 {{-- Previous Page Link --}}
                 @if ($paginator->onFirstPage())
                     <li class="page-item disabled" aria-disabled="true">
@@ -26,19 +26,19 @@
             </ul>
         </div>
 
-        <div class="d-none flex-sm-fill d-sm-flex align-items-sm-center justify-content-sm-between">
-            <div class="small text-muted">
+        <div class="d-none flex-sm-fill d-sm-flex align-items-sm-center justify-content-sm-between gap-3">
+            <div class="small text-theme-muted">
                 {!! __('Showing') !!}
-                <span class="fw-semibold">{{ $paginator->firstItem() }}</span>
+                <span class="fw-semibold text-theme">{{ $paginator->firstItem() }}</span>
                 {!! __('to') !!}
-                <span class="fw-semibold">{{ $paginator->lastItem() }}</span>
+                <span class="fw-semibold text-theme">{{ $paginator->lastItem() }}</span>
                 {!! __('of') !!}
-                <span class="fw-semibold">{{ $paginator->total() }}</span>
+                <span class="fw-semibold text-theme">{{ $paginator->total() }}</span>
                 {!! __('results') !!}
             </div>
 
             <div>
-                <ul class="pagination">
+                <ul class="pagination gap-1 mb-0">
                     {{-- Previous Page Link --}}
                     @if ($paginator->onFirstPage())
                         <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.previous')">

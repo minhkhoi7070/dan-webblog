@@ -195,12 +195,48 @@ class AdminTest extends TestCase
         $response->assertSessionHasErrors(['name']);
 
         // Duplicate slug
-        Category::factory()->create(['slug' => 'existing-slug']);
+        Category::factory()->create(['name' => 'Existing Category', 'slug' => 'existing-slug']);
         $dupResponse = $this->actingAs($admin)->post(route('admin.categories.store'), [
             'name' => 'New Category',
             'slug' => 'existing-slug',
         ]);
         $dupResponse->assertSessionHasErrors(['slug']);
+
+        // Duplicate name
+        $dupNameResponse = $this->actingAs($admin)->post(route('admin.categories.store'), [
+            'name' => 'Existing Category',
+        ]);
+        $dupNameResponse->assertSessionHasErrors(['name']);
+        $dupNameResponse->assertRedirect();
+    }
+
+    public function test_category_update_validation_rules_apply(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $category1 = Category::factory()->create(['name' => 'Category One', 'slug' => 'category-one']);
+        $category2 = Category::factory()->create(['name' => 'Category Two', 'slug' => 'category-two']);
+
+        // Unchanged name and slug is valid
+        $response = $this->actingAs($admin)->put(route('admin.categories.update', $category1), [
+            'name' => 'Category One',
+            'slug' => 'category-one',
+        ]);
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect();
+
+        // Duplicate name (changing to category2's name) is invalid
+        $dupNameResponse = $this->actingAs($admin)->put(route('admin.categories.update', $category1), [
+            'name' => 'Category Two',
+        ]);
+        $dupNameResponse->assertSessionHasErrors(['name']);
+
+        // Changing to a new unique name is valid
+        $validResponse = $this->actingAs($admin)->put(route('admin.categories.update', $category1), [
+            'name' => 'Category Three',
+        ]);
+        $validResponse->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('categories', ['id' => $category1->id, 'name' => 'Category Three']);
     }
 
     // =========================================================================

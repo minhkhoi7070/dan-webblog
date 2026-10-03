@@ -27,6 +27,7 @@ class CommentController extends Controller
             'user_id' => $request->user()->id,
             'parent_id' => $request->validated('parent_id'),
             'body' => $request->validated('body'),
+            'status' => 'approved',
         ]);
 
         $comment->load('user');
@@ -40,6 +41,7 @@ class CommentController extends Controller
                     'post_id' => $comment->post_id,
                     'parent_id' => $comment->parent_id,
                     'body' => $comment->body,
+                    'status' => $comment->status,
                     'user_name' => $comment->user->name,
                     'user_avatar' => $comment->user->avatar,
                     'created_at' => $comment->created_at->diffForHumans(),

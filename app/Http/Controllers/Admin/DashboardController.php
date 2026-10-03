@@ -31,6 +31,8 @@ class DashboardController extends Controller
         // Comments metrics
         $totalComments = Comment::count();
         $pendingComments = Comment::where('status', 'pending')->count();
+        $spamComments = Comment::where('status', 'spam')->count();
+        $moderationComments = Comment::whereIn('status', ['pending', 'spam'])->count();
 
         // Overall views
         $totalViews = (int) Post::sum('views');
@@ -43,7 +45,7 @@ class DashboardController extends Controller
             ->get();
 
         $recentPendingComments = Comment::with(['user', 'post'])
-            ->where('status', 'pending')
+            ->whereIn('status', ['pending', 'spam'])
             ->latest()
             ->take(5)
             ->get();
@@ -60,6 +62,8 @@ class DashboardController extends Controller
                 'rejected' => $rejectedPosts,
                 'comments' => $totalComments,
                 'pending_comments' => $pendingComments,
+                'spam_comments' => $spamComments,
+                'moderation_comments' => $moderationComments,
                 'views' => $totalViews,
             ],
             'recentPendingPosts' => $recentPendingPosts,

@@ -24,6 +24,7 @@ class CommentFactory extends Factory
             'user_id' => User::factory(),
             'parent_id' => null,
             'body' => fake()->paragraph(),
+            'status' => 'approved',
         ];
     }
 

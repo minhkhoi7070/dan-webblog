@@ -3,46 +3,81 @@
 @section('admin_title', 'Thẩm định Bài viết: ' . $post->title)
 
 @section('admin_content')
-<div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <a href="{{ route('admin.posts.index') }}" class="inline-flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-indigo-600 transition">
-        &larr; Quay lại danh sách bài viết
+<!-- Top Moderation Action Bar -->
+<div class="mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 pb-3 border-theme-bottom">
+    <a href="{{ route('admin.posts.index') }}" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 12.5px;">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        Quay lại danh sách
     </a>
 
-    <!-- Top Action Bar -->
-    <div class="flex flex-wrap items-center gap-2">
+    <!-- Action Buttons -->
+    <div class="d-flex flex-wrap align-items-center gap-2">
         @if($post->status === 'published')
-            <a href="{{ route('posts.show', $post->slug) }}" target="_blank" class="px-4 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl transition shadow-xs">
-                Xem bài viết công khai &rarr;
+            <a href="{{ route('posts.show', $post->slug) }}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-medium d-inline-flex align-items-center gap-1" style="font-size: 12.5px;">
+                <span>Xem bài viết công khai</span>
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
             </a>
         @endif
 
         @if($post->status !== 'published')
             <!-- Approve Button Form -->
-            <form action="{{ route('admin.posts.approve', $post) }}" method="POST" onsubmit="return confirm('Duyệt và xuất bản ngay bài viết này?');">
+            <form action="{{ route('admin.posts.approve', $post) }}" method="POST" class="m-0"
+                  data-confirm="true"
+                  data-confirm-title="Duyệt bài viết"
+                  data-confirm-message="Bạn có chắc chắn muốn duyệt và xuất bản ngay bài viết này?"
+                  data-confirm-target-name="{{ $post->title }}"
+                  data-confirm-target-meta="Tác giả: {{ $post->user->name }}"
+                  data-confirm-description="Bài viết sẽ được chuyển sang trạng thái đã xuất bản và hiển thị công khai trên BlogMNM."
+                  data-confirm-btn-text="Duyệt bài viết"
+                  data-confirm-btn-class="btn-success"
+                  data-confirm-type="success">
                 @csrf
-                <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition cursor-pointer shadow-xs">
-                    Duyệt & Xuất bản (Approve)
+                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 py-1 fw-semibold" style="font-size: 12.5px;">
+                    Duyệt & Xuất bản
                 </button>
             </form>
         @endif
 
         @if($post->status !== 'rejected')
             <!-- Reject Button Form with prompt -->
-            <form action="{{ route('admin.posts.reject', $post) }}" method="POST" onsubmit="const reason = prompt('Nhập lý do từ chối bài viết:'); if(!reason) return false; this.rejection_reason.value = reason; return true;">
+            <form action="{{ route('admin.posts.reject', $post) }}" method="POST" class="m-0"
+                  data-confirm="true"
+                  data-confirm-title="Từ chối phê duyệt"
+                  data-confirm-message="Vui lòng cung cấp lý do từ chối bài viết:"
+                  data-confirm-target-name="{{ $post->title }}"
+                  data-confirm-target-meta="Tác giả: {{ $post->user->name }}"
+                  data-confirm-description="Tác giả sẽ thấy phản hồi này để chỉnh sửa lại bài viết cho phù hợp."
+                  data-confirm-prompt="true"
+                  data-confirm-prompt-name="rejection_reason"
+                  data-confirm-prompt-label="Lý do từ chối:"
+                  data-confirm-prompt-placeholder="Nhập lý do từ chối bài viết..."
+                  data-confirm-btn-text="Từ chối bài viết"
+                  data-confirm-btn-class="btn-warning"
+                  data-confirm-type="warning">
                 @csrf
                 <input type="hidden" name="rejection_reason" value="">
-                <button type="submit" class="px-4 py-2 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl transition cursor-pointer">
-                    Từ chối phê duyệt (Reject)
+                <button type="submit" class="btn btn-outline-warning btn-sm rounded-pill px-3 py-1 fw-semibold" style="font-size: 12.5px;">
+                    Từ chối duyệt
                 </button>
             </form>
         @endif
 
         <!-- Delete Post Form -->
-        <form action="{{ route('admin.posts.destroy', $post) }}" method="POST" onsubmit="return confirm('XÁC NHẬN: Bạn có chắc chắn muốn xóa vĩnh viễn bài viết này?');">
+        <form action="{{ route('admin.posts.destroy', $post) }}" method="POST" class="m-0"
+              data-confirm="true"
+              data-confirm-title="Xóa vĩnh viễn bài viết"
+              data-confirm-message="Bạn có chắc chắn muốn xóa vĩnh viễn bài viết này?"
+              data-confirm-target-name="{{ $post->title }}"
+              data-confirm-target-meta="Tác giả: {{ $post->user->name }}"
+              data-confirm-description="Hành động này không thể hoàn tác. Bài viết và toàn bộ dữ liệu liên quan sẽ bị xóa khỏi hệ thống."
+              data-confirm-btn-text="Xóa bài viết"
+              data-confirm-btn-class="btn-danger"
+              data-confirm-type="danger">
             @csrf
             @method('DELETE')
-            <button type="submit" class="px-4 py-2 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition cursor-pointer">
-                Xóa bài viết
+            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 12.5px;" title="Xóa bài viết">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <span>Xóa bài viết</span>
             </button>
         </form>
     </div>
@@ -50,128 +85,150 @@
 
 <!-- Rejection Reason Banner if rejected -->
 @if($post->status === 'rejected' && $post->rejection_reason)
-    <div class="mb-6 p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-sm">
-        <h4 class="font-bold text-rose-900 mb-1 flex items-center gap-2">
-            <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+    <div class="alert alert-danger mb-4 p-3.5 rounded-xl border border-danger border-opacity-25 bg-danger-subtle shadow-xs">
+        <h4 class="h6 fw-bold mb-1.5 d-flex align-items-center gap-2 text-danger">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             Lý do từ chối biên tập:
         </h4>
-        <p class="text-rose-700 text-xs italic">{{ $post->rejection_reason }}</p>
+        <p class="small mb-0 text-danger-emphasis fst-italic">{{ $post->rejection_reason }}</p>
     </div>
 @endif
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Main Content Area -->
-    <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200/80 shadow-xs">
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight mb-4">
+<div class="row g-4">
+    <!-- Main Content Area (Editorial Post Preview) -->
+    <div class="col-12 col-lg-8">
+        <article class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl">
+            <!-- Title -->
+            <h1 class="h3 fw-bold text-theme mb-3 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif); line-height: 1.35;">
                 {{ $post->title }}
             </h1>
 
+            <!-- Excerpt -->
             @if($post->excerpt)
-                <div class="p-4 rounded-xl bg-gray-50 border border-gray-100 text-sm text-gray-600 italic mb-6">
+                <div class="p-3.5 rounded-xl bg-surface-2 border border-theme text-theme-secondary small fst-italic mb-4" style="line-height: 1.6;">
                     {{ $post->excerpt }}
                 </div>
             @endif
 
+            <!-- Thumbnail -->
             @if($post->thumbnail)
-                <div class="mb-6 rounded-2xl overflow-hidden border border-gray-200 shadow-xs">
-                    <img src="{{ str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset($post->thumbnail) }}" alt="" class="w-full max-h-96 object-cover">
+                <div class="mb-4 rounded-xl overflow-hidden border border-theme shadow-xs" style="max-height: 420px;">
+                    <img src="{{ str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset($post->thumbnail) }}" alt="{{ $post->title }}" class="w-100 h-100 object-fit-cover">
                 </div>
             @endif
 
             <!-- Article Body -->
-            <div class="prose max-w-none text-gray-800 leading-relaxed font-sans text-sm sm:text-base border-t border-gray-100 pt-6 whitespace-pre-line">
+            <div class="text-theme border-theme-top pt-4 fs-base" style="white-space: pre-line; line-height: 1.85; font-size: 15.5px;">
                 {{ $post->body }}
             </div>
-        </div>
+        </article>
     </div>
 
-    <!-- Right Sidebar Metadata -->
-    <div class="space-y-6">
-        <!-- Status & Reviewer Card -->
-        <div class="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
-            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Thông tin Xuất bản & Kiểm duyệt</h3>
+    <!-- Right Sidebar Metadata & Quick Actions -->
+    <div class="col-12 col-lg-4">
+        <div class="d-flex flex-column gap-3.5">
+            <!-- Metadata Card -->
+            <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl">
+                <h3 class="label-uppercase text-theme-muted mb-3.5" style="font-size: 11px;">Thông tin Thẩm định</h3>
 
-            <div>
-                <span class="text-xs text-gray-400 block mb-1">Trạng thái hiện tại:</span>
-                @php
-                    $statusBadges = [
-                        'draft' => 'bg-slate-50 text-slate-700 border-slate-200',
-                        'pending' => 'bg-amber-50 text-amber-700 border-amber-300 ring-2 ring-amber-500/10 font-bold',
-                        'published' => 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold',
-                        'rejected' => 'bg-rose-50 text-rose-700 border-rose-200 font-bold',
-                    ];
-                    $statusLabels = [
-                        'draft' => 'Bản nháp (Draft)',
-                        'pending' => 'Chờ thẩm định (Pending)',
-                        'published' => 'Đã xuất bản (Published)',
-                        'rejected' => 'Bị từ chối (Rejected)',
-                    ];
-                @endphp
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border {{ $statusBadges[$post->status] ?? 'bg-gray-100 text-gray-700' }}">
-                    <span class="w-1.5 h-1.5 rounded-full {{ $post->status === 'published' ? 'bg-emerald-500' : ($post->status === 'pending' ? 'bg-amber-500' : ($post->status === 'rejected' ? 'bg-rose-500' : 'bg-slate-400')) }}"></span>
-                    {{ $statusLabels[$post->status] ?? $post->status }}
-                </span>
-            </div>
+                <div class="mb-3">
+                    <span class="small text-theme-muted d-block mb-1" style="font-size: 12px;">Trạng thái hiện tại:</span>
+                    @if($post->status === 'published')
+                        <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill" style="font-size: 11.5px;">
+                            Đã xuất bản (Published)
+                        </span>
+                    @elseif($post->status === 'pending')
+                        <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-25 rounded-pill" style="font-size: 11.5px;">
+                            Chờ thẩm định (Pending)
+                        </span>
+                    @elseif($post->status === 'rejected')
+                        <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill" style="font-size: 11.5px;">
+                            Bị từ chối (Rejected)
+                        </span>
+                    @else
+                        <span class="badge bg-surface-2 text-theme-muted border border-theme rounded-pill" style="font-size: 11.5px;">
+                            Bản nháp (Draft)
+                        </span>
+                    @endif
+                </div>
 
-            <div>
-                <span class="text-xs text-gray-400 block mb-0.5">Tác giả:</span>
-                <a href="{{ route('admin.users.show', $post->user) }}" class="text-sm font-bold text-gray-900 hover:text-indigo-600">
-                    {{ $post->user->name }} ({{ $post->user->email }})
-                </a>
-            </div>
+                <div class="mb-3">
+                    <span class="small text-theme-muted d-block mb-1" style="font-size: 12px;">Tác giả:</span>
+                    <a href="{{ route('admin.users.show', $post->user) }}" class="small fw-semibold text-theme text-decoration-none hover-accent d-block" style="font-size: 13px;">
+                        {{ $post->user->name }} <span class="text-theme-muted fw-normal">({{ $post->user->email }})</span>
+                    </a>
+                </div>
 
-            <div>
-                <span class="text-xs text-gray-400 block mb-0.5">Chuyên mục:</span>
-                <span class="text-sm font-semibold text-gray-800">{{ $post->category->name }}</span>
-            </div>
+                <div class="mb-3">
+                    <span class="small text-theme-muted d-block mb-1" style="font-size: 12px;">Chuyên mục:</span>
+                    <span class="badge bg-surface-2 border border-theme text-theme-secondary rounded-pill" style="font-size: 11.5px;">
+                        {{ $post->category->name }}
+                    </span>
+                </div>
 
-            @if($post->tags->isNotEmpty())
-                <div>
-                    <span class="text-xs text-gray-400 block mb-1.5">Thẻ bài viết:</span>
-                    <div class="flex flex-wrap gap-1.5">
-                        @foreach($post->tags as $tag)
-                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">
-                                #{{ $tag->name }}
-                            </span>
-                        @endforeach
+                @if($post->tags->isNotEmpty())
+                    <div class="mb-3">
+                        <span class="small text-theme-muted d-block mb-1" style="font-size: 12px;">Thẻ bài viết:</span>
+                        <div class="d-flex flex-wrap gap-1">
+                            @foreach($post->tags as $tag)
+                                <span class="badge bg-surface-2 border border-theme text-theme-muted rounded-pill" style="font-size: 11px;">
+                                    #{{ $tag->name }}
+                                </span>
+                            @endforeach
+                        </div>
                     </div>
+                @endif
+
+                <div class="pt-3 border-theme-top small text-theme-muted d-flex flex-column gap-1.5" style="font-size: 12px;">
+                    <div class="d-flex justify-content-between">
+                        <span>Khởi tạo:</span>
+                        <strong class="text-theme">{{ $post->created_at->format('d/m/Y H:i') }}</strong>
+                    </div>
+                    @if($post->published_at)
+                        <div class="d-flex justify-content-between">
+                            <span>Xuất bản:</span>
+                            <strong class="text-theme">{{ $post->published_at->format('d/m/Y H:i') }}</strong>
+                        </div>
+                    @endif
+                    @if($post->reviewer)
+                        <div class="d-flex justify-content-between">
+                            <span>Kiểm duyệt bởi:</span>
+                            <strong class="text-theme">{{ $post->reviewer->name }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Thời điểm duyệt:</span>
+                            <strong class="text-theme">{{ $post->reviewed_at?->format('d/m/Y H:i') }}</strong>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Rejection Box for quick reject -->
+            @if($post->status !== 'rejected')
+                <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl">
+                    <h3 class="label-uppercase text-theme-muted mb-2" style="font-size: 11px;">Từ chối bài viết</h3>
+                    <p class="small text-theme-muted mb-3" style="font-size: 12px;">Gửi nhận xét phản hồi để tác giả chỉnh sửa bổ sung.</p>
+                    <form action="{{ route('admin.posts.reject', $post) }}" method="POST" class="d-flex flex-column gap-2.5">
+                        @csrf
+                        <textarea
+                            name="rejection_reason"
+                            rows="3"
+                            placeholder="Nhập lý do hoặc góp ý chỉnh sửa cho tác giả..."
+                            class="form-control form-control-sm form-control-editorial rounded-3"
+                            style="font-size: 13px;"
+                        ></textarea>
+                        <button
+                            type="submit"
+                            class="btn btn-outline-warning btn-sm rounded-pill fw-semibold w-100"
+                            style="font-size: 12px;"
+                        >
+                            Gửi lý do & Từ chối duyệt
+                        </button>
+                    </form>
                 </div>
             @endif
-
-            <div class="pt-3 border-t border-gray-100 text-xs text-gray-500 space-y-1.5">
-                <p>Khởi tạo: <strong>{{ $post->created_at->format('d/m/Y H:i') }}</strong></p>
-                @if($post->published_at)
-                    <p>Xuất bản: <strong>{{ $post->published_at->format('d/m/Y H:i') }}</strong></p>
-                @endif
-                @if($post->reviewer)
-                    <p>Người kiểm duyệt: <strong>{{ $post->reviewer->name }}</strong></p>
-                    <p>Thời điểm kiểm duyệt: <strong>{{ $post->reviewed_at?->format('d/m/Y H:i') }}</strong></p>
-                @endif
-            </div>
         </div>
-
-        <!-- Rejection Box for quick reject -->
-        @if($post->status !== 'rejected')
-            <div class="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs">
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Từ chối bài viết</h3>
-                <form action="{{ route('admin.posts.reject', $post) }}" method="POST" class="space-y-3">
-                    @csrf
-                    <textarea
-                        name="rejection_reason"
-                        rows="3"
-                        placeholder="Nhập lý do hoặc góp ý chỉnh sửa cho tác giả..."
-                        class="w-full p-3 text-xs bg-gray-50 focus:bg-white border border-gray-200 focus:border-rose-500 rounded-xl focus:ring-2 focus:ring-rose-500/20 text-gray-900 transition"
-                    ></textarea>
-                    <button
-                        type="submit"
-                        class="w-full py-2 px-4 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-300 transition cursor-pointer"
-                    >
-                        Gửi lý do & Từ chối phê duyệt
-                    </button>
-                </form>
-            </div>
-        @endif
     </div>
 </div>
 @endsection
+

@@ -1,115 +1,141 @@
 @extends('layouts.public')
 
 @section('content')
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-    <!-- Top Action Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+<div class="container-fluid py-4" style="max-width: 1200px;">
+    <!-- Top Dashboard Header (Ghost + Notion style) -->
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 pb-3 mb-4 border-theme-bottom">
         <div>
-            <div class="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
-                <span>Không gian tác giả</span>
+            <div class="d-flex align-items-center gap-2 small text-theme-muted label-uppercase mb-0.5" style="font-size: 11px;">
+                <span>Tác giả</span>
                 <span>&rsaquo;</span>
-                <span class="text-indigo-400">Biên tập & Thống kê</span>
+                <span class="text-accent">Bảng điều khiển</span>
             </div>
-            <h1 class="text-2xl sm:text-3xl font-black text-[var(--color-text)] tracking-tight">
-                Quản lý bài viết của bạn
+            <h1 class="h4 fw-bold text-theme tracking-tight mb-0" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+                Quản lý bài viết & Thống kê
             </h1>
         </div>
 
-        <a href="{{ route('posts.create') }}" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-[var(--color-text)] text-[var(--color-bg)] hover:opacity-90 active:scale-[0.98] shadow-md transition self-start sm:self-auto">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Soạn bài viết mới
-        </a>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('posts.create') }}" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5">
+                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Soạn bài viết mới
+            </a>
+        </div>
     </div>
 
-    <!-- Feedback messages -->
+    <!-- Success Feedback Message -->
     @if(session('success'))
-        <div class="mb-6 p-4 rounded-2xl bg-emerald-950/60 border border-emerald-800/60 text-emerald-200 text-sm flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-                <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="alert alert-success mb-4 shadow-xs border border-success border-opacity-25 rounded-3" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                <span>{{ session('success') }}</span>
+                <span class="small fw-medium">{{ session('success') }}</span>
             </div>
         </div>
     @endif
 
-    <!-- Statistics Grid (All 8 Metrics) -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
+    <!-- Statistics Grid (All 8 Metrics - Notion & Ghost Style) -->
+    <div class="row g-2 g-sm-3 mb-4">
         <!-- 1. Total Posts -->
-        <a href="{{ route('posts.stats') }}" class="p-4 rounded-2xl border transition {{ empty($currentStatus) ? 'bg-[var(--color-surface-hover)] border-[var(--color-text)] ring-1 ring-[var(--color-text)]' : 'bg-[var(--color-surface)] border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]' }}">
-            <span class="text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider block">Tổng bài</span>
-            <p class="text-xl sm:text-2xl font-black text-[var(--color-text)] mt-1">{{ number_format($stats['total']) }}</p>
-        </a>
+        <div class="col-6 col-sm-3 col-lg">
+            <a href="{{ route('posts.stats') }}" class="dashboard-stat-card h-100 {{ empty($currentStatus) ? 'active-filter' : '' }}">
+                <span class="label-uppercase d-block mb-1 text-3xs">Tổng bài viết</span>
+                <p class="h4 fw-bold text-theme m-0">{{ number_format($stats['total']) }}</p>
+                <span class="text-theme-muted text-2xs">Tất cả bài</span>
+            </a>
+        </div>
 
         <!-- 2. Draft -->
-        <a href="{{ route('posts.stats', ['status' => 'draft']) }}" class="p-4 rounded-2xl border transition {{ $currentStatus === 'draft' ? 'bg-[var(--color-surface-hover)] border-[var(--color-text)] ring-1 ring-[var(--color-text)]' : 'bg-[var(--color-surface)] border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]' }}">
-            <span class="text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider block">Bản nháp</span>
-            <p class="text-xl sm:text-2xl font-black text-[var(--color-text-secondary)] mt-1">{{ number_format($stats['draft']) }}</p>
-        </a>
+        <div class="col-6 col-sm-3 col-lg">
+            <a href="{{ route('posts.stats', ['status' => 'draft']) }}" class="dashboard-stat-card h-100 {{ $currentStatus === 'draft' ? 'active-filter' : '' }}">
+                <span class="label-uppercase d-block mb-1 text-theme-secondary text-3xs">Bản nháp</span>
+                <p class="h4 fw-bold text-theme m-0">{{ number_format($stats['draft']) }}</p>
+                <span class="text-theme-muted text-2xs">Đang soạn</span>
+            </a>
+        </div>
 
         <!-- 3. Pending -->
-        <a href="{{ route('posts.stats', ['status' => 'pending']) }}" class="p-4 rounded-2xl border transition {{ $currentStatus === 'pending' ? 'bg-amber-950/40 border-amber-500/50 ring-1 ring-amber-500/50' : 'bg-[var(--color-surface)] border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]' }}">
-            <span class="text-[11px] font-semibold text-amber-400 uppercase tracking-wider block">Chờ duyệt</span>
-            <p class="text-xl sm:text-2xl font-black text-amber-400 mt-1">{{ number_format($stats['pending']) }}</p>
-        </a>
+        <div class="col-6 col-sm-3 col-lg">
+            <a href="{{ route('posts.stats', ['status' => 'pending']) }}" class="dashboard-stat-card h-100 {{ $currentStatus === 'pending' ? 'active-filter' : '' }}">
+                <span class="label-uppercase d-block mb-1 text-warning text-3xs">Chờ duyệt</span>
+                <p class="h4 fw-bold text-warning m-0">{{ number_format($stats['pending']) }}</p>
+                <span class="text-theme-muted text-2xs">Đang xét duyệt</span>
+            </a>
+        </div>
 
         <!-- 4. Published -->
-        <a href="{{ route('posts.stats', ['status' => 'published']) }}" class="p-4 rounded-2xl border transition {{ $currentStatus === 'published' ? 'bg-emerald-950/40 border-emerald-500/50 ring-1 ring-emerald-500/50' : 'bg-[var(--color-surface)] border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]' }}">
-            <span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider block">Xuất bản</span>
-            <p class="text-xl sm:text-2xl font-black text-emerald-400 mt-1">{{ number_format($stats['published']) }}</p>
-        </a>
+        <div class="col-6 col-sm-3 col-lg">
+            <a href="{{ route('posts.stats', ['status' => 'published']) }}" class="dashboard-stat-card h-100 {{ $currentStatus === 'published' ? 'active-filter' : '' }}">
+                <span class="label-uppercase d-block mb-1 text-success text-3xs">Xuất bản</span>
+                <p class="h4 fw-bold m-0 text-success">{{ number_format($stats['published']) }}</p>
+                <span class="text-theme-muted text-2xs">Công khai</span>
+            </a>
+        </div>
 
         <!-- 5. Rejected -->
-        <a href="{{ route('posts.stats', ['status' => 'rejected']) }}" class="p-4 rounded-2xl border transition {{ $currentStatus === 'rejected' ? 'bg-rose-950/40 border-rose-500/50 ring-1 ring-rose-500/50' : 'bg-[var(--color-surface)] border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]' }}">
-            <span class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider block">Từ chối</span>
-            <p class="text-xl sm:text-2xl font-black text-rose-400 mt-1">{{ number_format($stats['rejected']) }}</p>
-        </a>
+        <div class="col-6 col-sm-3 col-lg">
+            <a href="{{ route('posts.stats', ['status' => 'rejected']) }}" class="dashboard-stat-card h-100 {{ $currentStatus === 'rejected' ? 'active-filter' : '' }}">
+                <span class="label-uppercase d-block mb-1 text-danger text-3xs">Bị từ chối</span>
+                <p class="h4 fw-bold text-danger m-0">{{ number_format($stats['rejected']) }}</p>
+                <span class="text-theme-muted text-2xs">Cần chỉnh sửa</span>
+            </a>
+        </div>
 
         <!-- 6. Views -->
-        <div class="p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-            <span class="text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider block">Lượt xem</span>
-            <p class="text-xl sm:text-2xl font-black text-indigo-400 mt-1">{{ number_format($stats['views']) }}</p>
+        <div class="col-6 col-sm-3 col-lg">
+            <div class="dashboard-stat-card h-100" style="cursor: default;">
+                <span class="label-uppercase d-block mb-1 text-3xs">Lượt xem</span>
+                <p class="h4 fw-bold m-0" style="color: var(--color-accent-text);">{{ number_format($stats['views']) }}</p>
+                <span class="text-theme-muted text-2xs">Tổng tương tác</span>
+            </div>
         </div>
 
         <!-- 7. Likes -->
-        <div class="p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-            <span class="text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider block">Lượt thích</span>
-            <p class="text-xl sm:text-2xl font-black text-rose-500 mt-1">{{ number_format($stats['likes']) }}</p>
+        <div class="col-6 col-sm-3 col-lg">
+            <div class="dashboard-stat-card h-100" style="cursor: default;">
+                <span class="label-uppercase d-block mb-1 text-3xs" style="color: var(--color-like);">Lượt thích</span>
+                <p class="h4 fw-bold m-0" style="color: var(--color-like);">{{ number_format($stats['likes']) }}</p>
+                <span class="text-theme-muted text-2xs">Từ độc giả</span>
+            </div>
         </div>
 
         <!-- 8. Comments -->
-        <div class="p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-            <span class="text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider block">Bình luận</span>
-            <p class="text-xl sm:text-2xl font-black text-purple-400 mt-1">{{ number_format($stats['comments']) }}</p>
+        <div class="col-6 col-sm-3 col-lg">
+            <div class="dashboard-stat-card h-100" style="cursor: default;">
+                <span class="label-uppercase d-block mb-1 text-theme-secondary text-3xs">Bình luận</span>
+                <p class="h4 fw-bold text-theme m-0">{{ number_format($stats['comments']) }}</p>
+                <span class="text-theme-muted text-2xs">Thảo luận</span>
+            </div>
         </div>
     </div>
 
-    <!-- Posts Filter & Search Bar -->
-    <div class="p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <!-- Filter Tabs & Search Controls (Notion style Database toolbar) -->
+    <div class="card p-3 border-theme bg-theme-surface shadow-xs rounded-xl mb-4">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
             <!-- Filter Tabs -->
-            <div class="flex items-center gap-1.5 overflow-x-auto text-xs font-semibold pb-1 sm:pb-0 no-scrollbar">
-                <a href="{{ route('posts.stats') }}" class="px-3.5 py-1.5 rounded-full transition {{ empty($currentStatus) ? 'bg-[var(--color-text)] text-[var(--color-bg)] font-bold' : 'bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]' }}">
+            <div class="d-flex align-items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                <a href="{{ route('posts.stats') }}" class="btn btn-sm rounded-pill px-3 py-1 small fw-medium {{ empty($currentStatus) ? 'btn-editorial-primary' : 'btn-outline-theme' }}" style="font-size: 12.5px;">
                     Tất cả ({{ $stats['total'] }})
                 </a>
-                <a href="{{ route('posts.stats', ['status' => 'draft']) }}" class="px-3.5 py-1.5 rounded-full transition {{ $currentStatus === 'draft' ? 'bg-[var(--color-text)] text-[var(--color-bg)] font-bold' : 'bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]' }}">
+                <a href="{{ route('posts.stats', ['status' => 'draft']) }}" class="btn btn-sm rounded-pill px-3 py-1 small fw-medium {{ $currentStatus === 'draft' ? 'btn-editorial-primary' : 'btn-outline-theme' }}" style="font-size: 12.5px;">
                     Bản nháp ({{ $stats['draft'] }})
                 </a>
-                <a href="{{ route('posts.stats', ['status' => 'pending']) }}" class="px-3.5 py-1.5 rounded-full transition {{ $currentStatus === 'pending' ? 'bg-amber-400 text-zinc-950 font-bold' : 'bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]' }}">
+                <a href="{{ route('posts.stats', ['status' => 'pending']) }}" class="btn btn-sm rounded-pill px-3 py-1 small fw-medium {{ $currentStatus === 'pending' ? 'btn-warning text-dark' : 'btn-outline-theme' }}" style="font-size: 12.5px;">
                     Chờ duyệt ({{ $stats['pending'] }})
                 </a>
-                <a href="{{ route('posts.stats', ['status' => 'published']) }}" class="px-3.5 py-1.5 rounded-full transition {{ $currentStatus === 'published' ? 'bg-emerald-400 text-zinc-950 font-bold' : 'bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]' }}">
+                <a href="{{ route('posts.stats', ['status' => 'published']) }}" class="btn btn-sm rounded-pill px-3 py-1 small fw-medium {{ $currentStatus === 'published' ? 'btn-editorial-primary' : 'btn-outline-theme' }}" style="font-size: 12.5px;">
                     Đã xuất bản ({{ $stats['published'] }})
                 </a>
-                <a href="{{ route('posts.stats', ['status' => 'rejected']) }}" class="px-3.5 py-1.5 rounded-full transition {{ $currentStatus === 'rejected' ? 'bg-rose-500 text-white font-bold' : 'bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]' }}">
+                <a href="{{ route('posts.stats', ['status' => 'rejected']) }}" class="btn btn-sm rounded-pill px-3 py-1 small fw-medium {{ $currentStatus === 'rejected' ? 'btn-outline-danger' : 'btn-outline-theme' }}" style="font-size: 12.5px;">
                     Bị từ chối ({{ $stats['rejected'] }})
                 </a>
             </div>
 
-            <!-- Search form -->
-            <form action="{{ route('posts.stats') }}" method="GET" class="relative max-w-xs w-full">
+            <!-- Search Form -->
+            <form action="{{ route('posts.stats') }}" method="GET" class="position-relative m-0" style="min-width: 240px; max-width: 280px;">
                 @if($currentStatus)
                     <input type="hidden" name="status" value="{{ $currentStatus }}">
                 @endif
@@ -117,64 +143,63 @@
                     type="search"
                     name="q"
                     value="{{ $search }}"
-                    placeholder="Tìm trong bài viết của bạn..."
-                    class="w-full pl-9 pr-3 py-1.5 text-xs bg-[var(--color-input)] border border-[var(--color-border)] rounded-full text-[var(--color-text)] placeholder-[var(--color-text-secondary)] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    placeholder="Tìm theo tiêu đề bài..."
+                    class="form-control form-control-sm form-control-editorial rounded-pill ps-4 pe-3 py-1 small"
+                    style="font-size: 12.5px;"
                 >
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--color-text-secondary)]">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </div>
+                <svg style="width: 14px; height: 14px; position: absolute; left: 11px; top: 9px; pointer-events: none;" class="text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
             </form>
         </div>
     </div>
 
-    <!-- Posts Table -->
-    <div class="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden shadow-xl">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-[var(--color-text)]">
-                <thead class="bg-[var(--color-surface-hover)] border-b border-[var(--color-border)] text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
+    <!-- Posts Database Table (Notion / Ghost style) -->
+    <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
+                <thead class="border-theme-bottom bg-surface-2">
                     <tr>
-                        <th class="px-6 py-4">Bài viết</th>
-                        <th class="px-6 py-4">Chuyên mục</th>
-                        <th class="px-6 py-4">Trạng thái</th>
-                        <th class="px-6 py-4">Chỉ số tương tác</th>
-                        <th class="px-6 py-4 text-right">Thao tác</th>
+                        <th class="ps-3 ps-sm-4 py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Bài viết</th>
+                        <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Chuyên mục</th>
+                        <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Trạng thái</th>
+                        <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Tương tác</th>
+                        <th class="pe-3 pe-sm-4 py-3 text-end label-uppercase text-theme-muted" style="font-size: 11px;">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-[var(--color-border)]">
+                <tbody class="divide-y divide-theme">
                     @forelse($posts as $post)
-                        <tr class="hover:bg-[var(--color-surface-hover)] transition">
-                            <!-- Title & Excerpt -->
-                            <td class="px-6 py-4 max-w-xs sm:max-w-md">
-                                <div class="flex items-center gap-3">
+                        <tr>
+                            <!-- Title, Thumbnail & Meta -->
+                            <td class="ps-3 ps-sm-4 py-3">
+                                <div class="d-flex align-items-center gap-3">
                                     @if($post->thumbnail)
-                                        <img src="{{ asset($post->thumbnail) }}" alt="" class="w-12 h-12 rounded-xl object-cover shrink-0 bg-[var(--color-surface-hover)] border border-[var(--color-border)]">
+                                        <img src="{{ asset($post->thumbnail) }}" alt="" class="rounded-3 flex-shrink-0 border border-theme shadow-xs" style="width: 46px; height: 46px; object-fit: cover;">
                                     @else
-                                        <div class="w-12 h-12 rounded-xl bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)] flex items-center justify-center shrink-0 font-bold text-xs border border-[var(--color-border)]">
-                                            DOC
+                                        <div class="rounded-3 bg-surface-2 text-theme-muted d-flex align-items-center justify-content-center flex-shrink-0 border border-theme fw-bold" style="width: 46px; height: 46px; font-size: 11px; font-family: var(--font-serif, 'Lora', serif);">
+                                            B
                                         </div>
                                     @endif
-                                    <div class="min-w-0">
-                                        <a href="{{ route('posts.edit', $post) }}" class="font-bold text-[var(--color-text)] hover:opacity-80 line-clamp-1 transition">
+                                    <div class="min-w-0" style="max-width: 380px;">
+                                        <a href="{{ route('posts.edit', $post) }}" class="fw-semibold text-theme text-decoration-none hover-accent text-truncate d-block small" style="font-size: 14px;">
                                             {{ $post->title }}
                                         </a>
-                                        <p class="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                                        <div class="small text-theme-muted mt-0.5" style="font-size: 11.5px;">
                                             Cập nhật: {{ $post->updated_at->format('d/m/Y H:i') }}
-                                        </p>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
 
                             <!-- Category -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-surface-hover)] text-[var(--color-text)] border border-[var(--color-border)]">
+                            <td class="py-3">
+                                <span class="badge bg-surface-2 text-theme-secondary border border-theme rounded-pill fw-medium" style="font-size: 11.5px;">
                                     {{ $post->category->name }}
                                 </span>
                             </td>
 
                             <!-- Status Badge -->
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="py-3">
                                 @if($post->status === 'published')
                                     <x-badge variant="status-published" size="xs">
                                         Đã xuất bản
@@ -195,44 +220,56 @@
                             </td>
 
                             <!-- Metrics -->
-                            <td class="px-6 py-4 whitespace-nowrap text-xs text-[var(--color-text-secondary)]">
-                                <div class="flex items-center gap-3">
-                                    <span title="Lượt xem">{{ number_format($post->views) }} views</span>
-                                    <span>&bull;</span>
-                                    <span title="Lượt thích">{{ $post->likers_count }} likes</span>
-                                    <span>&bull;</span>
-                                    <span title="Bình luận">{{ $post->comments_count }} cmt</span>
+                            <td class="py-3 small text-theme-secondary">
+                                <div class="d-flex align-items-center gap-2" style="font-size: 12px;">
+                                    <span>{{ number_format($post->views) }} views</span>
+                                    <span class="opacity-50">&bull;</span>
+                                    <span>{{ $post->likers_count }} likes</span>
+                                    <span class="opacity-50">&bull;</span>
+                                    <span>{{ $post->comments_count }} cmt</span>
                                 </div>
                             </td>
 
                             <!-- Actions -->
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
-                                <div class="flex items-center justify-end gap-2">
+                            <td class="pe-3 pe-sm-4 py-3 text-end">
+                                <div class="d-flex align-items-center justify-content-end gap-1.5">
                                     <!-- Submit for review button (Available if draft or rejected) -->
                                     @if(in_array($post->status, ['draft', 'rejected'], true))
-                                        <form action="{{ route('posts.submit', $post) }}" method="POST" class="inline">
+                                        <form action="{{ route('posts.submit', $post) }}" method="POST" class="d-inline m-0">
                                             @csrf
-                                            <button type="submit" class="px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 border border-indigo-500/30 transition" title="Gửi xét duyệt">
+                                            <button type="submit" class="btn btn-sm btn-outline-theme rounded-pill py-1 px-2.5 text-warning" style="font-size: 11px;" title="Gửi xét duyệt" aria-label="Gửi xét duyệt bài viết {{ $post->title }}">
                                                 Gửi duyệt &rarr;
                                             </button>
                                         </form>
                                     @endif
 
+                                    <!-- View Live (if published) -->
+                                    @if($post->status === 'published')
+                                        <a href="{{ route('posts.show', $post->slug) }}" target="_blank" class="btn btn-sm btn-outline-theme rounded-pill py-1 px-2 text-theme-secondary" style="font-size: 11px;" title="Xem bài viết trực tiếp" aria-label="Xem bài viết trực tiếp {{ $post->title }}">
+                                            Live &nearr;
+                                        </a>
+                                    @endif
+
                                     <!-- Edit Link -->
-                                    <a href="{{ route('posts.edit', $post) }}" class="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition" title="Chỉnh sửa">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
+                                    <a href="{{ route('posts.edit', $post) }}" class="btn btn-sm btn-outline-theme rounded-pill py-1 px-2 text-theme-secondary" style="font-size: 11px;" title="Chỉnh sửa bài viết" aria-label="Chỉnh sửa bài viết {{ $post->title }}">
+                                        Sửa
                                     </a>
 
                                     <!-- Delete Button -->
-                                    <form action="{{ route('posts.destroy', $post) }}" method="POST" class="inline" onsubmit="return confirm('Bạn có chắc muốn xóa bài viết này không?');">
+                                    <form action="{{ route('posts.destroy', $post) }}" method="POST" class="d-inline m-0"
+                                          data-confirm="true"
+                                          data-confirm-title="Xóa bài viết"
+                                          data-confirm-message="Bạn có chắc chắn muốn xóa bài viết này không?"
+                                          data-confirm-target-name="{{ $post->title }}"
+                                          data-confirm-target-meta="Trạng thái: {{ $post->status_label }}"
+                                          data-confirm-description="Hành động này không thể hoàn tác. Bản nháp hoặc bài viết này sẽ bị xóa hoàn toàn khỏi hệ thống."
+                                          data-confirm-btn-text="Xóa bài viết"
+                                          data-confirm-btn-class="btn-danger"
+                                          data-confirm-type="danger">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="p-1.5 text-[var(--color-text-secondary)] hover:text-rose-400 transition" title="Xóa">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill py-1 px-2" style="font-size: 11px;" title="Xóa" aria-label="Xóa bài viết {{ $post->title }}">
+                                            Xóa
                                         </button>
                                     </form>
                                 </div>
@@ -240,8 +277,14 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-sm text-[var(--color-text-secondary)]">
-                                Không tìm thấy bài viết nào. Hãy bấm "Soạn bài viết mới" để tạo bài viết đầu tiên!
+                            <td colspan="5" class="py-5 text-center text-theme-secondary small">
+                                <div class="py-4">
+                                    <p class="text-theme fw-medium mb-1">Không tìm thấy bài viết nào</p>
+                                    <p class="small text-theme-muted mb-3">Bắt đầu sáng tạo bài viết đầu tiên của bạn trên nền tảng BlogMNM</p>
+                                    <a href="{{ route('posts.create') }}" class="btn btn-editorial-primary btn-sm rounded-pill px-4">
+                                        Soạn bài viết mới
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @endforelse
@@ -252,7 +295,7 @@
 
     <!-- Pagination -->
     @if($posts->hasPages())
-        <div class="mt-8">
+        <div class="d-flex justify-content-center pt-2">
             {{ $posts->links() }}
         </div>
     @endif

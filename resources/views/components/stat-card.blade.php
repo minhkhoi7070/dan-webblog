@@ -8,28 +8,28 @@
 
 @php
     $accentColor = match($color) {
-        'indigo' => 'text-indigo-400',
-        'rose' => 'text-rose-400',
-        'amber' => 'text-amber-400',
-        'emerald' => 'text-emerald-400',
-        default => 'text-zinc-100',
+        'indigo' => 'text-primary',
+        'rose' => 'text-danger',
+        'amber' => 'text-warning',
+        'emerald' => 'text-success',
+        default => 'text-theme',
     };
 @endphp
 
-<div {{ $attributes->merge(['class' => 'bg-zinc-900/70 border border-zinc-800/80 rounded-2xl p-5 hover:border-zinc-700/80 transition-colors']) }}>
-    <div class="flex items-center justify-between text-xs font-medium text-zinc-400 mb-1.5">
+<div {{ $attributes->merge(['class' => 'card p-3 p-sm-4 border-theme shadow-sm']) }}>
+    <div class="d-flex align-items-center justify-content-between small text-theme-secondary mb-2">
         <span>{{ $title }}</span>
         @if(isset($icon))
-            <div class="text-zinc-500">
+            <div class="text-theme-secondary opacity-75">
                 {{ $icon }}
             </div>
         @endif
     </div>
-    <div class="text-2xl sm:text-3xl font-extrabold tracking-tight {{ $accentColor }}">
+    <div class="h3 fw-bold tracking-tight mb-0 metric-number {{ $accentColor }}">
         {{ $value }}
     </div>
     @if($subtitle)
-        <div class="mt-1 text-xs text-zinc-500">
+        <div class="mt-1 small text-theme-secondary">
             {{ $subtitle }}
         </div>
     @endif
