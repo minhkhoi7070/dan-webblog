@@ -3,17 +3,20 @@
 @section('admin_title', 'Chỉnh sửa Chuyên mục: ' . $category->name)
 
 @section('admin_content')
-<div class="max-w-2xl mx-auto">
-    <div class="mb-6">
-        <a href="{{ route('admin.categories.index') }}" class="inline-flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-indigo-600 transition">
-            &larr; Quay lại danh sách chuyên mục
+<div class="mx-auto" style="max-width: 620px;">
+    <div class="mb-4">
+        <a href="{{ route('admin.categories.index') }}" class="small text-theme-secondary hover-accent text-decoration-none d-inline-flex align-items-center gap-1.5 transition-colors">
+            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Quay lại danh sách chuyên mục
         </a>
     </div>
 
     <!-- Error Alert -->
     @if ($errors->any())
-        <div class="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm">
-            <ul class="list-disc list-inside space-y-1 text-xs text-rose-700">
+        <div class="alert alert-danger mb-4 shadow-xs border border-danger border-opacity-25 rounded-3 py-2.5 px-3">
+            <ul class="mb-0 small ps-3">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -21,14 +24,14 @@
         </div>
     @endif
 
-    <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200/80 shadow-xs">
-        <form action="{{ route('admin.categories.update', $category) }}" method="POST" class="space-y-6">
+    <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl">
+        <form action="{{ route('admin.categories.update', $category) }}" method="POST" class="d-flex flex-column gap-3.5">
             @csrf
             @method('PUT')
 
             <div>
-                <label for="name" class="block text-sm font-bold text-gray-800 mb-1">
-                    Tên chuyên mục <span class="text-rose-500">*</span>
+                <label for="name" class="label-uppercase text-theme mb-1.5 d-block">
+                    Tên chuyên mục <span class="text-danger">*</span>
                 </label>
                 <input
                     type="text"
@@ -37,39 +40,39 @@
                     value="{{ old('name', $category->name) }}"
                     required
                     autofocus
-                    class="w-full px-4 py-2.5 text-sm bg-gray-50 focus:bg-white border @error('name') border-rose-300 ring-1 ring-rose-500 @else border-gray-200 focus:border-indigo-500 @enderror rounded-xl focus:ring-2 focus:ring-indigo-500/20 text-gray-900 transition"
+                    class="form-control form-control-editorial @error('name') is-invalid @enderror"
                 >
                 @error('name')
-                    <p class="mt-1.5 text-xs text-rose-600 font-medium">{{ $message }}</p>
+                    <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
                 @enderror
             </div>
 
             <div>
-                <label for="slug" class="block text-sm font-bold text-gray-800 mb-1">
-                    Đường dẫn tĩnh (Slug)
+                <label for="slug" class="label-uppercase text-theme mb-1.5 d-block">
+                    Đường dẫn tĩnh (Slug URL)
                 </label>
                 <input
                     type="text"
                     name="slug"
                     id="slug"
                     value="{{ old('slug', $category->slug) }}"
-                    class="w-full px-4 py-2.5 text-sm font-mono bg-gray-50 focus:bg-white border @error('slug') border-rose-300 ring-1 ring-rose-500 @else border-gray-200 focus:border-indigo-500 @enderror rounded-xl focus:ring-2 focus:ring-indigo-500/20 text-gray-900 transition"
+                    class="form-control form-control-editorial font-monospace @error('slug') is-invalid @enderror"
                 >
                 @error('slug')
-                    <p class="mt-1.5 text-xs text-rose-600 font-medium">{{ $message }}</p>
+                    <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
+            <div class="d-flex align-items-center gap-2 pt-3 border-theme-top mt-2">
                 <button
                     type="submit"
-                    class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs transition cursor-pointer"
+                    class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-2 fw-semibold"
                 >
                     Lưu thay đổi
                 </button>
                 <a
                     href="{{ route('admin.categories.index') }}"
-                    class="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 transition"
+                    class="btn btn-outline-theme btn-sm rounded-pill px-4 py-2 fw-medium"
                 >
                     Hủy bỏ
                 </a>

@@ -1,37 +1,53 @@
 @extends('layouts.public')
 
 @section('content')
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-    <!-- Header & Navigation -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-            <div class="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
-                <a href="{{ route('posts.stats') }}" class="hover:text-indigo-400 transition">Không gian tác giả</a>
-                <span>&rsaquo;</span>
-                <span class="text-indigo-400">Soạn bài mới</span>
+<div class="container-fluid py-4" style="max-width: 1200px;">
+    <!-- Top Publishing Bar (Ghost + Notion style) -->
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 pb-3 mb-4 border-theme-bottom">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{{ route('posts.stats') }}" class="btn btn-sm btn-outline-theme rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 38px; height: 38px;" title="Quay lại bảng điều khiển" aria-label="Quay lại bảng điều khiển">
+                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <div class="d-flex align-items-center gap-2 small text-theme-muted label-uppercase mb-0.5" style="font-size: 11px;">
+                    <a href="{{ route('posts.stats') }}" class="text-decoration-none text-theme-muted hover-accent">Tác giả</a>
+                    <span>&rsaquo;</span>
+                    <span class="text-accent">Soạn thảo mới</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold text-theme fs-5" style="font-family: var(--font-serif, 'Lora', serif);">Tạo bài viết mới</span>
+                    <x-badge variant="status-draft" size="xs">
+                        Bản nháp (Draft)
+                    </x-badge>
+                </div>
             </div>
-            <h1 class="text-2xl sm:text-3xl font-black text-[var(--color-text)] tracking-tight">
-                Tạo bài viết mới
-            </h1>
         </div>
 
-        <div class="flex items-center gap-3">
-            <a href="{{ route('posts.stats') }}" class="px-4 py-2 text-xs font-semibold text-[var(--color-text)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full hover:bg-[var(--color-surface-hover)] transition">
-                Quay lại
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('posts.stats') }}" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium">
+                Hủy bỏ
             </a>
+            <button type="submit" form="create-post-form" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5">
+                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+                Lưu bản nháp
+            </button>
         </div>
     </div>
 
     <!-- Error Summary Alert -->
     @if ($errors->any())
-        <div class="mb-6 p-4 rounded-2xl bg-rose-950/60 border border-rose-800/60 text-rose-200 text-sm">
-            <div class="flex items-center gap-2 font-semibold mb-1">
-                <svg class="w-5 h-5 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="alert alert-danger mb-4 shadow-xs border border-danger border-opacity-25 rounded-3" role="alert">
+            <div class="d-flex align-items-center gap-2 fw-semibold mb-1">
+                <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <span>Có lỗi xảy ra trong dữ liệu nhập:</span>
+                <span>Vui lòng kiểm tra lại thông tin nhập:</span>
             </div>
-            <ul class="list-disc list-inside space-y-1 text-xs text-rose-300">
+            <ul class="mb-0 small ps-3">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -39,200 +55,243 @@
         </div>
     @endif
 
-    <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
+    <form id="create-post-form" action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left Main Column (Content) -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Title & Excerpt -->
-                <div class="bg-[var(--color-surface)] p-6 rounded-2xl border border-[var(--color-border)] space-y-4">
-                    <div>
-                        <label for="title" class="block text-sm font-bold text-[var(--color-text)] mb-1.5">
-                            Tiêu đề bài viết <span class="text-rose-500">*</span>
-                        </label>
+        <div class="row g-4">
+            <!-- Left Main Writing Canvas (Readable Editor) -->
+            <div class="col-12 col-lg-8">
+                <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl mb-4">
+                    <!-- Title Input (Notion / Ghost seamless title) -->
+                    <div class="mb-3">
+                        <label for="title" class="visually-hidden">Tiêu đề bài viết</label>
                         <input
                             type="text"
                             name="title"
                             id="title"
                             value="{{ old('title') }}"
-                            placeholder="Nhập tiêu đề ấn tượng và súc tích..."
+                            placeholder="Tiêu đề bài viết..."
                             required
-                            class="w-full px-4 py-3 text-base sm:text-lg font-semibold bg-[var(--color-input)] focus:bg-[var(--color-surface)] border @error('title') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl focus:ring-1 focus:ring-indigo-500 text-[var(--color-text)] placeholder-[var(--color-text-secondary)] transition"
+                            autofocus
+                            class="editor-title-input @error('title') is-invalid @enderror"
                         >
                         @error('title')
-                            <p class="mt-1.5 text-xs text-rose-400 font-medium">{{ $message }}</p>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
 
-                    <!-- Excerpt -->
-                    <div>
-                        <label for="excerpt" class="block text-sm font-bold text-[var(--color-text)] mb-1.5">
-                            Mô tả tóm tắt (Excerpt)
-                        </label>
+                    <!-- Excerpt Input -->
+                    <div class="mb-4">
+                        <label for="excerpt" class="visually-hidden">Mô tả tóm tắt (Excerpt)</label>
                         <textarea
                             name="excerpt"
                             id="excerpt"
                             rows="2"
-                            placeholder="Tóm tắt ngắn gọn nội dung hiển thị trong danh sách feed (tối đa 500 ký tự)..."
-                            class="w-full px-4 py-2.5 text-sm bg-[var(--color-input)] focus:bg-[var(--color-surface)] border @error('excerpt') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl focus:ring-1 focus:ring-indigo-500 text-[var(--color-text)] placeholder-[var(--color-text-secondary)] transition"
+                            placeholder="Tóm tắt ngắn gọn nội dung hiển thị trong danh sách đọc (tối đa 500 ký tự)..."
+                            class="editor-excerpt-input @error('excerpt') is-invalid @enderror"
                         >{{ old('excerpt') }}</textarea>
-                        <p class="mt-1 text-xs text-[var(--color-text-secondary)]">Nếu bỏ trống, hệ thống sẽ tự động trích đoạn từ nội dung bài viết.</p>
                         @error('excerpt')
-                            <p class="mt-1 text-xs text-rose-400 font-medium">{{ $message }}</p>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
-                </div>
 
-                <!-- Body / Content -->
-                <div class="bg-[var(--color-surface)] p-6 rounded-2xl border border-[var(--color-border)]">
-                    <div class="flex items-center justify-between mb-2">
-                        <label for="content" class="block text-sm font-bold text-[var(--color-text)]">
-                            Nội dung chi tiết <span class="text-rose-500">*</span>
-                        </label>
-                        <span class="text-xs text-[var(--color-text-secondary)]">Hỗ trợ định dạng văn bản</span>
+                    <!-- Minimal Formatting Toolbar -->
+                    <div class="editor-toolbar" role="toolbar" aria-label="Định dạng Markdown">
+                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('bold')" title="Chữ đậm (Ctrl+B)" aria-label="In đậm (Bold)">
+                            <strong>B</strong>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('italic')" title="Chữ nghiêng (Ctrl+I)" aria-label="In nghiêng (Italic)">
+                            <em>I</em>
+                        </button>
+                        <div class="editor-toolbar-divider"></div>
+                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('h2')" title="Tiêu đề 2" aria-label="Tiêu đề 2 (Heading 2)">
+                            H2
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('h3')" title="Tiêu đề 3" aria-label="Tiêu đề 3 (Heading 3)">
+                            H3
+                        </button>
+                        <div class="editor-toolbar-divider"></div>
+                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('quote')" title="Trích dẫn" aria-label="Trích dẫn (Quote)">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('code')" title="Khối mã nguồn" aria-label="Khối mã nguồn (Code block)">
+                            &lt;/&gt;
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('list')" title="Danh sách" aria-label="Danh sách (List)">
+                            &bull; List
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('link')" title="Chèn liên kết" aria-label="Chèn liên kết (Link)">
+                            Link
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('hr')" title="Đường phân tách" aria-label="Đường phân tách ngang (Horizontal rule)">
+                            &mdash;
+                        </button>
                     </div>
 
-                    <textarea
-                        name="content"
-                        id="content"
-                        rows="16"
-                        placeholder="Bắt đầu chia sẻ kiến thức của bạn ở đây..."
-                        required
-                        class="w-full px-4 py-3 text-sm font-mono leading-relaxed bg-[var(--color-input)] focus:bg-[var(--color-surface)] border @error('content') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl focus:ring-1 focus:ring-indigo-500 text-[var(--color-text)] placeholder-[var(--color-text-secondary)] transition"
-                    >{{ old('content', old('body')) }}</textarea>
-                    @error('content')
-                        <p class="mt-1.5 text-xs text-rose-400 font-medium">{{ $message }}</p>
-                    @enderror
-                    @error('body')
-                        <p class="mt-1.5 text-xs text-rose-400 font-medium">{{ $message }}</p>
-                    @enderror
+                    <!-- Body / Content Textarea -->
+                    <div>
+                        <label for="content" class="visually-hidden">Nội dung chi tiết</label>
+                        <textarea
+                            name="content"
+                            id="content"
+                            rows="18"
+                            placeholder="Bắt đầu chia sẻ kiến thức, kinh nghiệm và câu chuyện của bạn tại đây..."
+                            required
+                            class="editor-textarea w-100 @error('content') is-invalid @enderror @error('body') is-invalid @enderror"
+                            oninput="updateEditorStats()"
+                        >{{ old('content', old('body')) }}</textarea>
+                        @error('content')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        @error('body')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Editor Live Status Bar -->
+                    <div class="editor-status-bar mt-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span id="stat-words">0 từ</span>
+                            <span>&bull;</span>
+                            <span id="stat-chars">0 ký tự</span>
+                            <span>&bull;</span>
+                            <span id="stat-reading">~0 phút đọc</span>
+                        </div>
+                        <span class="opacity-75">Hỗ trợ Markdown</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Right Sidebar Column (Meta & Actions) -->
-            <div class="space-y-6">
-                <!-- Publishing Workflow Status Box -->
-                <div class="bg-[var(--color-surface)] p-6 rounded-2xl border border-[var(--color-border)]">
-                    <h2 class="text-sm font-bold text-[var(--color-text)] mb-3 flex items-center gap-2">
-                        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Trạng thái xuất bản
-                    </h2>
-
-                    <div class="p-3.5 rounded-xl bg-[var(--color-surface-hover)] border border-[var(--color-border)] text-xs text-[var(--color-text-secondary)] mb-5 leading-relaxed">
-                        <p class="font-semibold text-[var(--color-text)] mb-1">Quy trình kiểm duyệt:</p>
-                        Bài viết mới sẽ được lưu dưới dạng <strong>Bản nháp (Draft)</strong>. Sau khi hoàn thiện, bạn có thể bấm <em>Gửi xét duyệt</em> để Ban biên tập thẩm định.
-                    </div>
-
-                    <div class="space-y-3">
-                        <button
-                            type="submit"
-                            class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full text-xs font-bold bg-[var(--color-text)] text-[var(--color-bg)] hover:opacity-90 active:scale-[0.98] shadow-md transition cursor-pointer"
-                        >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            <!-- Right Sidebar: Settings & Publishing Panel -->
+            <div class="col-12 col-lg-4">
+                <div class="d-flex flex-column gap-3.5">
+                    <!-- Publishing Workflow Card -->
+                    <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
+                        <h2 class="label-uppercase text-theme mb-3 d-flex align-items-center gap-1.5">
+                            <svg style="width: 14px; height: 14px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            Lưu bản nháp (Draft)
-                        </button>
+                            Quy trình xuất bản
+                        </h2>
 
-                        <a
-                            href="{{ route('posts.stats') }}"
-                            class="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-full text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text)] bg-[var(--color-surface)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] transition"
-                        >
-                            Hủy bỏ
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Category Selection -->
-                <div class="bg-[var(--color-surface)] p-6 rounded-2xl border border-[var(--color-border)]">
-                    <label for="category_id" class="block text-sm font-bold text-[var(--color-text)] mb-2">
-                        Chuyên mục <span class="text-rose-500">*</span>
-                    </label>
-                    <select
-                        name="category_id"
-                        id="category_id"
-                        required
-                        class="w-full px-4 py-2.5 text-sm bg-[var(--color-input)] focus:bg-[var(--color-surface)] border @error('category_id') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl focus:ring-1 focus:ring-indigo-500 text-[var(--color-text)] transition"
-                    >
-                        <option value="">-- Chọn chuyên mục --</option>
-                        @foreach ($categories as $cat)
-                            <option value="{{ $cat->id }}" @selected(old('category_id') == $cat->id)>
-                                {{ $cat->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('category_id')
-                        <p class="mt-1.5 text-xs text-rose-400 font-medium">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Thumbnail Upload -->
-                <div class="bg-[var(--color-surface)] p-6 rounded-2xl border border-[var(--color-border)]">
-                    <label class="block text-sm font-bold text-[var(--color-text)] mb-2">
-                        Ảnh đại diện (Thumbnail)
-                    </label>
-
-                    <div
-                        id="drop-zone"
-                        class="border-2 border-dashed border-[var(--color-border)] hover:border-zinc-500 rounded-xl p-4 text-center cursor-pointer transition bg-[var(--color-surface-hover)] relative"
-                    >
-                        <input
-                            type="file"
-                            name="thumbnail"
-                            id="thumbnail"
-                            accept="image/jpeg,image/png,image/webp,image/jpg"
-                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                            onchange="previewThumbnail(event)"
-                        >
-                        <div id="upload-placeholder" class="space-y-2 py-4">
-                            <svg class="mx-auto h-8 w-8 text-[var(--color-text-secondary)]" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                            <p class="text-xs text-[var(--color-text)] font-medium">Bấm để tải ảnh lên hoặc kéo thả vào đây</p>
-                            <p class="text-[11px] text-[var(--color-text-secondary)]">JPG, PNG, WEBP tối đa 2MB</p>
+                        <div class="p-3 rounded-3 bg-surface-2 border border-theme mb-3 small text-theme-secondary">
+                            <p class="fw-semibold text-theme mb-1">Luồng kiểm duyệt bài viết:</p>
+                            Bài viết mới luôn được lưu ở trạng thái <strong>Bản nháp (Draft)</strong>. Sau khi soạn xong, bạn có thể gửi cho Ban biên tập xét duyệt (Pending) từ trang chỉnh sửa bài viết.
                         </div>
 
-                        <div id="preview-container" class="hidden">
-                            <img id="image-preview" src="#" alt="Thumbnail preview" class="w-full h-40 object-cover rounded-lg mb-2 shadow-xs">
-                            <p class="text-[11px] text-indigo-400 font-medium">Bấm vào để đổi ảnh khác</p>
+                        <div class="d-flex flex-column gap-2">
+                            <button
+                                type="submit"
+                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2"
+                            >
+                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                                Lưu bản nháp (Draft)
+                            </button>
+
+                            <a
+                                href="{{ route('posts.stats') }}"
+                                class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium"
+                            >
+                                Hủy bỏ & Quay lại
+                            </a>
                         </div>
                     </div>
-                    @error('thumbnail')
-                        <p class="mt-1.5 text-xs text-rose-400 font-medium">{{ $message }}</p>
-                    @enderror
-                </div>
 
-                <!-- Tags Selection -->
-                <div class="bg-[var(--color-surface)] p-6 rounded-2xl border border-[var(--color-border)]">
-                    <label class="block text-sm font-bold text-[var(--color-text)] mb-2">
-                        Thẻ bài viết (Tags)
-                    </label>
-                    <p class="text-xs text-[var(--color-text-secondary)] mb-3">Chọn các từ khóa chủ đề liên quan:</p>
+                    <!-- Category Selection -->
+                    <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
+                        <label for="category_id" class="label-uppercase text-theme mb-2 d-block">
+                            Chuyên mục <span class="text-danger">*</span>
+                        </label>
+                        <select
+                            name="category_id"
+                            id="category_id"
+                            required
+                            class="form-select form-control-editorial @error('category_id') is-invalid @enderror"
+                        >
+                            <option value="">-- Chọn chuyên mục bài viết --</option>
+                            @foreach ($categories as $cat)
+                                <option value="{{ $cat->id }}" @selected(old('category_id') == $cat->id)>
+                                    {{ $cat->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('category_id')
+                            <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                    @php
-                        $selectedTags = old('tags', []);
-                    @endphp
+                    <!-- Thumbnail Upload (Featured Image) -->
+                    <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
+                        <label class="label-uppercase text-theme mb-2 d-block">
+                            Ảnh bìa đại diện (Thumbnail)
+                        </label>
 
-                    <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1 no-scrollbar">
-                        @foreach ($tags as $tag)
-                            <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer border transition select-none has-checked:bg-indigo-500/20 has-checked:text-indigo-400 has-checked:border-indigo-500/40 border-[var(--color-border)] bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)] hover:border-zinc-500">
+                        <div
+                            id="drop-zone"
+                            class="border border-2 border-dashed border-theme rounded-3 p-3 text-center position-relative bg-surface-2 transition-colors"
+                            style="cursor: pointer;"
+                        >
+                            <input
+                                type="file"
+                                name="thumbnail"
+                                id="thumbnail"
+                                accept="image/jpeg,image/png,image/webp,image/jpg"
+                                class="position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer"
+                                onchange="previewThumbnail(event)"
+                            >
+                            <div id="upload-placeholder" class="py-3">
+                                <svg class="mx-auto mb-2 text-theme-muted" style="width: 28px; height: 28px;" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <p class="small text-theme fw-medium mb-1">Tải ảnh bìa lên bài viết</p>
+                                <p class="small text-theme-muted mb-0" style="font-size: 11px;">JPG, PNG, WEBP tối đa 2MB</p>
+                            </div>
+
+                            <div id="preview-container" class="d-none">
+                                <img id="image-preview" src="#" alt="Thumbnail preview" class="img-fluid rounded-3 mb-2" style="max-height: 160px; object-fit: cover;">
+                                <p class="small mb-0 text-accent" style="font-size: 11px;">Bấm để đổi ảnh khác</p>
+                            </div>
+                        </div>
+                        @error('thumbnail')
+                            <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Tags Selection -->
+                    <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
+                        <label class="label-uppercase text-theme mb-1 d-block">
+                            Thẻ bài viết (Tags)
+                        </label>
+                        <p class="small text-theme-muted mb-3" style="font-size: 12px;">Gắn các thẻ chủ đề liên quan:</p>
+
+                        @php
+                            $selectedTags = old('tags', []);
+                        @endphp
+
+                        <div class="d-flex flex-wrap gap-1.5 overflow-y-auto no-scrollbar" style="max-height: 190px;">
+                            @foreach ($tags as $tag)
                                 <input
                                     type="checkbox"
+                                    class="btn-check"
+                                    id="tag-{{ $tag->id }}"
                                     name="tags[]"
                                     value="{{ $tag->id }}"
-                                    class="hidden"
+                                    autocomplete="off"
                                     @checked(in_array($tag->id, (array)$selectedTags))
                                 >
-                                <span>#{{ $tag->name }}</span>
-                            </label>
-                        @endforeach
+                                <label class="btn btn-sm btn-outline-theme rounded-pill py-1 px-2.5 small" for="tag-{{ $tag->id }}" style="font-size: 12px;">
+                                    #{{ $tag->name }}
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('tags')
+                            <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
-                    @error('tags')
-                        <p class="mt-1.5 text-xs text-rose-400 font-medium">{{ $message }}</p>
-                    @enderror
                 </div>
             </div>
         </div>
@@ -246,11 +305,75 @@ function previewThumbnail(event) {
         const reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById('image-preview').src = e.target.result;
-            document.getElementById('upload-placeholder').classList.add('hidden');
-            document.getElementById('preview-container').classList.remove('hidden');
+            document.getElementById('upload-placeholder').classList.add('d-none');
+            document.getElementById('preview-container').classList.remove('d-none');
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+function updateEditorStats() {
+    const textarea = document.getElementById('content');
+    if (!textarea) return;
+    const text = textarea.value.trim();
+    const words = text ? text.split(/\s+/).length : 0;
+    const chars = text.length;
+    const minutes = Math.max(1, Math.ceil(words / 200));
+
+    const wordsEl = document.getElementById('stat-words');
+    const charsEl = document.getElementById('stat-chars');
+    const readingEl = document.getElementById('stat-reading');
+
+    if (wordsEl) wordsEl.textContent = words.toLocaleString() + ' từ';
+    if (charsEl) charsEl.textContent = chars.toLocaleString() + ' ký tự';
+    if (readingEl) readingEl.textContent = '~' + minutes + ' phút đọc';
+}
+
+function formatDoc(command) {
+    const textarea = document.getElementById('content');
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const sel = textarea.value.substring(start, end);
+    let before = textarea.value.substring(0, start);
+    let after = textarea.value.substring(end);
+    let replace = '';
+
+    switch(command) {
+        case 'bold':
+            replace = `**${sel || 'văn bản đậm'}**`;
+            break;
+        case 'italic':
+            replace = `*${sel || 'văn bản nghiêng'}*`;
+            break;
+        case 'h2':
+            replace = `\n## ${sel || 'Tiêu đề mục'}\n`;
+            break;
+        case 'h3':
+            replace = `\n### ${sel || 'Tiêu đề phụ'}\n`;
+            break;
+        case 'quote':
+            replace = `\n> ${sel || 'Trích dẫn hay'}\n`;
+            break;
+        case 'code':
+            replace = `\`\`\`\n${sel || '// Viết code tại đây'}\n\`\`\``;
+            break;
+        case 'list':
+            replace = `\n- ${sel || 'Mục danh sách'}\n`;
+            break;
+        case 'link':
+            replace = `[${sel || 'Tiêu đề liên kết'}](https://)`;
+            break;
+        case 'hr':
+            replace = `\n\n---\n\n`;
+            break;
+    }
+
+    textarea.value = before + replace + after;
+    textarea.focus();
+    updateEditorStats();
+}
+
+document.addEventListener('DOMContentLoaded', updateEditorStats);
 </script>
 @endsection

@@ -1,15 +1,19 @@
 <x-guest-layout>
-    <div class="mb-6 text-center">
-        <h2 class="text-xl font-bold text-[var(--color-text)]">Đăng ký tài khoản</h2>
-        <p class="text-xs text-[var(--color-text-secondary)] mt-1">Tham gia cùng các tác giả và độc giả tại BlogMNM</p>
+    <div class="mb-4 text-center">
+        <h1 class="h4 fw-bold text-theme mb-1 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+            Đăng ký tài khoản
+        </h1>
+        <p class="small text-theme-secondary mb-0">
+            Gia nhập cộng đồng người viết và độc giả BlogMNM
+        </p>
     </div>
 
-    <form method="POST" action="{{ route('register') }}" class="space-y-4">
+    <form method="POST" action="{{ route('register') }}" class="needs-validation" novalidate>
         @csrf
 
         <!-- Name -->
-        <div>
-            <label for="name" class="block text-xs font-semibold text-[var(--color-text)] mb-1.5">
+        <div class="mb-3">
+            <label for="name" class="form-label small fw-medium text-theme mb-1.5 d-block">
                 Họ và tên
             </label>
             <input
@@ -21,15 +25,16 @@
                 autofocus
                 autocomplete="name"
                 placeholder="Nguyễn Văn A"
-                class="w-full px-4 py-2.5 text-sm bg-[var(--color-input)] border @error('name') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl text-[var(--color-text)] placeholder-[var(--color-text-secondary)] focus:ring-1 focus:ring-indigo-500 transition"
+                class="form-control form-control-editorial @error('name') is-invalid @enderror"
+                aria-describedby="name-feedback"
             >
-            <x-input-error :messages="$errors->get('name')" class="mt-1.5 text-xs text-rose-400" />
+            <x-input-error :messages="$errors->get('name')" class="mt-1" />
         </div>
 
         <!-- Email Address -->
-        <div>
-            <label for="email" class="block text-xs font-semibold text-[var(--color-text)] mb-1.5">
-                Email
+        <div class="mb-3">
+            <label for="email" class="form-label small fw-medium text-theme mb-1.5 d-block">
+                Địa chỉ Email
             </label>
             <input
                 id="email"
@@ -39,14 +44,15 @@
                 required
                 autocomplete="username"
                 placeholder="ten@example.com"
-                class="w-full px-4 py-2.5 text-sm bg-[var(--color-input)] border @error('email') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl text-[var(--color-text)] placeholder-[var(--color-text-secondary)] focus:ring-1 focus:ring-indigo-500 transition"
+                class="form-control form-control-editorial @error('email') is-invalid @enderror"
+                aria-describedby="email-feedback"
             >
-            <x-input-error :messages="$errors->get('email')" class="mt-1.5 text-xs text-rose-400" />
+            <x-input-error :messages="$errors->get('email')" class="mt-1" />
         </div>
 
         <!-- Password -->
-        <div>
-            <label for="password" class="block text-xs font-semibold text-[var(--color-text)] mb-1.5">
+        <div class="mb-3">
+            <label for="password" class="form-label small fw-medium text-theme mb-1.5 d-block">
                 Mật khẩu
             </label>
             <input
@@ -56,14 +62,15 @@
                 required
                 autocomplete="new-password"
                 placeholder="Tối thiểu 8 ký tự"
-                class="w-full px-4 py-2.5 text-sm bg-[var(--color-input)] border @error('password') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl text-[var(--color-text)] placeholder-[var(--color-text-secondary)] focus:ring-1 focus:ring-indigo-500 transition"
+                class="form-control form-control-editorial @error('password') is-invalid @enderror"
+                aria-describedby="password-feedback"
             >
-            <x-input-error :messages="$errors->get('password')" class="mt-1.5 text-xs text-rose-400" />
+            <x-input-error :messages="$errors->get('password')" class="mt-1" />
         </div>
 
         <!-- Confirm Password -->
-        <div>
-            <label for="password_confirmation" class="block text-xs font-semibold text-[var(--color-text)] mb-1.5">
+        <div class="mb-4">
+            <label for="password_confirmation" class="form-label small fw-medium text-theme mb-1.5 d-block">
                 Xác nhận mật khẩu
             </label>
             <input
@@ -73,24 +80,26 @@
                 required
                 autocomplete="new-password"
                 placeholder="Nhập lại mật khẩu"
-                class="w-full px-4 py-2.5 text-sm bg-[var(--color-input)] border @error('password_confirmation') border-rose-500 @else border-[var(--color-border)] focus:border-indigo-500 @enderror rounded-xl text-[var(--color-text)] placeholder-[var(--color-text-secondary)] focus:ring-1 focus:ring-indigo-500 transition"
+                class="form-control form-control-editorial @error('password_confirmation') is-invalid @enderror"
+                aria-describedby="password-confirmation-feedback"
             >
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1.5 text-xs text-rose-400" />
+            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1" />
         </div>
 
         <!-- Submit Button -->
-        <div class="pt-2">
-            <button type="submit" class="w-full py-2.5 px-4 rounded-full text-xs font-bold bg-[var(--color-text)] text-[var(--color-bg)] hover:opacity-90 active:scale-[0.98] transition shadow-md">
+        <div class="mb-3">
+            <button type="submit" class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs">
                 Đăng ký tài khoản
             </button>
         </div>
 
         <!-- Already Registered Link -->
-        <div class="pt-4 text-center border-t border-[var(--color-border)] text-xs text-[var(--color-text-secondary)]">
+        <div class="pt-3 mt-4 text-center border-theme-top small text-theme-secondary">
             Đã có tài khoản?
-            <a href="{{ route('login') }}" class="font-semibold text-indigo-400 hover:text-indigo-300 transition ml-1">
+            <a href="{{ route('login') }}" class="text-theme fw-semibold text-decoration-underline-hover ms-1">
                 Đăng nhập ngay
             </a>
         </div>
     </form>
 </x-guest-layout>
+
