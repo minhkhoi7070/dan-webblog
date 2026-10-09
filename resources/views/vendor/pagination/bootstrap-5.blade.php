@@ -5,27 +5,26 @@
             {{-- Previous Page Link --}}
             @if ($paginator->onFirstPage())
             <li class="page-item disabled" aria-disabled="true">
-                <span class="page-link">@lang('pagination.previous')</span>
+                <span class="page-link">&laquo; Trước</span>
             </li>
             @else
             <li class="page-item">
-                <a class="page-link" href="{{ $paginator->previousPageUrl() }}" rel="prev">@lang('pagination.previous')</a>
+                <a class="page-link" href="{{ $paginator->previousPageUrl() }}" rel="prev">&laquo; Trước</a>
             </li>
             @endif
 
             {{-- Next Page Link --}}
             @if ($paginator->hasMorePages())
             <li class="page-item">
-                <a class="page-link" href="{{ $paginator->nextPageUrl() }}" rel="next">@lang('pagination.next')</a>
+                <a class="page-link" href="{{ $paginator->nextPageUrl() }}" rel="next">Sau &raquo;</a>
             </li>
             @else
             <li class="page-item disabled" aria-disabled="true">
-                <span class="page-link">@lang('pagination.next')</span>
+                <span class="page-link">Sau &raquo;</span>
             </li>
             @endif
         </ul>
     </div>
-
     <div class="d-none flex-sm-fill d-sm-flex align-items-sm-center justify-content-sm-between gap-3">
         <div class="small text-theme-muted">
             Hiển thị
