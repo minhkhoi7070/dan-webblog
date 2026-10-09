@@ -22,7 +22,7 @@ class PaginationTest extends TestCase
         $response1 = $this->get(route('posts.index'));
         $response1->assertOk();
         $text1 = preg_replace('/\s+/', ' ', strip_tags($response1->getContent()));
-        $this->assertStringContainsString('Showing 1 to 10 of 20 results', $text1);
+        $this->assertStringContainsString('Hiển thị 1 đến 10 trong tổng số 20 kết quả', $text1);
         $response1->assertSee('page=2');
         $response1->assertDontSee('page=3');
 
@@ -30,7 +30,7 @@ class PaginationTest extends TestCase
         $response2 = $this->get(route('posts.index', ['page' => 2]));
         $response2->assertOk();
         $text2 = preg_replace('/\s+/', ' ', strip_tags($response2->getContent()));
-        $this->assertStringContainsString('Showing 11 to 20 of 20 results', $text2);
+        $this->assertStringContainsString('Hiển thị 11 đến 20 trong tổng số 20 kết quả', $text2);
         $response2->assertDontSee('page=3');
     }
 
@@ -45,13 +45,13 @@ class PaginationTest extends TestCase
         $response1 = $this->get(route('posts.index'));
         $response1->assertOk();
         $text1 = preg_replace('/\s+/', ' ', strip_tags($response1->getContent()));
-        $this->assertStringContainsString('Showing 1 to 10 of 18 results', $text1);
+        $this->assertStringContainsString('Hiển thị 1 đến 10 trong tổng số 18 kết quả', $text1);
 
         // Page 2
         $response2 = $this->get(route('posts.index', ['page' => 2]));
         $response2->assertOk();
         $text2 = preg_replace('/\s+/', ' ', strip_tags($response2->getContent()));
-        $this->assertStringContainsString('Showing 11 to 18 of 18 results', $text2);
+        $this->assertStringContainsString('Hiển thị 11 đến 18 trong tổng số 18 kết quả', $text2);
     }
 
     /**
