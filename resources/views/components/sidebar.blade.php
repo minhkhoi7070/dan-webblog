@@ -103,8 +103,8 @@
 
             <!-- Admin Console (if Admin) -->
             @if(Auth::user()->isAdmin())
-                <div class="my-2 border-theme-top pt-2">
-                    <div class="sidebar-label px-3 py-1 label-uppercase text-accent" style="font-size: 10px; letter-spacing: 0.08em;">
+                <div class="mt-2 mb-0 border-theme-top pt-2">
+                    <div class="sidebar-labenpm.cmd run devl px-3 py-1 label-uppercase text-accent" style="font-size: 10px; letter-spacing: 0.08em;">
                         Quản trị
                     </div>
                     <a href="{{ route('admin.dashboard') }}"
@@ -158,6 +158,7 @@
             <!-- Settings / Cài đặt & Giao diện -->
             <a href="{{ route('profile.edit') }}"
                class="d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none {{ request()->routeIs('profile.edit') ? 'active' : '' }}"
+style="margin-top: -4px;"
                title="Cài đặt & Giao diện"
                aria-label="Cài đặt">
                 <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -191,22 +192,29 @@
     </nav>
 
     <!-- Bottom User Section / Auth -->
-    <div class="mt-auto pt-3 border-theme-top d-flex flex-column gap-1.5">
-        @auth
+<div class="sidebar-account mt-auto border-theme-top">
+    @auth
+        <div class="sidebar-account-card">
             <a href="{{ route('profile.show') }}"
-               class="d-flex align-items-center sidebar-link gap-2.5 p-2 rounded-3 text-decoration-none"
+               class="sidebar-account__top text-decoration-none"
                title="Hồ sơ cá nhân: {{ Auth::user()->name }}">
+
                 <x-avatar :user="Auth::user()" size="sm" />
-                <div class="sidebar-label min-w-0 flex-grow-1 overflow-hidden">
-                    <div class="d-flex align-items-center gap-1.5">
-                        <span class="small fw-semibold text-theme text-truncate">{{ Auth::user()->name }}</span>
+
+                <div class="sidebar-account__meta sidebar-label">
+                    <div class="sidebar-account__name-row">
+                        <span class="sidebar-account__name text-truncate">
+                            {{ Auth::user()->name }}
+                        </span>
+
                         @if(Auth::user()->role === 'admin')
-                            <span class="badge rounded-pill bg-accent text-accent-fg p-0 px-1.5" style="font-size: 9px; line-height: 14px;">Admin</span>
+                            <span class="sidebar-account__badge">Admin</span>
                         @elseif(Auth::user()->role === 'author')
-                            <span class="badge rounded-pill bg-theme-surface border border-theme text-theme-secondary p-0 px-1.5" style="font-size: 9px; line-height: 14px;">Tác giả</span>
+                            <span class="sidebar-account__badge">Tác giả</span>
                         @endif
                     </div>
-                    <div class="text-theme-secondary text-truncate" style="font-size: 11px;">
+
+                    <div class="sidebar-account__username text-truncate">
                         {{ '@' . (Auth::user()->username ?? strtolower(str_replace(' ', '', Auth::user()->name))) }}
                     </div>
                 </div>
@@ -214,30 +222,47 @@
 
             <form method="POST" action="{{ route('logout') }}" class="w-100 m-0">
                 @csrf
+
                 <button type="submit"
                         aria-label="Đăng xuất khỏi tài khoản"
                         title="Đăng xuất"
-                        class="btn p-0 w-100 d-flex align-items-center sidebar-link gap-2.5 px-3 py-1.5 rounded-3 text-decoration-none border-0 text-start text-danger">
-                    <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        class="sidebar-account__logout">
+                    <svg style="width: 18px; height: 18px; flex-shrink: 0;"
+                         fill="none"
+                         stroke="currentColor"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="1.8"
+                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    <span class="sidebar-label small">Đăng xuất</span>
+
+                    <span>Đăng xuất</span>
                 </button>
             </form>
-        @else
-            <a href="{{ route('login') }}"
-               class="d-flex align-items-center sidebar-link gap-2.5 px-3 py-2 rounded-3 text-decoration-none text-theme"
-               title="Đăng nhập">
-                <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
-                <span class="sidebar-label small">Đăng nhập</span>
-            </a>
-            <a href="{{ route('register') }}"
-               class="sidebar-label btn btn-sm btn-editorial-primary rounded-pill w-100 mt-1"
-               title="Đăng ký tài khoản">
-                Đăng ký
-            </a>
-        @endauth
-    </div>
+        </div>
+
+    @else
+        <a href="{{ route('login') }}"
+           class="d-flex align-items-center sidebar-link gap-2.5 px-3 py-2 rounded-3 text-decoration-none text-theme"
+           title="Đăng nhập">
+            <svg style="width: 20px; height: 20px; flex-shrink: 0;"
+                 fill="none"
+                 stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.8"
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+            <span class="sidebar-label small">Đăng nhập</span>
+        </a>
+
+        <a href="{{ route('register') }}"
+           class="sidebar-label btn btn-sm btn-editorial-primary rounded-pill w-100 mt-1"
+           title="Đăng ký tài khoản">
+            Đăng ký
+        </a>
+    @endauth
+</div>
 </aside>
