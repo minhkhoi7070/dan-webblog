@@ -8,18 +8,49 @@
     <form action="{{ route('admin.users.index') }}" method="GET" class="row g-2.5 align-items-center">
         <!-- Search Input -->
         <div class="col-12 col-md-5">
-            <div class="position-relative">
+            <div class="position-relative w-100">
+                <span
+                    class="position-absolute d-flex align-items-center justify-content-center text-theme-muted"
+                    style="
+                        left: 16px;
+                        top: 50%;
+                        width: 18px;
+                        height: 18px;
+                        transform: translateY(-50%);
+                        pointer-events: none;
+                        z-index: 2;
+                    "
+                    aria-hidden="true"
+                >
+                    <svg
+                        width="16"
+                        height="16"
+                        style="display: block;"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.8"
+                            d="m21 21-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                    </svg>
+                </span>
+
                 <input
                     type="search"
                     name="q"
                     value="{{ $search }}"
                     placeholder="Tìm theo tên hoặc email người dùng..."
-                    class="form-control form-control-sm form-control-editorial rounded-pill ps-4 pe-3 py-1.5"
-                    style="font-size: 13px;"
+                    class="form-control bg-surface-2 border-theme text-theme rounded-3 w-100"
+                    style="
+                        min-height: 46px;
+                        padding-left: 46px;
+                        padding-right: 16px;
+                    "
                 >
-                <svg style="width: 14px; height: 14px; position: absolute; left: 12px; top: 10px; pointer-events: none;" class="text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
             </div>
         </div>
 
@@ -66,12 +97,12 @@
         <table class="table table-hover align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
             <thead class="border-theme-bottom bg-surface-2">
                 <tr>
-                    <th class="ps-3 ps-sm-4 py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Người dùng</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Vai trò</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Bài viết</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Bình luận</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Trạng thái</th>
-                    <th class="pe-3 pe-sm-4 py-3 text-end label-uppercase text-theme-muted" style="font-size: 11px;">Thao tác</th>
+                    <th class="ps-3 ps-sm-4 py-3 text-center label-uppercase text-theme-muted" style="font-size: 11px;">Người dùng</th>
+                    <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Vai trò</th>
+                    <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Bài viết</th>
+                    <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Bình luận</th>
+                    <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Trạng thái</th>
+                    <th class="pe-3 pe-sm-4 py-3 text-center label-uppercase text-theme-muted" style="font-size: 11px;">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-theme">
@@ -79,9 +110,9 @@
                     <tr>
                         <!-- User Identity -->
                         <td class="ps-3 ps-sm-4 py-3">
-                            <div class="d-flex align-items-center gap-2.5">
+                            <div class="d-flex align-items-center" style="gap: 12px;">
                                 <x-avatar :user="$user" size="sm" class="border border-theme flex-shrink-0" />
-                                <div class="min-w-0" style="max-width: 280px;">
+                                <div class="min-w-0" style="min-width: 0; max-width: 280px;">
                                     <a href="{{ route('admin.users.show', $user) }}" class="fw-semibold text-theme text-decoration-none hover-accent text-truncate d-block small" style="font-size: 13.5px;">
                                         {{ $user->name }}
                                     </a>
@@ -91,7 +122,7 @@
                         </td>
 
                         <!-- Role Badge -->
-                        <td class="py-3">
+                        <td class="py-3 text-start">
                             @if($user->role === 'admin')
                                 <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill text-uppercase" style="font-size: 10.5px;">
                                     Admin
@@ -108,17 +139,17 @@
                         </td>
 
                         <!-- Posts Count -->
-                        <td class="py-3 small text-theme fw-semibold" style="font-size: 13px;">
+                        <td class="py-3 text-start small text-theme fw-semibold" style="font-size: 13px;">
                             {{ number_format($user->posts_count) }}
                         </td>
 
                         <!-- Comments Count -->
-                        <td class="py-3 small text-theme fw-semibold" style="font-size: 13px;">
+                        <td class="py-3 text-start small text-theme fw-semibold" style="font-size: 13px;">
                             {{ number_format($user->comments_count) }}
                         </td>
 
                         <!-- Status Badge -->
-                        <td class="py-3">
+                        <td class="py-3 text-start">
                             @if($user->is_locked)
                                 <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill" style="font-size: 11px;">
                                     Đã bị khóa
@@ -131,7 +162,7 @@
                         </td>
 
                         <!-- Actions -->
-                        <td class="pe-3 pe-sm-4 py-3 text-end">
+                        <td class="pe-3 pe-sm-4 py-3 text-center">
                             <div class="d-inline-flex align-items-center gap-1.5">
                                 <a href="{{ route('admin.users.show', $user) }}" class="btn btn-sm btn-outline-theme rounded-pill px-2.5 py-1 text-theme-secondary" style="font-size: 11px;" aria-label="Xem chi tiết người dùng {{ $user->name }}">
                                     Chi tiết

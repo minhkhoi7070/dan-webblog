@@ -6,18 +6,49 @@
 <!-- Header Action Bar & Search -->
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
     <form action="{{ route('admin.categories.index') }}" method="GET" class="flex-grow-1" style="max-width: 440px;">
-        <div class="position-relative">
+        <div class="position-relative w-100">
+            <span
+                class="position-absolute d-flex align-items-center justify-content-center text-theme-muted"
+                style="
+                    left: 16px;
+                    top: 50%;
+                    width: 18px;
+                    height: 18px;
+                    transform: translateY(-50%);
+                    pointer-events: none;
+                    z-index: 2;
+                "
+                aria-hidden="true"
+            >
+                <svg
+                    width="16"
+                    height="16"
+                    style="display: block;"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.8"
+                        d="m21 21-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                </svg>
+            </span>
+
             <input
                 type="search"
                 name="q"
                 value="{{ $search }}"
                 placeholder="Tìm chuyên mục theo tên hoặc slug..."
-                class="form-control form-control-sm form-control-editorial rounded-pill ps-4 pe-3 py-1.5"
-                style="font-size: 13px;"
+                class="form-control bg-surface-2 border-theme text-theme rounded-3 w-100"
+                style="
+                    min-height: 46px;
+                    padding-left: 46px;
+                    padding-right: 16px;
+                "
             >
-            <svg style="width: 14px; height: 14px; position: absolute; left: 12px; top: 10px; pointer-events: none;" class="text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
         </div>
     </form>
 
@@ -33,29 +64,29 @@
         <table class="table table-hover align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
             <thead class="border-theme-bottom bg-surface-2">
                 <tr>
-                    <th class="ps-3 ps-sm-4 py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Tên Chuyên mục</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Đường dẫn tĩnh (Slug)</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Số bài viết</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Ngày tạo</th>
-                    <th class="pe-3 pe-sm-4 py-3 text-end label-uppercase text-theme-muted" style="font-size: 11px;">Thao tác</th>
+                    <th class="ps-3 ps-sm-4 py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Tên Chuyên mục</th>
+                    <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Đường dẫn tĩnh (Slug)</th>
+                    <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Số bài viết</th>
+                    <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Ngày tạo</th>
+                    <th class="pe-3 pe-sm-4 py-3 text-center label-uppercase text-theme-muted" style="font-size: 11px;">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-theme">
                 @forelse($categories as $category)
                     <tr>
-                        <td class="ps-3 ps-sm-4 py-3 fw-semibold text-theme" style="font-size: 13.5px;">
+                        <td class="ps-3 ps-sm-4 py-3 text-start fw-semibold text-theme" style="font-size: 13.5px;">
                             {{ $category->name }}
                         </td>
-                        <td class="py-3 font-monospace small text-theme-muted" style="font-size: 12px;">
+                        <td class="py-3 text-start font-monospace small text-theme-muted" style="font-size: 12px;">
                             {{ $category->slug }}
                         </td>
-                        <td class="py-3 fw-semibold text-theme small" style="font-size: 13px;">
+                        <td class="py-3 text-start fw-semibold text-theme small" style="font-size: 13px;">
                             {{ number_format($category->posts_count) }} bài
                         </td>
-                        <td class="py-3 small text-theme-muted" style="font-size: 12px;">
+                        <td class="py-3 text-start small text-theme-muted" style="font-size: 12px;">
                             {{ $category->created_at->format('d/m/Y') }}
                         </td>
-                        <td class="pe-3 pe-sm-4 py-3 text-end">
+                        <td class="pe-3 pe-sm-4 py-3 text-center">
                             <div class="d-inline-flex gap-1.5">
                                 <a href="{{ route('admin.categories.edit', $category) }}" class="btn btn-sm btn-outline-theme rounded-pill px-2.5 py-1 text-theme-secondary" style="font-size: 11px;" aria-label="Chỉnh sửa chuyên mục {{ $category->name }}">
                                     Sửa
