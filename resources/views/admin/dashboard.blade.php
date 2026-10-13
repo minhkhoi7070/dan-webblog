@@ -98,9 +98,7 @@
         letter-spacing: -.04em;
     }
 
-    .admin-dashboard .metric-value--success {
-        color: var(--color-success, #16a34a);
-    }
+
 
     .admin-dashboard .metric-footer {
         display: flex;
@@ -461,7 +459,9 @@
                             </svg>
                         </span>
                     </div>
-                    <p class="metric-value metric-value--success">{{ number_format($metrics['views']) }}</p>
+                   <p class="metric-value">
+    {{ number_format($metrics['views']) }}
+</p>
                     <div class="metric-footer">
                         <span>Tổng lưu lượng đọc toàn trang</span>
                         <span class="ms-auto text-theme-muted">Tất cả bài viết</span>
@@ -499,12 +499,10 @@
     <section class="dashboard-panel mb-4 mb-lg-5" aria-labelledby="lifecycle-heading">
         <div class="dashboard-section-head mb-3">
             <div>
-                <p class="dashboard-section-kicker">Nội dung</p>
-                <h2 id="lifecycle-heading" class="dashboard-section-title">Vòng đời bài viết</h2>
+                <p class="dashboard-section-kicker">Bài viết</p>
+                <h2 id="lifecycle-heading" class="dashboard-section-title">Trạng thái bài viết</h2>
             </div>
-            <span class="dashboard-section-meta">Tổng cộng <strong class="text-theme">{{ number_format($metrics['posts']) }}</strong> bài viết</span>
         </div>
-
         <div class="status-grid">
             <a href="{{ route('admin.posts.index') }}" class="status-card">
                 <span class="status-label">Tổng bài</span>

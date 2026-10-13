@@ -52,6 +52,38 @@ export const BlogMNMTheme = {
         } else {
             document.documentElement.classList.remove('dark');
         }
+
+        this.updateAria();
+    },
+
+    updateAria() {
+        if (typeof document === 'undefined') return;
+        const resolved = this.getResolvedTheme();
+        const lightBtn = document.querySelector('.sidebar-theme-toggle__btn--light');
+        const darkBtn = document.querySelector('.sidebar-theme-toggle__btn--dark');
+        const compactBtn = document.querySelector('.sidebar-theme-compact__btn');
+
+        if (lightBtn && darkBtn) {
+            lightBtn.setAttribute('aria-pressed', resolved === 'light' ? 'true' : 'false');
+            darkBtn.setAttribute('aria-pressed', resolved === 'dark' ? 'true' : 'false');
+        }
+        if (compactBtn) {
+            const nextTheme = resolved === 'dark' ? 'Sáng' : 'Tối';
+            compactBtn.setAttribute('aria-label', `Chuyển sang giao diện ${nextTheme}`);
+            compactBtn.setAttribute('title', `Chuyển sang giao diện ${nextTheme}`);
+        }
+    },
+
+    handleKeydown(e) {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            this.setTheme('light');
+            document.querySelector('.sidebar-theme-toggle__btn--light')?.focus();
+        } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            this.setTheme('dark');
+            document.querySelector('.sidebar-theme-toggle__btn--dark')?.focus();
+        }
     },
 
     toggle() {
@@ -74,6 +106,14 @@ export const BlogMNMTheme = {
                     }));
                 }
             });
+        }
+
+        if (typeof document !== 'undefined') {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => this.updateAria());
+            } else {
+                this.updateAria();
+            }
         }
     }
 };

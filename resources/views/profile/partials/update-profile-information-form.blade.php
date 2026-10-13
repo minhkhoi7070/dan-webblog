@@ -24,12 +24,12 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="d-flex flex-column gap-3.5">
+    <form method="post" action="{{ route('profile.update') }}" class="d-flex flex-column gap-4">
         @csrf
         @method('patch')
 
         <div>
-            <label for="name" class="label-uppercase text-theme mb-1.5 d-block" style="font-size: 11px;">
+            <label for="name" class="label-uppercase text-theme mb-2 d-block" style="font-size: 11px;">
                 Tên hiển thị <span class="text-danger">*</span>
             </label>
             <input
@@ -49,7 +49,7 @@
         </div>
 
         <div>
-            <label for="email" class="label-uppercase text-theme mb-1.5 d-block" style="font-size: 11px;">
+            <label for="email" class="label-uppercase text-theme mb-2 d-block" style="font-size: 11px;">
                 Địa chỉ Email <span class="text-danger">*</span>
             </label>
             <input
@@ -84,11 +84,7 @@
             @endif
         </div>
 
-        <div class="d-flex align-items-center gap-3 pt-2">
-            <button type="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-2 fw-semibold" style="font-size: 13px;">
-                Lưu thay đổi
-            </button>
-
+        <div class="d-flex align-items-center justify-content-end flex-wrap gap-3">
             @if (session('status') === 'profile-updated')
                 <span id="profile-saved-msg" class="small text-success fw-medium d-inline-flex align-items-center gap-1" style="font-size: 12.5px;">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
@@ -101,6 +97,10 @@
                     }, 3000);
                 </script>
             @endif
+
+            <button type="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-2 fw-semibold" style="font-size: 13px;">
+                Lưu thay đổi
+            </button>
         </div>
     </form>
 </section>

@@ -104,7 +104,7 @@
             <!-- Admin Console (if Admin) -->
             @if(Auth::user()->isAdmin())
                 <div class="mt-2 mb-0 border-theme-top pt-2">
-                    <div class="sidebar-labenpm.cmd run devl px-3 py-1 label-uppercase text-accent" style="font-size: 10px; letter-spacing: 0.08em;">
+                    <div class="sidebar-label px-3 py-1 label-uppercase text-accent" style="font-size: 10px; letter-spacing: 0.08em;">
                         Quản trị
                     </div>
                     <a href="{{ route('admin.dashboard') }}"
@@ -169,78 +169,138 @@ style="margin-top: -4px;"
             </a>
         @endauth
 
-        <!-- Quick Theme Toggle -->
-        <button type="button"
-                id="sidebar-theme-toggle"
-                onclick="window.BlogMNMTheme && window.BlogMNMTheme.toggle()"
-                aria-label="Chuyển đổi giao diện sáng/tối"
-                title="Chuyển đổi giao diện sáng/tối"
-                class="btn p-0 w-100 d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none border-0 text-start">
-            <div style="width: 20px; height: 20px;" class="d-flex align-items-center justify-content-center flex-shrink-0">
-                <svg id="sidebar-icon-light" class="theme-icon-light" style="width: 19px; height: 19px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <svg id="sidebar-icon-dark" class="theme-icon-dark" style="width: 19px; height: 19px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-            </div>
-            <span class="sidebar-label small font-medium" id="sidebar-theme-text">
-                <span class="theme-text-light">Giao diện sáng</span>
-                <span class="theme-text-dark">Giao diện tối</span>
-            </span>
-        </button>
     </nav>
 
     <!-- Bottom User Section / Auth -->
-<div class="sidebar-account mt-auto border-theme-top">
-    @auth
-        <div class="sidebar-account-card">
-            <a href="{{ route('profile.show') }}"
-               class="sidebar-account__top text-decoration-none"
-               title="Hồ sơ cá nhân: {{ Auth::user()->name }}">
+    <div class="sidebar-account mt-auto border-theme-top">
+        @auth
+            <div class="sidebar-account-card">
+                <!-- 1. Avatar, tên người dùng, vai trò, username -->
+                <a href="{{ route('profile.show') }}"
+                   class="sidebar-account__top text-decoration-none"
+                   title="Hồ sơ cá nhân: {{ Auth::user()->name }}">
 
-                <x-avatar :user="Auth::user()" size="sm" />
+                    <x-avatar :user="Auth::user()" size="sm" />
 
-                <div class="sidebar-account__meta sidebar-label">
-                    <div class="sidebar-account__name-row">
-                        <span class="sidebar-account__name text-truncate">
-                            {{ Auth::user()->name }}
-                        </span>
+                    <div class="sidebar-account__meta sidebar-label">
+                        <div class="sidebar-account__name-row">
+                            <span class="sidebar-account__name text-truncate">
+                                {{ Auth::user()->name }}
+                            </span>
 
-                        @if(Auth::user()->role === 'admin')
-                            <span class="sidebar-account__badge">Admin</span>
-                        @elseif(Auth::user()->role === 'author')
-                            <span class="sidebar-account__badge">Tác giả</span>
-                        @endif
+                            @if(Auth::user()->role === 'admin')
+                                <span class="sidebar-account__badge">Admin</span>
+                            @elseif(Auth::user()->role === 'author')
+                                <span class="sidebar-account__badge">Tác giả</span>
+                            @endif
+                        </div>
+
+                        <div class="sidebar-account__username text-truncate">
+                            {{ '@' . (Auth::user()->username ?? strtolower(str_replace(' ', '', Auth::user()->name))) }}
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 2. Đường phân cách mảnh -->
+                <div class="sidebar-account__divider"></div>
+
+                <!-- 3. Chế độ giao diện: Hàng ngang tiêu đề & compact icon toggle -->
+                <div class="sidebar-account__theme">
+                    <!-- Expanded View (Desktop >= 992px) -->
+                    <div class="sidebar-account__theme-row sidebar-label">
+                        <span class="sidebar-theme-title">CHẾ ĐỘ GIAO DIỆN</span>
+
+                        <div class="sidebar-theme-toggle"
+                             role="group"
+                             aria-label="Chuyển đổi giao diện sáng hoặc tối"
+                             onkeydown="window.BlogMNMTheme && window.BlogMNMTheme.handleKeydown && window.BlogMNMTheme.handleKeydown(event)"
+                             onclick="window.BlogMNMTheme && window.BlogMNMTheme.toggle()">
+                            <div class="sidebar-theme-toggle__indicator" aria-hidden="true"></div>
+
+                            <button type="button"
+                                    class="sidebar-theme-toggle__btn sidebar-theme-toggle__btn--light"
+                                    onclick="event.stopPropagation(); window.BlogMNMTheme && window.BlogMNMTheme.setTheme('light')"
+                                    aria-label="Chuyển sang giao diện Sáng"
+                                    aria-pressed="false"
+                                    title="Chuyển sang giao diện Sáng">
+                                <svg class="sidebar-theme-toggle__icon sidebar-theme-toggle__icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="4"></circle>
+                                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+                                </svg>
+                            </button>
+
+                            <button type="button"
+                                    class="sidebar-theme-toggle__btn sidebar-theme-toggle__btn--dark"
+                                    onclick="event.stopPropagation(); window.BlogMNMTheme && window.BlogMNMTheme.setTheme('dark')"
+                                    aria-label="Chuyển sang giao diện Tối"
+                                    aria-pressed="false"
+                                    title="Chuyển sang giao diện Tối">
+                                <svg class="sidebar-theme-toggle__icon sidebar-theme-toggle__icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="sidebar-account__username text-truncate">
-                        {{ '@' . (Auth::user()->username ?? strtolower(str_replace(' ', '', Auth::user()->name))) }}
+                    <!-- Compact View (Collapsed Sidebar < 992px) -->
+                    <div class="sidebar-account__theme-compact">
+                        <button type="button"
+                                class="sidebar-theme-compact__btn"
+                                onclick="window.BlogMNMTheme && window.BlogMNMTheme.toggle()"
+                                aria-label="Chuyển đổi giao diện sáng/tối"
+                                title="Chuyển đổi giao diện sáng/tối">
+                            <svg class="sidebar-theme-compact__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                                <circle cx="12" cy="12" r="4"></circle>
+                                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+                            </svg>
+                            <svg class="sidebar-theme-compact__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                            </svg>
+                        </button>
                     </div>
+
+                    <script>
+                        (function() {
+                            function syncSidebarThemeA11y() {
+                                if (window.BlogMNMTheme && window.BlogMNMTheme.updateAria) {
+                                    window.BlogMNMTheme.updateAria();
+                                }
+                            }
+                            if (document.readyState === 'loading') {
+                                document.addEventListener('DOMContentLoaded', syncSidebarThemeA11y);
+                            } else {
+                                syncSidebarThemeA11y();
+                            }
+                            window.addEventListener('blogmnm:theme-changed', syncSidebarThemeA11y);
+                        })();
+                    </script>
                 </div>
-            </a>
 
-            <form method="POST" action="{{ route('logout') }}" class="w-100 m-0">
-                @csrf
+                <!-- 4. Đường phân cách mảnh -->
+                <div class="sidebar-account__divider"></div>
 
-                <button type="submit"
-                        aria-label="Đăng xuất khỏi tài khoản"
-                        title="Đăng xuất"
-                        class="sidebar-account__logout">
-                    <svg style="width: 18px; height: 18px; flex-shrink: 0;"
-                         fill="none"
-                         stroke="currentColor"
-                         viewBox="0 0 24 24">
-                        <path stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="1.8"
-                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
+                <!-- 5. Nút Đăng xuất -->
+                <form method="POST" action="{{ route('logout') }}" class="w-100 m-0">
+                    @csrf
 
-                    <span>Đăng xuất</span>
-                </button>
-            </form>
-        </div>
+                    <button type="submit"
+                            aria-label="Đăng xuất khỏi tài khoản"
+                            title="Đăng xuất"
+                            class="sidebar-account__logout">
+                        <svg style="width: 18px; height: 18px; flex-shrink: 0;"
+                             fill="none"
+                             stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.8"
+                                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+
+                        <span>Đăng xuất</span>
+                    </button>
+                </form>
+            </div>
 
     @else
         <a href="{{ route('login') }}"

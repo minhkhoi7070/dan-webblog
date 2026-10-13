@@ -50,19 +50,50 @@
         @endif
 
         <div class="col-12 col-md-6">
-            <div class="position-relative">
-                <input
-                    type="search"
-                    name="q"
-                    value="{{ $search }}"
-                    placeholder="Tìm bài viết theo tiêu đề..."
-                    class="form-control form-control-sm form-control-editorial rounded-pill ps-4 pe-3 py-1.5"
-                    style="font-size: 13px;"
-                >
-                <svg style="width: 14px; height: 14px; position: absolute; left: 12px; top: 10px; pointer-events: none;" class="text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </div>
+           <div class="position-relative w-100">
+    <span
+        class="position-absolute d-flex align-items-center justify-content-center text-theme-muted"
+        style="
+            left: 16px;
+            top: 50%;
+            width: 18px;
+            height: 18px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: 2;
+        "
+        aria-hidden="true"
+    >
+        <svg
+            width="16"
+            height="16"
+            style="display: block;"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+                d="m21 21-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+        </svg>
+    </span>
+
+    <input
+        type="text"
+        name="search"
+        value="{{ request('search') }}"
+        class="form-control bg-surface-2 border-theme text-theme rounded-3 w-100"
+        placeholder="Tìm theo tên hoặc email người dùng..."
+        style="
+            min-height: 46px;
+            padding-left: 46px;
+            padding-right: 16px;
+        "
+    >
+</div>
         </div>
 
         <div class="col-12 col-sm-8 col-md-4">
@@ -87,27 +118,174 @@
     </form>
 </div>
 
+{{-- Scoped styles: Admin Posts Table column layout --}}
+<style>
+.ap-table {
+    width: 100%;
+    table-layout: fixed;
+}
+.ap-table th,
+.ap-table td {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    vertical-align: middle;
+}
+.ap-table th {
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Desktop column proportions (>= 992px) */
+.ap-table .col-post    { width: 31%; }
+.ap-table .col-author  { width: 16%; }
+.ap-table .col-cat     { width: 11%; }
+.ap-table .col-status  { width: 11%; }
+.ap-table .col-interact{ width: 10%; }
+.ap-table .col-actions { width: 21%; }
+
+/* Column text alignments */
+.ap-table td.col-post     { text-align: left; }
+.ap-table th.col-author,
+.ap-table td.col-author   { text-align: left; }
+.ap-table td.col-cat      { text-align: center; }
+.ap-table td.col-status   { text-align: center; }
+.ap-table td.col-interact { text-align: center; }
+.ap-table td.col-actions  { text-align: center; }
+
+/* Truncation & text safety */
+.ap-post-title {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+.ap-author-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    max-width: 100%;
+}
+.ap-badge {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Interactions – centered vertical stack */
+.ap-interact {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    line-height: 1.45;
+}
+.ap-interact span {
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* Actions */
+.ap-actions-wrap {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+.ap-actions-wrap .btn {
+    padding: 0.2rem 0.5rem;
+    font-size: 11px;
+}
+
+/* Tablet refinement (576px - 991px) */
+@media (min-width: 576px) and (max-width: 991.98px) {
+    .ap-table { min-width: 720px; }
+    .ap-table .col-post    { width: 30%; }
+    .ap-table .col-author  { width: 16%; }
+    .ap-table .col-cat     { width: 11%; }
+    .ap-table .col-status  { width: 11%; }
+    .ap-table .col-interact{ width: 10%; }
+    .ap-table .col-actions { width: 22%; }
+}
+
+/* Mobile card stacking (< 576px) */
+@media (max-width: 575.98px) {
+    .ap-table,
+    .ap-table tbody,
+    .ap-table tr,
+    .ap-table td {
+        display: block !important;
+        width: 100% !important;
+    }
+    .ap-table thead,
+    .ap-table colgroup {
+        display: none !important;
+    }
+    .ap-table tr {
+        padding: 0.875rem 1rem !important;
+        border-bottom: 1px solid var(--color-border) !important;
+    }
+    .ap-table td {
+        padding: 0.25rem 0 !important;
+        border: none !important;
+    }
+    .ap-table td.col-actions {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem !important;
+        border-top: 1px dashed var(--color-border) !important;
+        text-align: center;
+    }
+    .ap-table .ap-actions-wrap {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+    }
+    .ap-table .ap-interact {
+        flex-direction: row;
+        gap: 0.75rem;
+    }
+}
+</style>
+
 <!-- Posts Moderation Table (High Information Density) -->
 <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
+        <table class="table table-hover align-middle mb-0 ap-table" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
+            <colgroup>
+                <col class="col-post">
+                <col class="col-author">
+                <col class="col-cat">
+                <col class="col-status">
+                <col class="col-interact">
+                <col class="col-actions">
+            </colgroup>
             <thead class="border-theme-bottom bg-surface-2">
                 <tr>
-                    <th class="ps-3 ps-sm-4 py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Bài viết</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Tác giả</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Chuyên mục</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Trạng thái</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Tương tác</th>
-                    <th class="py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Người duyệt</th>
-                    <th class="pe-3 pe-sm-4 py-3 text-end label-uppercase text-theme-muted" style="font-size: 11px;">Thao tác</th>
+                    <th class="ap-col py-3 label-uppercase text-theme-muted col-post text-center" style="font-size: 11px;">Bài viết</th>
+                    <th class="ap-col py-3 label-uppercase text-theme-muted col-author text-start" style="font-size: 11px;">Tác giả</th>
+                    <th class="ap-col py-3 label-uppercase text-theme-muted col-cat text-center" style="font-size: 11px;">Chuyên mục</th>
+                    <th class="ap-col py-3 label-uppercase text-theme-muted col-status text-center" style="font-size: 11px;">Trạng thái</th>
+                    <th class="ap-col py-3 label-uppercase text-theme-muted col-interact text-center" style="font-size: 11px;">Tương tác</th>
+                    <th class="ap-col py-3 label-uppercase text-theme-muted col-actions text-center" style="font-size: 11px;">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-theme">
                 @forelse($posts as $post)
                     <tr>
                         <!-- Post Info with Thumbnail -->
-                        <td class="ps-3 ps-sm-4 py-3">
-                            <div class="d-flex align-items-center gap-3">
+                        <td class="py-3 col-post" style="min-width: 0;">
+                            <div class="d-flex align-items-center gap-3" style="min-width: 0;">
                                 <div class="rounded-2 overflow-hidden bg-surface-2 flex-shrink-0 border border-theme" style="width: 48px; height: 38px;">
                                     @if($post->thumbnail)
                                         <img src="{{ str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset($post->thumbnail) }}" alt="" class="w-100 h-100 object-fit-cover">
@@ -117,70 +295,62 @@
                                         </div>
                                     @endif
                                 </div>
-                                <div class="min-w-0" style="max-width: 280px;">
-                                    <a href="{{ route('admin.posts.show', $post) }}" class="fw-semibold text-theme text-decoration-none hover-accent text-truncate d-block small" style="font-size: 13.5px;" title="{{ $post->title }}">
+                                <div style="min-width: 0; flex: 1 1 0;">
+                                    <a href="{{ route('admin.posts.show', $post) }}" class="ap-post-title fw-semibold text-theme text-decoration-none hover-accent small" style="font-size: 13.5px;" title="{{ $post->title }}">
                                         {{ $post->title }}
                                     </a>
-                                    <span class="small text-theme-muted" style="font-size: 11.5px;">{{ $post->created_at->format('d/m/Y H:i') }}</span>
+                                    <span class="small text-theme-muted d-block" style="font-size: 11.5px;">{{ $post->created_at->format('d/m/Y H:i') }}</span>
                                 </div>
                             </div>
                         </td>
 
                         <!-- Author -->
-                        <td class="py-3">
-                            <a href="{{ route('admin.users.show', $post->user) }}" class="small fw-semibold text-theme text-decoration-none hover-accent d-block" style="font-size: 13px;">
+                        <td class="py-3 col-author" style="min-width: 0;">
+                            <a href="{{ route('admin.users.show', $post->user) }}" class="ap-author-name small fw-semibold text-theme text-decoration-none hover-accent" style="font-size: 13px;" title="{{ $post->user->name }}">
                                 {{ $post->user->name }}
                             </a>
                         </td>
 
                         <!-- Category -->
-                        <td class="py-3">
-                            <span class="badge bg-surface-2 border border-theme text-theme-secondary rounded-pill" style="font-size: 11px;">
+                        <td class="py-3 col-cat text-center">
+                            <span class="badge ap-badge bg-surface-2 border border-theme text-theme-secondary rounded-pill" style="font-size: 11px;">
                                 {{ $post->category->name }}
                             </span>
                         </td>
 
                         <!-- Status Badge -->
-                        <td class="py-3">
+                        <td class="py-3 col-status text-center">
                             @if($post->status === 'published')
-                                <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill" style="font-size: 11px;">
+                                <span class="badge ap-badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill" style="font-size: 11px;">
                                     Đã xuất bản
                                 </span>
                             @elseif($post->status === 'pending')
-                                <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-25 rounded-pill" style="font-size: 11px;">
+                                <span class="badge ap-badge bg-warning-subtle text-warning border border-warning border-opacity-25 rounded-pill" style="font-size: 11px;">
                                     Chờ duyệt
                                 </span>
                             @elseif($post->status === 'rejected')
-                                <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill" style="font-size: 11px;">
+                                <span class="badge ap-badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill" style="font-size: 11px;">
                                     Bị từ chối
                                 </span>
                             @else
-                                <span class="badge bg-surface-2 text-theme-muted border border-theme rounded-pill" style="font-size: 11px;">
+                                <span class="badge ap-badge bg-surface-2 text-theme-muted border border-theme rounded-pill" style="font-size: 11px;">
                                     Bản nháp
                                 </span>
                             @endif
                         </td>
 
                         <!-- Interactions -->
-                        <td class="py-3 small text-theme-muted text-nowrap" style="font-size: 11.5px;">
-                            <span title="Lượt xem">{{ number_format($post->views) }} views</span> &bull;
-                            <span title="Lượt thích">{{ number_format($post->likers_count) }} likes</span> &bull;
-                            <span title="Bình luận">{{ number_format($post->comments_count) }} cmt</span>
-                        </td>
-
-                        <!-- Reviewer Info -->
-                        <td class="py-3 small text-theme-muted" style="font-size: 11.5px;">
-                            @if($post->reviewer)
-                                <span class="fw-medium text-theme d-block">{{ $post->reviewer->name }}</span>
-                                <span class="text-theme-muted" style="font-size: 10.5px;">{{ $post->reviewed_at?->format('d/m H:i') }}</span>
-                            @else
-                                <span class="text-theme-muted">&mdash;</span>
-                            @endif
+                        <td class="py-3 col-interact text-center text-theme-muted">
+                            <div class="ap-interact">
+                                <span title="Lượt xem">{{ number_format($post->views) }} <span class="opacity-60">views</span></span>
+                                <span title="Lượt thích">{{ number_format($post->likers_count) }} <span class="opacity-60">likes</span></span>
+                                <span title="Bình luận">{{ number_format($post->comments_count) }} <span class="opacity-60">cmt</span></span>
+                            </div>
                         </td>
 
                         <!-- Actions -->
-                        <td class="pe-3 pe-sm-4 py-3 text-end text-nowrap">
-                            <div class="d-inline-flex align-items-center gap-1.5">
+                        <td class="py-3 col-actions text-center">
+                            <div class="ap-actions-wrap">
                                 @if($post->status === 'pending')
                                     <!-- Approve Action -->
                                     <form action="{{ route('admin.posts.approve', $post) }}" method="POST" class="d-inline m-0"
@@ -248,7 +418,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="p-0 border-0">
+                        <td colspan="6" class="p-0 border-0">
                             <x-empty-state
                                 title="Không tìm thấy bài viết"
                                 description="Không có bài viết nào phù hợp với bộ lọc hoặc từ khóa tìm kiếm hiện tại."

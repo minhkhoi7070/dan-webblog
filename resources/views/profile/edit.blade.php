@@ -2,13 +2,6 @@
     <x-slot name="header">
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
             <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="label-uppercase text-accent" style="font-size: 10px; letter-spacing: 0.08em;">
-                        Tùy biến & Cài đặt
-                    </span>
-                    <span class="text-theme-muted" style="font-size: 11px;">&bull;</span>
-                    <span class="small text-theme-muted" style="font-size: 12px;">BlogMNM Preferences</span>
-                </div>
                 <h1 class="h4 fw-bold text-theme mb-0 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
                     Cài đặt tài khoản
                 </h1>

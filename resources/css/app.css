@@ -729,8 +729,26 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   color: var(--color-text-secondary);
 }
 
+.sidebar-account__divider {
+  height: 1px;
+  background-color: var(--color-border-subtle);
+  margin: 9px 0;
+  width: 100%;
+}
+
+.sidebar-account__theme-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+
+.sidebar-account__theme-compact {
+  display: none;
+}
+
 .sidebar-account__logout {
-  margin-top: 12px;
+  margin-top: 0;
   width: 100%;
   min-height: 38px;
   padding: 0 12px;
@@ -762,7 +780,7 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
 /* Khi sidebar ở mode hẹp 80px */
 @media (max-width: 991.98px) {
   .sidebar-account-card {
-    padding: 10px 8px;
+    padding: 8px 6px;
   }
 
   .sidebar-account__top {
@@ -770,15 +788,290 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   }
 
   .sidebar-account__meta,
-  .sidebar-account__logout span {
-    display: none;
+  .sidebar-account__logout span,
+  .sidebar-account__theme-row,
+  .sidebar-account__theme-expanded {
+    display: none !important;
+  }
+
+  .sidebar-account__theme-compact {
+    display: flex !important;
+    justify-content: center;
+  }
+
+  .sidebar-account__divider {
+    margin: 7px 0;
   }
 
   .sidebar-account__logout {
     padding: 0;
-    min-height: 36px;
+    min-height: 34px;
   }
 }
+
+/* ============================================================
+   Sidebar Theme Switch (Compact Segmented Pill Toggle)
+   ============================================================ */
+.sidebar-account__theme {
+  width: 100%;
+}
+
+.sidebar-account__theme-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+.sidebar-theme-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1;
+}
+
+/* Compact Pill Toggle Container */
+.sidebar-theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 84px;
+  height: 32px;
+  padding: 2.5px;
+  border-radius: 9999px;
+  user-select: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 180ms ease,
+              background-color 180ms ease,
+              box-shadow 180ms ease;
+}
+
+/* Dark Theme: Nền tối và viền subtle */
+html[data-theme="dark"] .sidebar-theme-toggle,
+html.dark .sidebar-theme-toggle {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* Light Theme: Nền sáng xám trung tính và viền nhẹ */
+html:not([data-theme="dark"]) .sidebar-theme-toggle,
+html[data-theme="light"] .sidebar-theme-toggle {
+  background: #E4E4E7;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.sidebar-theme-toggle:hover {
+  border-color: var(--color-border-strong);
+}
+
+/* Sliding Indicator */
+.sidebar-theme-toggle__indicator {
+  position: absolute;
+  top: 2.5px;
+  bottom: 2.5px;
+  left: 2.5px;
+  width: calc(50% - 2.5px);
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 1;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 180ms ease,
+              border-color 180ms ease,
+              box-shadow 180ms ease;
+}
+
+/* Indicator in Light Mode: Nền trắng sáng, trượt về bên trái (Mặt trời) */
+html:not([data-theme="dark"]) .sidebar-theme-toggle__indicator,
+html[data-theme="light"] .sidebar-theme-toggle__indicator {
+  transform: translateX(0);
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* Indicator in Dark Mode: Nền xanh đen nổi bật, trượt về bên phải (Mặt trăng) */
+html[data-theme="dark"] .sidebar-theme-toggle__indicator,
+html.dark .sidebar-theme-toggle__indicator {
+  transform: translateX(100%);
+  background: #1E293B;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Toggle Buttons (Icon Only) */
+.sidebar-theme-toggle__btn {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.sidebar-theme-toggle__btn:hover {
+  color: var(--color-text-primary);
+}
+
+.sidebar-theme-toggle__btn:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.sidebar-theme-toggle__icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              color 180ms ease,
+              filter 180ms ease;
+}
+
+/* --- Trạng thái hiển thị Icon: Đang chọn (nổi bật) vs Chưa chọn (trung tính) --- */
+
+/* 1. Light Mode: Icon Mặt trời màu cam nhạt, nền sáng */
+html:not([data-theme="dark"]) .sidebar-theme-toggle__btn--light .sidebar-theme-toggle__icon--sun,
+html[data-theme="light"] .sidebar-theme-toggle__btn--light .sidebar-theme-toggle__icon--sun {
+  color: #F59E0B;
+  transform: scale(1.1) rotate(10deg);
+  filter: drop-shadow(0 1px 3px rgba(245, 158, 11, 0.45));
+}
+html:not([data-theme="dark"]) .sidebar-theme-toggle__btn--dark .sidebar-theme-toggle__icon--moon,
+html[data-theme="light"] .sidebar-theme-toggle__btn--dark .sidebar-theme-toggle__icon--moon {
+  color: #71717A;
+  opacity: 0.75;
+}
+
+/* 2. Dark Mode: Icon Mặt trăng màu trắng, nền xanh đen */
+html[data-theme="dark"] .sidebar-theme-toggle__btn--dark .sidebar-theme-toggle__icon--moon,
+html.dark .sidebar-theme-toggle__btn--dark .sidebar-theme-toggle__icon--moon {
+  color: #FFFFFF;
+  transform: scale(1.1) rotate(-8deg);
+  filter: drop-shadow(0 1px 4px rgba(255, 255, 255, 0.4));
+}
+html[data-theme="dark"] .sidebar-theme-toggle__btn--light .sidebar-theme-toggle__icon--sun,
+html.dark .sidebar-theme-toggle__btn--light .sidebar-theme-toggle__icon--sun {
+  color: #71717A;
+  opacity: 0.75;
+}
+
+/* Hover micro-interactions */
+.sidebar-theme-toggle__btn:hover .sidebar-theme-toggle__icon {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+/* Compact mode cho collapsed sidebar (< 992px) */
+.sidebar-theme-compact,
+.sidebar-account__theme-compact {
+  display: none;
+}
+
+@media (max-width: 991.98px) {
+  .sidebar-theme-compact,
+  .sidebar-account__theme-compact {
+    display: flex !important;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+
+  .sidebar-theme-compact__btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(255, 255, 255, 0.015) 100%
+    );
+    border: 1px solid var(--color-border-subtle);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .sidebar-theme-compact__btn:hover {
+    color: var(--color-interactive);
+    background: var(--color-bg-hover);
+    border-color: var(--color-border-strong);
+    transform: translateY(-1px);
+  }
+
+  html[data-theme="light"] .sidebar-theme-compact__btn,
+  html:not(.dark)[data-theme="light"] .sidebar-theme-compact__btn {
+    background: #FFFFFF;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+
+  html[data-theme="dark"] .sidebar-theme-compact__sun,
+  html.dark .sidebar-theme-compact__sun {
+    display: block !important;
+    color: #FBBF24;
+    transition: transform 0.25s ease;
+  }
+  html[data-theme="dark"] .sidebar-theme-compact__moon,
+  html.dark .sidebar-theme-compact__moon {
+    display: none !important;
+  }
+
+  html:not([data-theme="dark"]) .sidebar-theme-compact__sun,
+  html[data-theme="light"] .sidebar-theme-compact__sun {
+    display: none !important;
+  }
+  html:not([data-theme="dark"]) .sidebar-theme-compact__moon,
+  html[data-theme="light"] .sidebar-theme-compact__moon {
+    display: block !important;
+    color: #6366F1;
+    transition: transform 0.25s ease;
+  }
+
+  .sidebar-theme-compact__btn:hover .sidebar-theme-compact__sun {
+    transform: rotate(20deg) scale(1.12);
+  }
+  .sidebar-theme-compact__btn:hover .sidebar-theme-compact__moon {
+    transform: rotate(-15deg) scale(1.12);
+  }
+
+  .sidebar-theme-compact__btn:focus-visible {
+    outline: 2px solid var(--color-interactive);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
+  }
+}
+
+/* Accessibility: Tôn trọng prefers-reduced-motion triệt để cho theme switches */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-theme-toggle,
+  .sidebar-theme-toggle__indicator,
+  .sidebar-theme-toggle__btn,
+  .sidebar-theme-toggle__icon,
+  .sidebar-theme-compact__btn,
+  .sidebar-theme-compact__sun,
+  .sidebar-theme-compact__moon {
+    transition: none !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
 /* Mobile Bottom Navigation Bar */
 .mobile-bottom-nav {
   height: 60px;
