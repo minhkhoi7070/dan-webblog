@@ -99,7 +99,6 @@
         <div class="col-12 col-sm-8 col-md-4">
             <select
                 name="category_id"
-                onchange="this.form.submit()"
                 class="form-select form-select-sm form-control-editorial rounded-pill"
                 style="font-size: 13px;"
             >

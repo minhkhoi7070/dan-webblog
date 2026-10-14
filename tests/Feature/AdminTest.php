@@ -51,8 +51,8 @@ class AdminTest extends TestCase
 
         $response = $this->actingAs($admin)->get(route('admin.dashboard'));
         $response->assertOk();
-        $response->assertSee('Admin Control Center');
-        $response->assertSee('Thống kê Tổng thể Hệ thống');
+        $response->assertSee('Bảng điều khiển Quản trị');
+        $response->assertSee('Chỉ số vận hành');
     }
 
     // =========================================================================

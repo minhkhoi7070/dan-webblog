@@ -425,7 +425,48 @@
                 <p class="dashboard-section-kicker">Tổng quan hệ thống</p>
                 <h2 id="overview-heading" class="dashboard-section-title">Chỉ số vận hành</h2>
             </div>
-            <span class="dashboard-section-meta">Dữ liệu thời gian thực</span>
+            {{-- Live Clock: 3-box widget (HH / MM / SS) --}}
+            <div id="admin-live-clock"
+                 class="d-flex align-items-center gap-1"
+                 style="font-variant-numeric: tabular-nums;"
+                 aria-label="Đồng hồ hệ thống">
+
+                {{-- Box: GIỜ --}}
+                <div class="d-flex flex-column align-items-center justify-content-center rounded-2 bg-body-tertiary border px-2"
+                     style="min-width: 36px; height: 42px;">
+                    <span id="clock-hh"
+                          class="fw-bold text-body lh-1"
+                          style="font-size: 0.9rem; letter-spacing: 0.02em;">00</span>
+                    <span class="text-secondary text-uppercase d-block mt-1"
+                          style="font-size: 0.5rem; letter-spacing: 0.06em;">Giờ</span>
+                </div>
+
+                {{-- Separator --}}
+                <span class="fw-bold text-secondary pb-2" style="font-size: 0.75rem; line-height: 1;">:</span>
+
+                {{-- Box: PHÚT --}}
+                <div class="d-flex flex-column align-items-center justify-content-center rounded-2 bg-body-tertiary border px-2"
+                     style="min-width: 36px; height: 42px;">
+                    <span id="clock-mm"
+                          class="fw-bold text-body lh-1"
+                          style="font-size: 0.9rem; letter-spacing: 0.02em;">00</span>
+                    <span class="text-secondary text-uppercase d-block mt-1"
+                          style="font-size: 0.5rem; letter-spacing: 0.06em;">Phút</span>
+                </div>
+
+                {{-- Separator --}}
+                <span class="fw-bold text-secondary pb-2" style="font-size: 0.75rem; line-height: 1;">:</span>
+
+                {{-- Box: GIÂY --}}
+                <div class="d-flex flex-column align-items-center justify-content-center rounded-2 bg-body-tertiary border px-2"
+                     style="min-width: 36px; height: 42px;">
+                    <span id="clock-ss"
+                          class="fw-bold text-secondary lh-1"
+                          style="font-size: 0.9rem; letter-spacing: 0.02em;">00</span>
+                    <span class="text-secondary text-uppercase d-block mt-1"
+                          style="font-size: 0.5rem; letter-spacing: 0.06em;">Giây</span>
+                </div>
+            </div>
         </div>
 
         <div class="row g-3">
@@ -681,4 +722,37 @@
         </div>
     </section>
 </div>
+
+{{-- Live Clock: real-time tick script --}}
+<script>
+(function () {
+    'use strict';
+
+    var clockEl = document.getElementById('admin-live-clock');
+    if (!clockEl) return;
+
+    var hhEl = document.getElementById('clock-hh');
+    var mmEl = document.getElementById('clock-mm');
+    var ssEl = document.getElementById('clock-ss');
+    if (!hhEl || !mmEl || !ssEl) return;
+
+    function pad(n) {
+        return n < 10 ? '0' + n : String(n);
+    }
+
+    function tick() {
+        var now = new Date();
+        hhEl.textContent = pad(now.getHours());
+        mmEl.textContent = pad(now.getMinutes());
+        ssEl.textContent = pad(now.getSeconds());
+    }
+
+    if (window._adminClockInterval) {
+        clearInterval(window._adminClockInterval);
+    }
+
+    tick();
+    window._adminClockInterval = setInterval(tick, 1000);
+})();
+</script>
 @endsection
