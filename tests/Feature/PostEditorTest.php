@@ -290,6 +290,346 @@ class PostEditorTest extends TestCase
         $response->assertSee('editor-content-image', false);
         $response->assertSee('/storage/posts/images/test1234.png', false);
     }
+
+    // =========================================================================
+    // 3. FULL TOOLBAR & ADVANCED FORMATTING TESTS
+    // =========================================================================
+
+    public function test_post_editor_toolbar_contains_full_block_dropdown_and_formatting_controls(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+        $post = Post::factory()->create([
+            'user_id' => $author->id,
+            'category_id' => $category->id,
+        ]);
+
+        foreach ([route('posts.create'), route('posts.edit', $post)] as $url) {
+            $response = $this->actingAs($author)->get($url);
+            $response->assertOk();
+
+            // Block format dropdown
+            $response->assertSee('editor-block-dropdown', false);
+            $response->assertSee('data-editor-block="p"', false);
+            $response->assertSee('data-editor-block="h1"', false);
+            $response->assertSee('data-editor-block="h2"', false);
+            $response->assertSee('data-editor-block="h3"', false);
+            $response->assertSee('data-editor-block="h4"', false);
+            $response->assertSee('data-editor-block="h5"', false);
+            $response->assertSee('data-editor-block="h6"', false);
+            $response->assertSee('data-editor-block="quote"', false);
+
+            // Character formatting actions
+            $response->assertSee('data-editor-action="bold"', false);
+            $response->assertSee('data-editor-action="italic"', false);
+            $response->assertSee('data-editor-action="underline"', false);
+            $response->assertSee('data-editor-action="strike"', false);
+            $response->assertSee('data-editor-action="clear-format"', false);
+
+            // Alignment actions
+            $response->assertSee('data-editor-action="align-left"', false);
+            $response->assertSee('data-editor-action="align-center"', false);
+            $response->assertSee('data-editor-action="align-right"', false);
+            $response->assertSee('data-editor-action="align-justify"', false);
+
+            // Lists & Indentation group
+            $response->assertSee('data-editor-action="bullet-list"', false);
+            $response->assertSee('data-editor-action="ordered-list"', false);
+            $response->assertSee('data-editor-action="indent"', false);
+            $response->assertSee('data-editor-action="outdent"', false);
+
+            // Text color & Highlight controls
+            $response->assertSee('id="editor-color-dropdown"', false);
+            $response->assertSee('id="editor-highlight-dropdown"', false);
+            $response->assertSee('data-editor-color="reset"', false);
+            $response->assertSee('data-editor-highlight="reset"', false);
+            $response->assertSee('Xóa màu chữ', false);
+            $response->assertSee('Xóa màu nền', false);
+
+            // History
+            $response->assertSee('data-editor-action="undo"', false);
+            $response->assertSee('data-editor-action="redo"', false);
+
+            // Utilities & Modals
+            $response->assertSee('data-editor-action="paste-text"', false);
+            $response->assertSee('data-editor-action="shortcuts-help"', false);
+            $response->assertSee('id="editor-shortcuts-modal"', false);
+            $response->assertSee('id="editor-link-modal"', false);
+        }
+    }
+
+    public function test_post_content_preserves_all_heading_levels_h1_through_h6_and_rich_marks(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+
+        $richHtml = '<h1>Tiêu đề Cấp 1</h1>'
+            .'<h2>Tiêu đề Cấp 2</h2>'
+            .'<h3>Tiêu đề Cấp 3</h3>'
+            .'<h4>Tiêu đề Cấp 4</h4>'
+            .'<h5>Tiêu đề Cấp 5</h5>'
+            .'<h6>Tiêu đề Cấp 6</h6>'
+            .'<p>Đoạn văn có <strong>đậm</strong>, <em>nghiêng</em>, <u>gạch chân</u>, <s>gạch ngang</s>, <del>xóa</del>, <strike>strike</strike>, và <mark data-color="#fef08a" style="background-color: #fef08a; color: #0f172a;">tô màu nền</mark>.</p>'
+            .'<p><span style="color: #ef4444">Chữ màu đỏ</span> và <span style="color: #3b82f6">chữ màu xanh</span>.</p>'
+            .'<blockquote>Trích dẫn ý nghĩa</blockquote>'
+            .'<hr>'
+            .'<ul><li>Mục chấm 1</li><li>Mục chấm 2</li></ul>'
+            .'<ol><li>Mục số 1</li><li>Mục số 2</li></ol>';
+
+        $post = Post::factory()->published()->create([
+            'user_id' => $author->id,
+            'category_id' => $category->id,
+            'body' => $richHtml,
+        ]);
+
+        $rendered = $post->rendered_body;
+
+        // Verify all 6 headings are preserved
+        $this->assertStringContainsString('<h1>Tiêu đề Cấp 1</h1>', $rendered);
+        $this->assertStringContainsString('<h2>Tiêu đề Cấp 2</h2>', $rendered);
+        $this->assertStringContainsString('<h3>Tiêu đề Cấp 3</h3>', $rendered);
+        $this->assertStringContainsString('<h4>Tiêu đề Cấp 4</h4>', $rendered);
+        $this->assertStringContainsString('<h5>Tiêu đề Cấp 5</h5>', $rendered);
+        $this->assertStringContainsString('<h6>Tiêu đề Cấp 6</h6>', $rendered);
+
+        // Verify marks
+        $this->assertStringContainsString('<strong>đậm</strong>', $rendered);
+        $this->assertStringContainsString('<em>nghiêng</em>', $rendered);
+        $this->assertStringContainsString('<u>gạch chân</u>', $rendered);
+        $this->assertStringContainsString('<s>gạch ngang</s>', $rendered);
+        $this->assertStringContainsString('<del>xóa</del>', $rendered);
+        $this->assertStringContainsString('<mark', $rendered);
+        $this->assertStringContainsString('color: #ef4444', $rendered);
+        $this->assertStringContainsString('color: #3b82f6', $rendered);
+        $this->assertStringContainsString('<blockquote>Trích dẫn ý nghĩa</blockquote>', $rendered);
+        $this->assertStringContainsString('<hr>', $rendered);
+
+        // Verify public view
+        $response = $this->get(route('posts.show', $post->slug));
+        $response->assertOk();
+        $response->assertSee('<h1>Tiêu đề Cấp 1</h1>', false);
+        $response->assertSee('<h6>Tiêu đề Cấp 6</h6>', false);
+        $response->assertSee('color: #ef4444', false);
+    }
+
+    public function test_post_content_preserves_safe_css_styles_and_strips_malicious_styles(): void
+    {
+        $safeHtml = '<p style="text-align: center; color: #3b82f6; background-color: #fef08a; padding-left: 2rem">Văn bản căn giữa có màu và thụt lề</p>'
+            .'<h2 style="text-align: right">Tiêu đề căn phải</h2>'
+            .'<p style="text-align: justify">Văn bản căn đều hai bên</p>';
+
+        $clean = PostContentService::cleanHtml($safeHtml);
+
+        $this->assertStringContainsString('text-align: center', $clean);
+        $this->assertStringContainsString('color: #3b82f6', $clean);
+        $this->assertStringContainsString('background-color: #fef08a', $clean);
+        $this->assertStringContainsString('padding-left: 2rem', $clean);
+        $this->assertStringContainsString('text-align: right', $clean);
+        $this->assertStringContainsString('text-align: justify', $clean);
+
+        // Test stripping dangerous style injections
+        $dangerousHtml = '<p style="color: red; background: url(\'javascript:alert(1)\'); expression(alert(2)); -moz-binding: url(test)">Đoạn văn độc hại</p>';
+        $cleanDangerous = PostContentService::cleanHtml($dangerousHtml);
+
+        $this->assertStringNotContainsString('javascript', $cleanDangerous);
+        $this->assertStringNotContainsString('expression', $cleanDangerous);
+        $this->assertStringNotContainsString('url(', $cleanDangerous);
+        $this->assertStringNotContainsString('-moz-binding', $cleanDangerous);
+    }
+
+    public function test_legacy_markdown_with_h1_to_h6_and_blockquotes_converts_properly(): void
+    {
+        $markdown = "# Tiêu đề 1\n\n## Tiêu đề 2\n\n### Tiêu đề 3\n\n#### Tiêu đề 4\n\n##### Tiêu đề 5\n\n###### Tiêu đề 6\n\n> Trích dẫn Markdown\n\n---\n\n- Gạch đầu dòng\n1. Số thứ tự";
+
+        $html = PostContentService::renderHtml($markdown);
+
+        $this->assertStringContainsString('<h1>Tiêu đề 1</h1>', $html);
+        $this->assertStringContainsString('<h2>Tiêu đề 2</h2>', $html);
+        $this->assertStringContainsString('<h3>Tiêu đề 3</h3>', $html);
+        $this->assertStringContainsString('<h4>Tiêu đề 4</h4>', $html);
+        $this->assertStringContainsString('<h5>Tiêu đề 5</h5>', $html);
+        $this->assertStringContainsString('<h6>Tiêu đề 6</h6>', $html);
+        $this->assertStringContainsString('<blockquote>', $html);
+        $this->assertStringContainsString('<hr>', $html);
+        $this->assertStringContainsString('<li>Gạch đầu dòng</li>', $html);
+        $this->assertStringContainsString('<li>Số thứ tự</li>', $html);
+    }
+
+    public function test_author_and_admin_role_permissions_remain_intact(): void
+    {
+        $author1 = User::factory()->author()->create();
+        $author2 = User::factory()->author()->create();
+        $admin = User::factory()->admin()->create();
+        $category = Category::factory()->create();
+
+        $post = Post::factory()->create([
+            'user_id' => $author1->id,
+            'category_id' => $category->id,
+            'status' => 'draft',
+        ]);
+
+        // Author 1 can view edit page of their own post
+        $response1 = $this->actingAs($author1)->get(route('posts.edit', $post));
+        $response1->assertOk();
+
+        // Author 2 cannot edit Author 1's post
+        $response2 = $this->actingAs($author2)->get(route('posts.edit', $post));
+        $response2->assertForbidden();
+
+        // Admin can access admin post review page
+        $adminResponse = $this->actingAs($admin)->get(route('admin.posts.show', $post));
+        $adminResponse->assertOk();
+    }
+
+    public function test_nested_ordered_and_bulleted_lists_are_preserved_in_content_service_and_public_views(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+
+        $nestedListsHtml = '<ol>'
+            .'<li>Mục 1 chính'
+                .'<ol>'
+                    .'<li>Mục con 1.1'
+                        .'<ol>'
+                            .'<li>Mục cháu 1.1.1</li>'
+                        .'</ol>'
+                    .'</li>'
+                    .'<li>Mục con 1.2</li>'
+                .'</ol>'
+            .'</li>'
+            .'<li>Mục 2 chính</li>'
+        .'</ol>'
+        .'<ul>'
+            .'<li>Chấm 1'
+                .'<ul>'
+                    .'<li>Chấm con 1.1</li>'
+                .'</ul'
+                .'></li>'
+        .'</ul>';
+
+        $clean = PostContentService::cleanHtml($nestedListsHtml);
+
+        // Verify structural nested HTML is preserved without corruption
+        $this->assertStringContainsString('<ol>', $clean);
+        $this->assertStringContainsString('<li>Mục con 1.1', $clean);
+        $this->assertStringContainsString('<li>Mục cháu 1.1.1</li>', $clean);
+        $this->assertStringContainsString('<ul>', $clean);
+        $this->assertStringContainsString('<li>Chấm con 1.1</li>', $clean);
+
+        // Verify through post creation and public show
+        $post = Post::factory()->published()->create([
+            'user_id' => $author->id,
+            'category_id' => $category->id,
+            'body' => $nestedListsHtml,
+        ]);
+
+        $response = $this->get(route('posts.show', $post->slug));
+        $response->assertOk();
+        $response->assertSee('Mục cháu 1.1.1', false);
+        $response->assertSee('Chấm con 1.1', false);
+    }
+
+    public function test_text_color_and_text_highlight_are_independent_and_can_coexist_or_be_cleared_separately(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+
+        // 1. Text color and highlight coexisting
+        $coexistingHtml = '<p><mark data-color="#fef08a" style="background-color: #fef08a"><span style="color: #ef4444">Chữ đỏ nền vàng</span></mark></p>';
+        $cleanCoexisting = PostContentService::cleanHtml($coexistingHtml);
+
+        $this->assertStringContainsString('data-color="#fef08a"', $cleanCoexisting);
+        $this->assertStringContainsString('background-color: #fef08a', $cleanCoexisting);
+        $this->assertStringContainsString('color: #ef4444', $cleanCoexisting);
+        $this->assertStringContainsString('Chữ đỏ nền vàng', $cleanCoexisting);
+
+        // 2. Removing highlight keeps text color
+        $onlyColorHtml = '<p><span style="color: #3b82f6">Chữ xanh không nền</span></p>';
+        $cleanOnlyColor = PostContentService::cleanHtml($onlyColorHtml);
+
+        $this->assertStringContainsString('color: #3b82f6', $cleanOnlyColor);
+        $this->assertStringNotContainsString('background-color', $cleanOnlyColor);
+        $this->assertStringNotContainsString('<mark', $cleanOnlyColor);
+
+        // 3. Removing text color keeps highlight
+        $onlyHighlightHtml = '<p><mark data-color="#bbf7d0" style="background-color: #bbf7d0">Chữ nền xanh lá không màu chữ</mark></p>';
+        $cleanOnlyHighlight = PostContentService::cleanHtml($onlyHighlightHtml);
+
+        $this->assertStringContainsString('background-color: #bbf7d0', $cleanOnlyHighlight);
+        $this->assertDoesNotMatchRegularExpression('/(?<!background-)color\s*:/', $cleanOnlyHighlight);
+
+        // 4. Combined on single element style attribute
+        $combinedSpanHtml = '<p><span style="color: #8b5cf6; background-color: #e9d5ff">Chữ tím nền tím</span></p>';
+        $cleanCombined = PostContentService::cleanHtml($combinedSpanHtml);
+
+        $this->assertStringContainsString('color: #8b5cf6', $cleanCombined);
+        $this->assertStringContainsString('background-color: #e9d5ff', $cleanCombined);
+
+        // 5. Test persistence and display
+        $post = Post::factory()->published()->create([
+            'user_id' => $author->id,
+            'category_id' => $category->id,
+            'body' => $coexistingHtml,
+        ]);
+
+        $response = $this->get(route('posts.show', $post->slug));
+        $response->assertOk();
+        $response->assertSee('color: #ef4444', false);
+        $response->assertSee('background-color: #fef08a', false);
+    }
+
+    public function test_shortcuts_modal_is_independent_and_contains_complete_categorized_shortcuts(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+        $post = Post::factory()->create([
+            'user_id' => $author->id,
+            'category_id' => $category->id,
+        ]);
+
+        foreach ([route('posts.create'), route('posts.edit', $post)] as $url) {
+            $response = $this->actingAs($author)->get($url);
+            $response->assertOk();
+
+            // 1. Verify modal exists and is a distinct sibling, NOT nested in editor-link-modal
+            $content = $response->getContent();
+            $linkModalPos = strpos($content, 'id="editor-link-modal"');
+            $shortcutsModalPos = strpos($content, 'id="editor-shortcuts-modal"');
+            $this->assertNotFalse($linkModalPos);
+            $this->assertNotFalse($shortcutsModalPos);
+
+            // Find closing tag of editor-link-modal and ensure it occurs BEFORE editor-shortcuts-modal
+            $linkModalSubstr = substr($content, $linkModalPos, $shortcutsModalPos - $linkModalPos);
+            $this->assertStringContainsString('</div>', $linkModalSubstr);
+
+            // 2. Title & Close controls
+            $response->assertSee('id="editorShortcutsModalLabel"', false);
+            $response->assertSee('Phím tắt', false);
+            $response->assertSee('data-bs-dismiss="modal"', false);
+
+            // 3. Supported Categories
+            $response->assertSee('Định dạng văn bản', false);
+            $response->assertSee('Tiêu đề và đoạn văn', false);
+            $response->assertSee('Danh sách & Thụt lề', false);
+            $response->assertSee('Căn lề và trích dẫn', false);
+            $response->assertSee('Liên kết', false);
+            $response->assertSee('Lịch sử thao tác', false);
+            $response->assertSee('Quy tắc gõ tắt tự động (Markdown)', false);
+
+            // 4. Platform distinction (macOS vs Windows/Linux)
+            $response->assertSee('macOS', false);
+            $response->assertSee('Windows / Linux', false);
+            $response->assertSee('⌘ + B', false);
+            $response->assertSee('Ctrl + B', false);
+            $response->assertSee('⌘ + K', false);
+            $response->assertSee('Ctrl + K', false);
+            $response->assertSee('⌘ + Shift + 8', false);
+            $response->assertSee('Ctrl + Shift + 8', false);
+            $response->assertSee('Tab', false);
+            $response->assertSee('Shift + Tab', false);
+        }
+    }
 }
+
 
 

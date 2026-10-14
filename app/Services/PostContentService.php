@@ -15,7 +15,7 @@ class PostContentService
      * @var list<string>
      */
     protected static array $allowedTags = [
-        'p', 'h2', 'h3', 'h4', 'strong', 'b', 'em', 'i', 'u', 's',
+        'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'del', 'mark',
         'blockquote', 'ul', 'ol', 'li', 'a', 'img', 'pre', 'code', 'hr', 'br',
         'span', 'div', 'figure', 'figcaption',
     ];
@@ -29,7 +29,7 @@ class PostContentService
             return false;
         }
 
-        return (bool) preg_match('/<\s*(p|h[1-6]|ul|ol|li|blockquote|div|table|img|a|strong|em|u)\b/i', $content);
+        return (bool) preg_match('/<\s*(p|h[1-6]|ul|ol|li|blockquote|div|table|img|a|strong|em|u|s|del|strike|mark|span|hr|pre|code)\b/i', $content);
     }
 
     /**
@@ -179,6 +179,23 @@ class PostContentService
                         } elseif (! in_array($attrName, ['alt', 'title', 'class', 'loading', 'width', 'height'], true)) {
                             $node->removeAttribute($attrName);
                         }
+                    } elseif ($attrName === 'style') {
+                        $cleanStyle = static::sanitizeCssStyle($attr->value);
+                        if ($cleanStyle !== null && $cleanStyle !== '') {
+                            $node->setAttribute('style', $cleanStyle);
+                        } else {
+                            $node->removeAttribute('style');
+                        }
+                    } elseif ($attrName === 'data-color') {
+                        $val = trim($attr->value);
+                        if (! preg_match('/^(#[0-9a-fA-F]{3,8}|rgba?\(\s*[0-9.%,\s]+\s*\)|[a-zA-Z]+)$/', $val)) {
+                            $node->removeAttribute('data-color');
+                        }
+                    } elseif ($attrName === 'data-indent') {
+                        $val = trim($attr->value);
+                        if (! ctype_digit($val) || (int) $val < 0 || (int) $val > 10) {
+                            $node->removeAttribute('data-indent');
+                        }
                     } elseif (! in_array($attrName, ['class', 'title', 'id'], true)) {
                         $node->removeAttribute($attrName);
                     }
@@ -233,5 +250,50 @@ class PostContentService
                 static::sanitizeNode($child);
             }
         }
+    }
+
+    /**
+     * Strictly sanitize inline CSS styles.
+     * Only allow safe typography, alignment, and spacing rules.
+     */
+    public static function sanitizeCssStyle(?string $css): ?string
+    {
+        if (empty($css)) {
+            return null;
+        }
+
+        // Block dangerous tokens immediately (XSS vectors in CSS)
+        if (preg_match('/(expression|javascript|vbscript|behavior|@import|url\s*\(|-moz-binding|<|>|")/i', $css)) {
+            return null;
+        }
+
+        $declarations = explode(';', $css);
+        $safeDeclarations = [];
+
+        foreach ($declarations as $declaration) {
+            $declaration = trim($declaration);
+            if ($declaration === '') {
+                continue;
+            }
+
+            $parts = explode(':', $declaration, 2);
+            if (count($parts) !== 2) {
+                continue;
+            }
+
+            $prop = strtolower(trim($parts[0]));
+            $val = trim($parts[1]);
+
+            // Whitelist allowed CSS properties and valid formats
+            if ($prop === 'text-align' && in_array(strtolower($val), ['left', 'center', 'right', 'justify'], true)) {
+                $safeDeclarations[] = "text-align: ".strtolower($val);
+            } elseif (($prop === 'color' || $prop === 'background-color') && preg_match('/^(#[0-9a-fA-F]{3,8}|rgba?\(\s*[0-9.%,\s]+\s*\)|hsla?\(\s*[0-9.%,\s]+\s*\)|[a-zA-Z]+)$/', $val)) {
+                $safeDeclarations[] = "{$prop}: {$val}";
+            } elseif (($prop === 'padding-left' || $prop === 'margin-left') && preg_match('/^[0-9]+(\.[0-9]+)?(px|rem|em)$/', $val)) {
+                $safeDeclarations[] = "{$prop}: {$val}";
+            }
+        }
+
+        return ! empty($safeDeclarations) ? implode('; ', $safeDeclarations) : null;
     }
 }

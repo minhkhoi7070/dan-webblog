@@ -174,6 +174,42 @@
 
                     <!-- WYSIWYG Formatting Toolbar -->
                     <div class="editor-toolbar" role="toolbar" aria-label="Định dạng bài viết">
+                        <!-- History: Undo / Redo -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="undo" title="Hoàn tác (Ctrl+Z)" aria-label="Hoàn tác (Undo)">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a5 5 0 015 5v2m-15-7l4-4m-4 4l4 4" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="redo" title="Làm lại (Ctrl+Y / Ctrl+Shift+Z)" aria-label="Làm lại (Redo)">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a5 5 0 00-5 5v2m15-7l-4-4m4 4l-4 4" />
+                            </svg>
+                        </button>
+
+                        <div class="editor-toolbar-divider"></div>
+
+                        <!-- Block Format Dropdown (H1 - H6, Paragraph, Quote) -->
+                        <div class="dropdown d-inline-block">
+                            <button class="editor-toolbar-btn dropdown-toggle d-inline-flex align-items-center gap-1.5 px-2" type="button" id="editor-block-dropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Chọn kiểu văn bản">
+                                <span id="editor-current-block-label">Đoạn văn</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark shadow-lg border-theme py-1" aria-labelledby="editor-block-dropdown" style="min-width: 210px; font-size: 13px;">
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="p"><span>Đoạn văn (Paragraph)</span><span class="text-theme-muted small">Ctrl+Alt+7</span></button></li>
+                                <li><hr class="dropdown-divider my-1 border-theme"></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h1"><span class="fw-bold fs-6">Tiêu đề 1 (H1)</span><span class="text-theme-muted small">Ctrl+Alt+1</span></button></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h2"><span class="fw-bold" style="font-size: 0.95rem;">Tiêu đề 2 (H2)</span><span class="text-theme-muted small">Ctrl+Alt+2</span></button></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h3"><span class="fw-semibold" style="font-size: 0.9rem;">Tiêu đề 3 (H3)</span><span class="text-theme-muted small">Ctrl+Alt+3</span></button></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h4"><span>Tiêu đề 4 (H4)</span><span class="text-theme-muted small">Ctrl+Alt+4</span></button></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h5"><span class="small">Tiêu đề 5 (H5)</span><span class="text-theme-muted small">Ctrl+Alt+5</span></button></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h6"><span class="small text-uppercase">Tiêu đề 6 (H6)</span><span class="text-theme-muted small">Ctrl+Alt+6</span></button></li>
+                                <li><hr class="dropdown-divider my-1 border-theme"></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="quote"><span>Trích dẫn (Quote)</span><span class="text-theme-muted small">Ctrl+Alt+Q</span></button></li>
+                            </ul>
+                        </div>
+
+                        <div class="editor-toolbar-divider"></div>
+
+                        <!-- Character Formatting -->
                         <button type="button" class="editor-toolbar-btn" data-editor-action="bold" title="In đậm (Ctrl+B)" aria-label="In đậm (Bold)">
                             <strong>B</strong>
                         </button>
@@ -183,15 +219,121 @@
                         <button type="button" class="editor-toolbar-btn" data-editor-action="underline" title="Gạch chân (Ctrl+U)" aria-label="Gạch chân (Underline)">
                             <u>U</u>
                         </button>
-                        <div class="editor-toolbar-divider"></div>
-                        <button type="button" class="editor-toolbar-btn" data-editor-action="h2" title="Tiêu đề 2" aria-label="Tiêu đề 2 (Heading 2)">
-                            H2
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="strike" title="Gạch ngang chữ (Ctrl+Alt+D)" aria-label="Gạch ngang (Strikethrough)">
+                            <s>S</s>
                         </button>
-                        <button type="button" class="editor-toolbar-btn" data-editor-action="h3" title="Tiêu đề 3" aria-label="Tiêu đề 3 (Heading 3)">
-                            H3
+
+                        <!-- Text Color Picker Dropdown -->
+                        <div class="dropdown d-inline-block">
+                            <button class="editor-toolbar-btn dropdown-toggle d-inline-flex align-items-center gap-1" type="button" id="editor-color-dropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Màu chữ">
+                                <span class="fw-bold" style="border-bottom: 2.5px solid #3b82f6; line-height: 1;">A</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-dark shadow-lg border-theme p-2.5" aria-labelledby="editor-color-dropdown" style="min-width: 175px;">
+                                <div class="small fw-semibold text-theme-secondary mb-1.5">Màu chữ</div>
+                                <div class="d-flex flex-wrap gap-1.5 mb-2">
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #f8fafc;" data-editor-color="#f8fafc" title="Trắng sáng"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #94a3b8;" data-editor-color="#94a3b8" title="Xám"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #ef4444;" data-editor-color="#ef4444" title="Đỏ"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #f97316;" data-editor-color="#f97316" title="Cam"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #eab308;" data-editor-color="#eab308" title="Vàng"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #10b981;" data-editor-color="#10b981" title="Xanh lá"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #3b82f6;" data-editor-color="#3b82f6" title="Xanh dương"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #8b5cf6;" data-editor-color="#8b5cf6" title="Tím"></button>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between pt-1 border-top border-theme">
+                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 small text-theme-muted" data-editor-color="reset">Xóa màu chữ</button>
+                                    <label class="btn btn-sm btn-outline-secondary p-0 px-1.5 small d-flex align-items-center gap-1 m-0" style="cursor: pointer; font-size: 11px;">
+                                        Tùy chọn
+                                        <input type="color" id="editor-custom-color-picker" class="visually-hidden" value="#3b82f6">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Highlight Dropdown -->
+                        <div class="dropdown d-inline-block">
+                            <button class="editor-toolbar-btn dropdown-toggle d-inline-flex align-items-center gap-1" type="button" id="editor-highlight-dropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Tô màu nền chữ (Highlight)">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-dark shadow-lg border-theme p-2.5" aria-labelledby="editor-highlight-dropdown" style="min-width: 175px;">
+                                <div class="small fw-semibold text-theme-secondary mb-1.5">Màu nền chữ</div>
+                                <div class="d-flex flex-wrap gap-1.5 mb-2">
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #fef08a;" data-editor-highlight="#fef08a" title="Vàng nhạt"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #bbf7d0;" data-editor-highlight="#bbf7d0" title="Xanh lá nhạt"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #bfdbfe;" data-editor-highlight="#bfdbfe" title="Xanh dương nhạt"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #fbcfe8;" data-editor-highlight="#fbcfe8" title="Hồng nhạt"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #e9d5ff;" data-editor-highlight="#e9d5ff" title="Tím nhạt"></button>
+                                </div>
+                                <div class="pt-1 border-top border-theme">
+                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 small text-theme-muted" data-editor-highlight="reset">Xóa màu nền</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Clear Formatting -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="clear-format" title="Xóa toàn bộ định dạng ký tự (Clear formatting)" aria-label="Xóa toàn bộ định dạng (Clear formatting)">
+                            <span style="font-family: serif; font-size: 13px; text-decoration: line-through;">T</span><small style="font-size: 9px; margin-left: 1px;">x</small>
                         </button>
+
                         <div class="editor-toolbar-divider"></div>
-                        <button type="button" class="editor-toolbar-btn" data-editor-action="quote" title="Trích dẫn" aria-label="Trích dẫn (Quote)">
+
+                        <!-- Alignment Buttons -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="align-left" title="Căn trái (Ctrl+Alt+L)" aria-label="Căn trái">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h14" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="align-center" title="Căn giữa (Ctrl+Alt+E)" aria-label="Căn giữa">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10M5 18h14" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="align-right" title="Căn phải (Ctrl+Alt+R)" aria-label="Căn phải">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M10 12h10M6 18h14" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="align-justify" title="Căn đều (Ctrl+Alt+J)" aria-label="Căn đều">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+
+                        <div class="editor-toolbar-divider"></div>
+
+                        <!-- Lists & Indent Group -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="bullet-list" title="Danh sách dấu chấm (Bulleted List)" aria-label="Danh sách dấu chấm (Bulleted list)">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h.01M4 12h.01M4 18h.01M8 6h12M8 12h12M8 18h12" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="ordered-list" title="Danh sách số thứ tự (Numbered List)" aria-label="Danh sách số (Ordered list)">
+                            <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="10" y1="6" x2="21" y2="6"></line>
+                                <line x1="10" y1="12" x2="21" y2="12"></line>
+                                <line x1="10" y1="18" x2="21" y2="18"></line>
+                                <path d="M4 6h1v4"></path>
+                                <path d="M4 10h2"></path>
+                                <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path>
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="indent" title="Tăng thụt lề (Increase Indent - Tab)" aria-label="Tăng thụt lề (Indent)">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16m-4-9l4 3-4 3" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="outdent" title="Giảm thụt lề (Decrease Indent - Shift+Tab)" aria-label="Giảm thụt lề (Outdent)">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16m4-9l-4 3 4 3" />
+                            </svg>
+                        </button>
+
+                        <div class="editor-toolbar-divider"></div>
+
+                        <!-- Blockquote, Code & HR -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="quote" title="Trích dẫn (Ctrl+Alt+Q)" aria-label="Trích dẫn (Quote)">
                             <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                             </svg>
@@ -199,14 +341,14 @@
                         <button type="button" class="editor-toolbar-btn" data-editor-action="code" title="Khối mã nguồn" aria-label="Khối mã nguồn (Code block)">
                             &lt;/&gt;
                         </button>
-                        <button type="button" class="editor-toolbar-btn" data-editor-action="bullet-list" title="Danh sách dấu chấm" aria-label="Danh sách (Bullet list)">
-                            &bull; List
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="hr" title="Đường phân tách ngang (---)" aria-label="Đường phân tách ngang (Horizontal rule)">
+                            &mdash;
                         </button>
-                        <button type="button" class="editor-toolbar-btn" data-editor-action="ordered-list" title="Danh sách có số thứ tự" aria-label="Danh sách số (Ordered list)">
-                            1. List
-                        </button>
+
                         <div class="editor-toolbar-divider"></div>
-                        <button type="button" class="editor-toolbar-btn" data-editor-action="link" title="Chèn / Sửa liên kết" aria-label="Chèn liên kết (Link)">
+
+                        <!-- Insert: Link & Image -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="link" title="Chèn / Sửa liên kết (Ctrl+K)" aria-label="Chèn liên kết (Link)">
                             <svg style="width: 14px; height: 14px; margin-right: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                             </svg>
@@ -218,9 +360,17 @@
                             </svg>
                             Ảnh
                         </button>
+
                         <div class="editor-toolbar-divider"></div>
-                        <button type="button" class="editor-toolbar-btn" data-editor-action="hr" title="Đường phân tách ngang" aria-label="Đường phân tách ngang (Horizontal rule)">
-                            &mdash;
+
+                        <!-- Utilities: Paste Plain Text & Keyboard Shortcuts Modal -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="paste-text" title="Dán văn bản thuần (Ctrl+Shift+V)" aria-label="Dán văn bản thuần">
+                            <span class="small font-monospace fw-bold">Txt</span>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="shortcuts-help" title="Danh sách phím tắt" aria-label="Trợ giúp phím tắt">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                         </button>
                     </div>
 
@@ -472,7 +622,269 @@
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Modal Hướng Dẫn Phím Tắt -->
+    <div class="modal fade" id="editor-shortcuts-modal" tabindex="-1" aria-labelledby="editorShortcutsModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header d-flex align-items-center justify-content-between">
+                    <h5 class="modal-title m-0 d-flex align-items-center gap-2" id="editorShortcutsModalLabel">
+                        <svg style="width: 20px; height: 20px; color: #3b82f6;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        Phím tắt
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        Danh sách các phím tắt được hỗ trợ khi soạn thảo nội dung. Nhấn <kbd>Esc</kbd> hoặc click ra ngoài vùng hộp thoại để đóng.
+                    </p>
+
+                    <!-- 1. Định dạng văn bản -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Định dạng văn bản</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>In đậm (Bold)</td>
+                                        <td><kbd>⌘ + B</kbd></td>
+                                        <td><kbd>Ctrl + B</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>In nghiêng (Italic)</td>
+                                        <td><kbd>⌘ + I</kbd></td>
+                                        <td><kbd>Ctrl + I</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Gạch chân (Underline)</td>
+                                        <td><kbd>⌘ + U</kbd></td>
+                                        <td><kbd>Ctrl + U</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Gạch ngang chữ (Strike)</td>
+                                        <td><kbd>⌘ + Shift + X</kbd> <span class="text-muted small">hoặc</span> <kbd>⌥ + ⌘ + D</kbd></td>
+                                        <td><kbd>Ctrl + Shift + X</kbd> <span class="text-muted small">hoặc</span> <kbd>Ctrl + Alt + D</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 2. Tiêu đề và đoạn văn -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Tiêu đề và đoạn văn</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Đoạn văn (Paragraph)</td>
+                                        <td><kbd>⌥ + ⌘ + 7</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 7</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 1 (H1)</td>
+                                        <td><kbd>⌥ + ⌘ + 1</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 1</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 2 (H2)</td>
+                                        <td><kbd>⌥ + ⌘ + 2</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 2</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 3 (H3)</td>
+                                        <td><kbd>⌥ + ⌘ + 3</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 3</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 4 (H4)</td>
+                                        <td><kbd>⌥ + ⌘ + 4</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 4</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 5 (H5)</td>
+                                        <td><kbd>⌥ + ⌘ + 5</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 5</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 6 (H6)</td>
+                                        <td><kbd>⌥ + ⌘ + 6</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 6</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 3. Danh sách -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Danh sách & Thụt lề</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Danh sách dấu chấm (Bulleted List)</td>
+                                        <td><kbd>⌘ + Shift + 8</kbd></td>
+                                        <td><kbd>Ctrl + Shift + 8</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Danh sách số thứ tự (Numbered List)</td>
+                                        <td><kbd>⌘ + Shift + 7</kbd></td>
+                                        <td><kbd>Ctrl + Shift + 7</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tăng thụt lề danh sách (Lồng cấp con)</td>
+                                        <td><kbd>Tab</kbd></td>
+                                        <td><kbd>Tab</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Giảm thụt lề danh sách (Đưa lên cấp cha)</td>
+                                        <td><kbd>Shift + Tab</kbd></td>
+                                        <td><kbd>Shift + Tab</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 4. Căn lề và trích dẫn -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Căn lề và trích dẫn</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Căn lề trái (Align Left)</td>
+                                        <td><kbd>⌥ + ⌘ + L</kbd></td>
+                                        <td><kbd>Ctrl + Alt + L</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Căn giữa (Align Center)</td>
+                                        <td><kbd>⌥ + ⌘ + E</kbd></td>
+                                        <td><kbd>Ctrl + Alt + E</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Căn lề phải (Align Right)</td>
+                                        <td><kbd>⌥ + ⌘ + R</kbd></td>
+                                        <td><kbd>Ctrl + Alt + R</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Căn đều hai bên (Align Justify)</td>
+                                        <td><kbd>⌥ + ⌘ + J</kbd></td>
+                                        <td><kbd>Ctrl + Alt + J</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Khối trích dẫn (Blockquote)</td>
+                                        <td><kbd>⌥ + ⌘ + Q</kbd></td>
+                                        <td><kbd>Ctrl + Alt + Q</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 5. Liên kết -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Liên kết</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Chèn / Sửa liên kết (Link)</td>
+                                        <td><kbd>⌘ + K</kbd></td>
+                                        <td><kbd>Ctrl + K</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 6. Lịch sử thao tác (Undo/Redo) -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Lịch sử thao tác</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Hoàn tác (Undo)</td>
+                                        <td><kbd>⌘ + Z</kbd></td>
+                                        <td><kbd>Ctrl + Z</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Làm lại (Redo)</td>
+                                        <td><kbd>⌘ + Shift + Z</kbd></td>
+                                        <td><kbd>Ctrl + Y</kbd> <span class="text-muted small">hoặc</span> <kbd>Ctrl + Shift + Z</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 7. Khác & Markdown nhanh -->
+                    <div>
+                        <span class="shortcut-section-badge mb-2">Quy tắc gõ tắt tự động (Markdown)</span>
+                        <div class="p-2.5 rounded bg-light border border-slate-200">
+                            <ul class="mb-0 ps-3 small text-secondary">
+                                <li><code># </code> đến <code>###### </code> + <kbd>Space</kbd>: Chuyển thành Tiêu đề H1 đến H6 tương ứng</li>
+                                <li><code>&gt; </code> + <kbd>Space</kbd>: Tạo khối trích dẫn (Blockquote)</li>
+                                <li><code>- </code> hoặc <code>* </code> + <kbd>Space</kbd>: Tạo danh sách dấu chấm (Bullet List)</li>
+                                <li><code>1. </code> + <kbd>Space</kbd>: Tạo danh sách số thứ tự (Numbered List)</li>
+                                <li><code>---</code> + <kbd>Enter</kbd>: Tạo đường kẻ phân cách ngang</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between align-items-center">
+                    <span class="small text-muted">Nhấn <kbd>Esc</kbd> hoặc click vùng nền tối bên ngoài để đóng</span>
+                    <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3.5 py-1" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <script>
 function previewThumbnail(event) {
