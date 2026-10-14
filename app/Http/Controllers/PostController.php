@@ -192,7 +192,9 @@ class PostController extends Controller
         $excerpt = $request->validated('excerpt') ?: Str::limit(strip_tags($body), 150);
         $slug = Str::slug($request->validated('title')).'-'.Str::lower(Str::random(6));
 
-        // Workflow rule: Authors ALWAYS create posts with 'draft' status
+        $action = $request->input('action');
+        $status = ($action === 'submit') ? 'pending' : 'draft';
+
         $post = Post::create([
             'user_id' => $request->user()->id,
             'category_id' => $request->validated('category_id'),
@@ -201,11 +203,16 @@ class PostController extends Controller
             'excerpt' => $excerpt,
             'body' => $body,
             'thumbnail' => $thumbnail,
-            'status' => 'draft',
+            'status' => $status,
             'views' => 0,
         ]);
 
         $post->tags()->sync($request->input('tags', []));
+
+        if ($status === 'pending') {
+            return redirect()->route('posts.edit', $post)
+                ->with('success', 'Bài viết đã được gửi đến Admin để kiểm duyệt thành công (Đang chờ Admin duyệt).');
+        }
 
         return redirect()->route('posts.edit', $post)
             ->with('success', 'Bài viết đã được tạo thành công dưới dạng Bản nháp (Draft).');
@@ -254,12 +261,21 @@ class PostController extends Controller
         $post->category_id = $request->validated('category_id');
         $post->excerpt = $excerpt;
         $post->body = $body;
+
+        $action = $request->input('action');
+        if ($action === 'submit' && in_array($post->status, ['draft', 'rejected'], true)) {
+            $post->status = 'pending';
+            $successMessage = 'Bài viết đã được lưu và gửi đến Admin để kiểm duyệt thành công (Đang chờ Admin duyệt).';
+        } else {
+            $successMessage = 'Bài viết đã được cập nhật thành công.';
+        }
+
         $post->save();
 
         $post->tags()->sync($request->input('tags', []));
 
         return redirect()->route('posts.edit', $post)
-            ->with('success', 'Bài viết đã được cập nhật thành công.');
+            ->with('success', $successMessage);
     }
 
     /**
@@ -293,12 +309,12 @@ class PostController extends Controller
             return response()->json([
                 'success' => true,
                 'status' => 'pending',
-                'message' => 'Bài viết đã được gửi cho Ban biên tập xét duyệt (Pending).',
+                'message' => 'Bài viết đã được gửi đến Admin để kiểm duyệt (Đang chờ Admin duyệt).',
             ]);
         }
 
         return redirect()->back()
-            ->with('success', 'Bài viết đã được gửi cho Ban biên tập xét duyệt (Pending).');
+            ->with('success', 'Bài viết đã được gửi đến Admin để kiểm duyệt (Đang chờ Admin duyệt).');
     }
 
     /**

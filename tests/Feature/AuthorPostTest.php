@@ -457,4 +457,47 @@ class AuthorPostTest extends TestCase
                 'body' => 'Great technical article from another author!',
             ])->assertStatus(201);
     }
+
+    public function test_author_can_submit_post_directly_for_review_on_create(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+
+        $postData = [
+            'title' => 'Direct Submit For Admin Review Post',
+            'category_id' => $category->id,
+            'excerpt' => 'Direct submission summary.',
+            'content' => 'Full content that is sent directly to Admin for editorial approval.',
+            'action' => 'submit',
+        ];
+
+        $response = $this->actingAs($author)->post(route('posts.store'), $postData);
+
+        $post = Post::where('title', 'Direct Submit For Admin Review Post')->first();
+        $this->assertNotNull($post);
+        $this->assertSame('pending', $post->status);
+        $this->assertNull($post->published_at);
+        $response->assertRedirect(route('posts.edit', $post));
+        $response->assertSessionHas('success');
+    }
+
+    public function test_unpublished_posts_are_not_visible_publicly(): void
+    {
+        $author = User::factory()->author()->create();
+        $viewer = User::factory()->viewer()->create();
+
+        $draftPost = Post::factory()->create(['user_id' => $author->id, 'status' => 'draft']);
+        $pendingPost = Post::factory()->pending()->create(['user_id' => $author->id]);
+        $rejectedPost = Post::factory()->rejected()->create(['user_id' => $author->id]);
+
+        // Unauthenticated visitor gets 404
+        $this->get(route('posts.show', $draftPost->slug))->assertNotFound();
+        $this->get(route('posts.show', $pendingPost->slug))->assertNotFound();
+        $this->get(route('posts.show', $rejectedPost->slug))->assertNotFound();
+
+        // Other logged in user (viewer) gets 404
+        $this->actingAs($viewer)->get(route('posts.show', $draftPost->slug))->assertNotFound();
+        $this->actingAs($viewer)->get(route('posts.show', $pendingPost->slug))->assertNotFound();
+        $this->actingAs($viewer)->get(route('posts.show', $rejectedPost->slug))->assertNotFound();
+    }
 }

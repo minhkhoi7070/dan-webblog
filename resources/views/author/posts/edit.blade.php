@@ -81,6 +81,18 @@
         </div>
     @endif
 
+    <!-- Pending Notice -->
+    @if($post->status === 'pending')
+        <div class="alert alert-warning mb-4 shadow-xs border border-warning border-opacity-25 rounded-3" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="small fw-medium"><strong>Đang chờ Admin duyệt:</strong> Bài viết đã được gửi đến Admin để kiểm duyệt. Bài chỉ hiển thị công khai sau khi được phê duyệt.</span>
+            </div>
+        </div>
+    @endif
+
     <!-- Rejection Alert / Resubmit Guidance -->
     @if($post->status === 'rejected')
         <div class="alert alert-danger mb-4 shadow-xs border border-danger border-opacity-25 rounded-3" role="alert">
@@ -88,8 +100,13 @@
                 <svg style="width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <div>
-                    <h3 class="h6 fw-bold mb-1">Bài viết đã bị Ban biên tập từ chối phê duyệt</h3>
+                <div class="w-100">
+                    <h3 class="h6 fw-bold mb-1">Bài viết bị từ chối / Yêu cầu chỉnh sửa</h3>
+                    @if($post->rejection_reason)
+                        <div class="p-2.5 my-2 rounded-2 bg-dark bg-opacity-25 border border-danger border-opacity-25 small font-monospace">
+                            <strong>Lý do từ Ban biên tập:</strong> {{ $post->rejection_reason }}
+                        </div>
+                    @endif
                     <p class="small mb-0">
                         Vui lòng rà soát lại tiêu đề, tóm tắt và nội dung bài viết theo tiêu chuẩn cộng đồng, sau đó nhấn <strong>"Gửi lại xét duyệt (Resubmit)"</strong> ở góc phải để gửi lại cho Ban biên tập.
                     </p>

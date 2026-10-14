@@ -55,6 +55,7 @@ class StorePostRequest extends FormRequest
             'thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['integer', 'exists:tags,id'],
+            'action' => ['nullable', 'string', 'in:draft,submit'],
         ];
     }
 }

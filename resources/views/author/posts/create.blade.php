@@ -178,23 +178,37 @@
 
                         <div class="p-3 rounded-3 bg-surface-2 border border-theme mb-3 small text-theme-secondary">
                             <p class="fw-semibold text-theme mb-1">Luồng kiểm duyệt bài viết:</p>
-                            Bài viết mới luôn được lưu ở trạng thái <strong>Bản nháp (Draft)</strong>. Sau khi soạn xong, bạn có thể gửi cho Ban biên tập xét duyệt (Pending) từ trang chỉnh sửa bài viết.
+                            Bài viết sẽ được gửi đến Admin để kiểm duyệt. Bài chỉ hiển thị công khai sau khi được phê duyệt.
                         </div>
 
                         <div class="d-flex flex-column gap-2">
                             <button
                                 type="submit"
+                                name="action"
+                                value="submit"
                                 class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2"
+                            >
+                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
+                                Gửi bài viết để Admin duyệt
+                            </button>
+
+                            <button
+                                type="submit"
+                                name="action"
+                                value="draft"
+                                class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium d-flex align-items-center justify-content-center gap-2"
                             >
                                 <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                                 </svg>
-                                Lưu bản nháp (Draft)
+                                Lưu bản nháp
                             </button>
 
                             <a
                                 href="{{ route('posts.stats') }}"
-                                class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium"
+                                class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center"
                             >
                                 Hủy bỏ & Quay lại
                             </a>
