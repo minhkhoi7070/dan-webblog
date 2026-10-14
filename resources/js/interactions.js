@@ -76,7 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!url) return;
 
         btn.disabled = true;
+<<<<<<< HEAD
         btn.classList.add('opacity-50');
+=======
+        btn.classList.add('opacity-50', 'is-loading');
+        btn.style.pointerEvents = 'none';
+>>>>>>> origin/main
 
         try {
             const response = await fetch(url, {
@@ -124,14 +129,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
-
-            showToast(data.liked ? 'Đã thích bài viết!' : 'Đã bỏ thích bài viết.');
         } catch (error) {
             console.error('Like error:', error);
             showToast(error.message, 'error');
         } finally {
             btn.disabled = false;
+<<<<<<< HEAD
             btn.classList.remove('opacity-50');
+=======
+            btn.classList.remove('opacity-50', 'is-loading');
+            btn.style.pointerEvents = '';
+>>>>>>> origin/main
         }
     });
 
@@ -145,7 +153,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!url) return;
 
         btn.disabled = true;
+<<<<<<< HEAD
         btn.classList.add('opacity-50');
+=======
+        btn.classList.add('opacity-50', 'is-loading');
+        btn.style.pointerEvents = 'none';
+>>>>>>> origin/main
 
         try {
             const response = await fetch(url, {
@@ -191,14 +204,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (label) label.textContent = 'Lưu';
                 }
             });
-
-            showToast(data.saved ? 'Đã lưu vào danh sách đọc!' : 'Đã bỏ lưu bài viết.');
         } catch (error) {
             console.error('Favorite error:', error);
             showToast(error.message, 'error');
         } finally {
             btn.disabled = false;
+<<<<<<< HEAD
             btn.classList.remove('opacity-50');
+=======
+            btn.classList.remove('opacity-50', 'is-loading');
+            btn.style.pointerEvents = '';
+>>>>>>> origin/main
         }
     });
 
@@ -212,7 +228,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!url) return;
 
         btn.disabled = true;
+<<<<<<< HEAD
         btn.classList.add('opacity-50');
+=======
+        btn.classList.add('opacity-50', 'is-loading');
+        btn.style.pointerEvents = 'none';
+>>>>>>> origin/main
 
         try {
             const response = await fetch(url, {
@@ -245,12 +266,20 @@ document.addEventListener('DOMContentLoaded', () => {
             allFollowBtns.forEach(el => {
                 if (data.following) {
                     el.textContent = 'Đang theo dõi';
+<<<<<<< HEAD
                     el.classList.remove('btn-primary');
+=======
+                    el.classList.remove('btn-primary', 'btn-editorial-primary');
+>>>>>>> origin/main
                     el.classList.add('btn-outline-theme');
                 } else {
                     el.textContent = 'Theo dõi';
                     el.classList.remove('btn-outline-theme');
+<<<<<<< HEAD
                     el.classList.add('btn-primary');
+=======
+                    el.classList.add('btn-editorial-primary');
+>>>>>>> origin/main
                 }
             });
 
@@ -259,14 +288,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 let current = parseInt(followerCountEl.textContent, 10) || 0;
                 followerCountEl.textContent = data.following ? current + 1 : Math.max(0, current - 1);
             }
-
-            showToast(data.following ? 'Đã theo dõi tác giả!' : 'Đã bỏ theo dõi tác giả.');
         } catch (error) {
             console.error('Follow error:', error);
             showToast(error.message, 'error');
         } finally {
             btn.disabled = false;
+<<<<<<< HEAD
             btn.classList.remove('opacity-50');
+=======
+            btn.classList.remove('opacity-50', 'is-loading');
+            btn.style.pointerEvents = '';
+>>>>>>> origin/main
         }
     });
 
@@ -369,6 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p class="small text-theme mb-0 ps-4 lh-base">${data.comment.body}</p>
                     `;
                     repliesContainer.appendChild(replyCard);
+                    replyCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             } else if (commentsContainer) {
                 const emptyPlaceholder = commentsContainer.querySelector('.text-center.py-4');
@@ -394,6 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="text-theme mb-0 ps-4 ms-2 lh-base">${data.comment.body}</p>
                 `;
                 commentsContainer.prepend(newCommentEl);
+                newCommentEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
 
             const counterEls = document.querySelectorAll('.comment-count-badge');
@@ -401,8 +435,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const count = parseInt(el.textContent, 10) || 0;
                 el.textContent = count + 1;
             });
-
-            showToast('Đã đăng bình luận thành công!');
         } catch (error) {
             console.error('Comment error:', error);
             showToast(error.message, 'error');
@@ -602,8 +634,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (closeBtnEl) closeBtnEl.disabled = false;
             const spinnerEl = document.getElementById('confirm-modal-spinner');
             if (spinnerEl) spinnerEl.classList.add('d-none');
+<<<<<<< HEAD
             if (promptInputEl) {
                 promptInputEl.value = '';
+=======
+            const promptBoxEl = document.getElementById('confirm-modal-prompt-box');
+            if (promptBoxEl) promptBoxEl.classList.add('d-none');
+            const targetBoxEl = document.getElementById('confirm-modal-target-box');
+            if (targetBoxEl) targetBoxEl.classList.add('d-none');
+            const descBoxEl = document.getElementById('confirm-modal-description-box');
+            if (descBoxEl) descBoxEl.classList.add('d-none');
+            if (promptInputEl) {
+                promptInputEl.value = '';
+                promptInputEl.placeholder = '';
+>>>>>>> origin/main
                 promptInputEl.classList.remove('is-invalid');
             }
             if (promptErrorEl) promptErrorEl.classList.add('d-none');

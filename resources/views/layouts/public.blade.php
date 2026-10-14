@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full" data-theme="dark">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+@extends('layouts.base')
 
+<<<<<<< HEAD
     <title>{{ $title ?? config('app.name', 'BlogMNM') }} - Khám phá tin tức & góc nhìn công nghệ</title>
 
     <!-- Google Fonts: Inter -->
@@ -34,11 +30,19 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="d-flex flex-column flex-sm-row min-vh-100 bg-theme text-theme transition-colors">
+=======
+@section('body')
+    <!-- Accessibility Skip to Main Content Link -->
+    <a class="visually-hidden-focusable" href="#main-content">
+        Skip to main content
+    </a>
+>>>>>>> origin/main
 
     <!-- Desktop / Tablet Left Sidebar Navigation -->
     <x-sidebar />
 
     <!-- Mobile Top Navigation Header -->
+<<<<<<< HEAD
     <header class="d-sm-none d-flex align-items-center justify-content-between px-3 py-2 sticky-top bg-theme-surface border-theme-bottom z-3 user-select-none">
         <a href="{{ route('home') }}" class="d-flex align-items-center gap-2 text-decoration-none" aria-label="BlogMNM">
             <div class="d-flex align-items-center justify-content-center text-white fw-bold rounded shadow-sm" style="width: 32px; height: 32px; font-size: 14px; background: linear-gradient(to top right, #4f46e5, #8b5cf6);" data-theme-preserve>
@@ -93,6 +97,12 @@
             @media (min-width: 576px) { main.flex-grow-1 { margin-bottom: 0 !important; margin-left: 80px !important; } }
             @media (min-width: 992px) { main.flex-grow-1 { margin-left: 256px !important; } }
         </style>
+=======
+    <x-mobile-header />
+
+    <!-- Main Content Area -->
+    <main id="main-content" class="main-layout flex-grow-1 w-100 min-vh-100 d-flex flex-column">
+>>>>>>> origin/main
         @hasSection('content')
             @yield('content')
         @else
@@ -100,13 +110,19 @@
         @endif
     </main>
 
-    <!-- Mobile Bottom Navigation Bar -->
-    <x-mobile-nav />
+    <!-- Mobile Bottom Navigation Bar (Hidden on Admin pages to avoid covering management tools) -->
+    @if(!request()->routeIs('admin.*'))
+        <x-mobile-nav />
+    @endif
 
     <!-- Global Bootstrap Confirmation Modal -->
     <x-confirm-modal />
 
     <!-- Global Bootstrap Toast Notifications -->
     <x-toast />
+<<<<<<< HEAD
 </body>
 </html>
+=======
+@endsection
+>>>>>>> origin/main

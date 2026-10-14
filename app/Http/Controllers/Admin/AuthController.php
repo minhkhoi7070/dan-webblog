@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -16,7 +17,10 @@ class AuthController extends Controller
      */
     public function create(): View|RedirectResponse
     {
-        if (Auth::check() && Auth::user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        if ($user && $user->isAdmin()) {
             return redirect()->route('admin.dashboard');
         }
 
@@ -32,6 +36,7 @@ class AuthController extends Controller
     {
         $request->authenticate();
 
+        /** @var User|null $user */
         $user = Auth::user();
 
         // Enforce admin role check strictly via database model

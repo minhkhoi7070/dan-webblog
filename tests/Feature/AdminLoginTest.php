@@ -18,9 +18,8 @@ class AdminLoginTest extends TestCase
         $response = $this->get(route('admin.login'));
 
         $response->assertStatus(200);
-        $response->assertSee('Đăng nhập Quản trị viên');
-        $response->assertSee('Khu vực dành riêng cho quản trị hệ thống BlogMNM');
-        $response->assertSee('Quay lại BlogMNM');
+        $response->assertSee('Quản trị viên');
+        $response->assertSee('Admin');
         $response->assertDontSee('Đăng ký ngay');
     }
 

@@ -46,8 +46,10 @@ class CategoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:categories,slug'],
+        ], [
+            'name.unique' => 'Tên chuyên mục này đã tồn tại.',
         ]);
 
         $slug = ! empty($validated['slug'])
@@ -104,8 +106,10 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', Rule::unique('categories', 'name')->ignore($category->id)],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('categories', 'slug')->ignore($category->id)],
+        ], [
+            'name.unique' => 'Tên chuyên mục này đã tồn tại.',
         ]);
 
         $slug = ! empty($validated['slug'])

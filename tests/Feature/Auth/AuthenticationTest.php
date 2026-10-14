@@ -15,6 +15,14 @@ class AuthenticationTest extends TestCase
         $response = $this->get('/login');
 
         $response->assertStatus(200);
+        $response->assertSee('Chào mừng trở lại');
+        $response->assertSee('Đăng nhập để tiếp tục với BlogMNM');
+        $response->assertSee('login-glass-card');
+        $response->assertSee('form-control-glass');
+        $response->assertSee('btn-glass-primary');
+        $response->assertSee('Quay lại BlogMNM');
+        $response->assertSee('Ghi nhớ đăng nhập');
+        $response->assertSee('Đăng ký ngay');
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void

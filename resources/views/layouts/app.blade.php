@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full" data-theme="dark">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+@extends('layouts.public')
+@section('title', config('app.name', 'BlogMNM') . ' - Quản lý tài khoản')
 
+<<<<<<< HEAD
         <title>{{ config('app.name', 'BlogMNM') }} - Quản lý tài khoản</title>
 
         <!-- Fonts -->
@@ -77,9 +74,17 @@
                 @auth
                     <x-avatar :user="Auth::user()" size="sm" />
                 @endauth
+=======
+@section('content')
+    <div class="container-fluid py-3 py-sm-4 content-container">
+        @isset($header)
+            <div class="mb-4 pb-3 border-theme-bottom">
+                {{ $header }}
+>>>>>>> origin/main
             </div>
-        </header>
+        @endisset
 
+<<<<<<< HEAD
         <div class="flex-grow-1 w-100 min-vh-100 d-flex flex-column" style="margin-bottom: 64px; padding-left: 0;">
             <style>
                 @media (min-width: 576px) { .flex-grow-1 { margin-bottom: 0 !important; margin-left: 80px !important; } }
@@ -96,8 +101,15 @@
                     {{ $slot }}
                 </main>
             </div>
+=======
+        <div>
+            {{ $slot }}
+>>>>>>> origin/main
         </div>
+    </div>
+@endsection
 
+<<<<<<< HEAD
         <!-- Mobile Bottom Nav -->
         <x-mobile-nav />
 
@@ -108,3 +120,5 @@
         <x-toast />
     </body>
 </html>
+=======
+>>>>>>> origin/main
