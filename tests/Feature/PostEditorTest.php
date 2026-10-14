@@ -263,4 +263,33 @@ class PostEditorTest extends TestCase
         $post->refresh();
         $this->assertStringContainsString('Thêm đoạn mới', $post->body);
     }
+
+    public function test_content_image_includes_editor_content_image_class_for_unified_styling(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+
+        $content = '<p>Văn bản trước ảnh</p><p><img src="/storage/posts/images/test1234.png" alt="Ảnh minh họa"></p>';
+
+        $post = Post::factory()->published()->create([
+            'user_id' => $author->id,
+            'category_id' => $category->id,
+            'body' => $content,
+        ]);
+
+        // Accessing rendered_body applies editor-content-image and loading="lazy"
+        $rendered = $post->rendered_body;
+        $this->assertStringContainsString('editor-content-image', $rendered);
+        $this->assertStringContainsString('loading="lazy"', $rendered);
+        $this->assertStringContainsString('/storage/posts/images/test1234.png', $rendered);
+
+        // Public show page displays the sanitized image within editorial-content container
+        $response = $this->get(route('posts.show', $post->slug));
+        $response->assertOk();
+        $response->assertSee('editorial-content', false);
+        $response->assertSee('editor-content-image', false);
+        $response->assertSee('/storage/posts/images/test1234.png', false);
+    }
 }
+
+

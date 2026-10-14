@@ -219,8 +219,8 @@ class PostContentService
                 }
 
                 $existingClass = $node->getAttribute('class');
-                if (! str_contains($existingClass, 'img-fluid')) {
-                    $node->setAttribute('class', trim($existingClass.' img-fluid rounded-3 my-3 editor-content-image'));
+                if (! str_contains($existingClass, 'editor-content-image')) {
+                    $node->setAttribute('class', trim($existingClass.' editor-content-image'));
                 }
                 $node->setAttribute('loading', 'lazy');
             }

@@ -1774,11 +1774,15 @@ html[data-theme="light"] span.theme-text-dark {
 }
 
 .editorial-content img {
-  max-width: 100%;
+  display: block;
+  width: auto;
+  max-width: min(100%, 720px) !important;
   height: auto;
+  object-fit: contain;
+  margin: 1.25rem auto !important;
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border);
-  margin: 2rem 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
 }
 
 .editorial-content a {
@@ -2149,14 +2153,16 @@ html[data-theme="light"] span.theme-text-dark {
 }
 .editor-wysiwyg-surface .ProseMirror img,
 .editor-content-image {
-  max-width: 100%;
-  height: auto;
-  border-radius: var(--radius-lg, 12px);
-  margin: 1.25rem 0;
   display: block;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  border: 2px solid transparent;
-  transition: border-color 0.15s ease;
+  width: auto;
+  max-width: min(100%, 720px) !important;
+  height: auto;
+  object-fit: contain;
+  margin: 1.25rem auto !important;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .editor-wysiwyg-surface .ProseMirror img.ProseMirror-selectednode {
   border-color: #3b82f6 !important;

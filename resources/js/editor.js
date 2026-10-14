@@ -37,7 +37,7 @@ export function initPostEditor() {
                 inline: false,
                 allowBase64: false,
                 HTMLAttributes: {
-                    class: 'editor-content-image img-fluid rounded-3 my-3',
+                    class: 'editor-content-image',
                     loading: 'lazy',
                 },
             }),
@@ -372,3 +372,4 @@ function showEditorToast(message, type = 'info') {
         toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
     }
 }
+
