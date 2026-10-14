@@ -118,8 +118,8 @@
             @endif
 
             <!-- Article Body -->
-            <div class="text-theme border-theme-top pt-4 fs-base" style="white-space: pre-line; line-height: 1.85; font-size: 15.5px;">
-                {{ $post->body }}
+            <div class="text-theme border-theme-top pt-4 fs-base editorial-content" style="line-height: 1.85; font-size: 15.5px;">
+                {!! $post->rendered_body !!}
             </div>
         </article>
     </div>

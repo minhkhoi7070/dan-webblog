@@ -87,6 +87,22 @@ class Post extends Model
     }
 
     /**
+     * Get the sanitized, rendered HTML content for display.
+     */
+    public function getRenderedBodyAttribute(): string
+    {
+        return \App\Services\PostContentService::renderHtml($this->body);
+    }
+
+    /**
+     * Get the HTML content formatted for the WYSIWYG editor.
+     */
+    public function getEditorContentAttribute(): string
+    {
+        return \App\Services\PostContentService::toEditorHtml($this->body);
+    }
+
+    /**
      * The author of this post.
      */
     public function user(): BelongsTo

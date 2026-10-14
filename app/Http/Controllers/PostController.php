@@ -189,6 +189,7 @@ class PostController extends Controller
         }
 
         $body = $request->input('body') ?? $request->input('content');
+        $body = \App\Services\PostContentService::cleanHtml($body);
         $excerpt = $request->validated('excerpt') ?: Str::limit(strip_tags($body), 150);
         $slug = Str::slug($request->validated('title')).'-'.Str::lower(Str::random(6));
 
@@ -216,6 +217,42 @@ class PostController extends Controller
 
         return redirect()->route('posts.edit', $post)
             ->with('success', 'Bài viết đã được tạo thành công dưới dạng Bản nháp (Draft).');
+    }
+
+    /**
+     * Upload an embedded image for post content.
+     */
+    public function uploadImage(Request $request): JsonResponse
+    {
+        Gate::authorize('create', Post::class);
+
+        $request->validate([
+            'image' => [
+                'required',
+                'file',
+                'image',
+                'mimes:jpeg,png,jpg,webp,gif',
+                'max:2048',
+            ],
+        ], [
+            'image.required' => 'Vui lòng chọn file hình ảnh.',
+            'image.image' => 'File tải lên phải là hình ảnh hợp lệ.',
+            'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, webp, hoặc gif.',
+            'image.max' => 'Dung lượng hình ảnh không được vượt quá 2MB.',
+        ]);
+
+        $file = $request->file('image');
+
+        $extension = $file->guessExtension() ?: 'jpg';
+        $safeName = Str::random(40).'.'.$extension;
+
+        $path = $file->storeAs('posts/images', $safeName, 'public');
+
+        return response()->json([
+            'success' => true,
+            'url' => '/storage/'.$path,
+            'filename' => $safeName,
+        ], 201);
     }
 
     /**
@@ -254,6 +291,7 @@ class PostController extends Controller
         }
 
         $body = $request->input('body') ?? $request->input('content');
+        $body = \App\Services\PostContentService::cleanHtml($body);
         $excerpt = $request->validated('excerpt') ?: Str::limit(strip_tags($body), 150);
 
         // Security: Do not allow user input to tamper with status directly!

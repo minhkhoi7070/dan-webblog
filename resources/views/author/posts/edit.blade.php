@@ -172,53 +172,71 @@
                         @enderror
                     </div>
 
-                    <!-- Minimal Formatting Toolbar -->
-                    <div class="editor-toolbar" role="toolbar" aria-label="Định dạng Markdown">
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('bold')" title="Chữ đậm (Ctrl+B)" aria-label="In đậm (Bold)">
+                    <!-- WYSIWYG Formatting Toolbar -->
+                    <div class="editor-toolbar" role="toolbar" aria-label="Định dạng bài viết">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="bold" title="In đậm (Ctrl+B)" aria-label="In đậm (Bold)">
                             <strong>B</strong>
                         </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('italic')" title="Chữ nghiêng (Ctrl+I)" aria-label="In nghiêng (Italic)">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="italic" title="In nghiêng (Ctrl+I)" aria-label="In nghiêng (Italic)">
                             <em>I</em>
                         </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="underline" title="Gạch chân (Ctrl+U)" aria-label="Gạch chân (Underline)">
+                            <u>U</u>
+                        </button>
                         <div class="editor-toolbar-divider"></div>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('h2')" title="Tiêu đề 2" aria-label="Tiêu đề 2 (Heading 2)">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="h2" title="Tiêu đề 2" aria-label="Tiêu đề 2 (Heading 2)">
                             H2
                         </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('h3')" title="Tiêu đề 3" aria-label="Tiêu đề 3 (Heading 3)">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="h3" title="Tiêu đề 3" aria-label="Tiêu đề 3 (Heading 3)">
                             H3
                         </button>
                         <div class="editor-toolbar-divider"></div>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('quote')" title="Trích dẫn" aria-label="Trích dẫn (Quote)">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="quote" title="Trích dẫn" aria-label="Trích dẫn (Quote)">
                             <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                             </svg>
                         </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('code')" title="Khối mã nguồn" aria-label="Khối mã nguồn (Code block)">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="code" title="Khối mã nguồn" aria-label="Khối mã nguồn (Code block)">
                             &lt;/&gt;
                         </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('list')" title="Danh sách" aria-label="Danh sách (List)">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="bullet-list" title="Danh sách dấu chấm" aria-label="Danh sách (Bullet list)">
                             &bull; List
                         </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('link')" title="Chèn liên kết" aria-label="Chèn liên kết (Link)">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="ordered-list" title="Danh sách có số thứ tự" aria-label="Danh sách số (Ordered list)">
+                            1. List
+                        </button>
+                        <div class="editor-toolbar-divider"></div>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="link" title="Chèn / Sửa liên kết" aria-label="Chèn liên kết (Link)">
+                            <svg style="width: 14px; height: 14px; margin-right: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
                             Link
                         </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('hr')" title="Đường phân tách" aria-label="Đường phân tách ngang (Horizontal rule)">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="image" title="Chèn hình ảnh từ máy tính" aria-label="Chèn ảnh (Image)">
+                            <svg style="width: 14px; height: 14px; margin-right: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Ảnh
+                        </button>
+                        <div class="editor-toolbar-divider"></div>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="hr" title="Đường phân tách ngang" aria-label="Đường phân tách ngang (Horizontal rule)">
                             &mdash;
                         </button>
                     </div>
 
-                    <!-- Body / Content Textarea -->
+                    <!-- Hidden file input for uploading images directly into editor content -->
+                    <input type="file" id="editor-image-file-input" accept="image/jpeg,image/png,image/jpg,image/webp,image/gif" class="d-none">
+
+                    <!-- WYSIWYG Editor Surface -->
                     <div>
-                        <label for="content" class="visually-hidden">Nội dung chi tiết</label>
+                        <div id="tiptap-editor" class="editor-wysiwyg-surface"></div>
+
+                        <!-- Hidden sync textarea for native form submission & validation -->
                         <textarea
                             name="content"
                             id="content"
-                            rows="20"
-                            placeholder="Nội dung bài viết..."
-                            required
-                            class="editor-textarea w-100 @error('content') is-invalid @enderror @error('body') is-invalid @enderror"
-                            oninput="updateEditorStats()"
-                        >{{ old('content', old('body', $post->body)) }}</textarea>
+                            class="d-none @error('content') is-invalid @enderror @error('body') is-invalid @enderror"
+                        >{{ old('content', old('body', $post->editor_content)) }}</textarea>
                         @error('content')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
@@ -236,7 +254,7 @@
                             <span>&bull;</span>
                             <span id="stat-reading">~0 phút đọc</span>
                         </div>
-                        <span class="opacity-75">Hỗ trợ Markdown</span>
+                        <span class="opacity-75">Trình soạn thảo trực quan (WYSIWYG)</span>
                     </div>
                 </div>
             </form>
@@ -429,6 +447,33 @@
     </div>
 </div>
 
+    <!-- Modal Chèn / Sửa Liên Kết -->
+    <div class="modal fade" id="editor-link-modal" tabindex="-1" aria-labelledby="editorLinkModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-theme bg-theme-surface shadow-lg text-theme" style="border-radius: var(--radius-lg, 14px);">
+                <div class="modal-header border-theme-bottom py-2.5 px-3">
+                    <h6 class="modal-title fs-6 fw-bold text-theme m-0" id="editorLinkModalLabel">Chèn / Sửa liên kết</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <div class="mb-2">
+                        <label for="editor-link-url" class="form-label small fw-semibold text-theme mb-1">Địa chỉ URL:</label>
+                        <input type="url" id="editor-link-url" class="form-control form-control-sm form-control-editorial" placeholder="https://example.com" required>
+                        <div class="form-text small text-theme-muted mt-1" style="font-size: 11px;">Hỗ trợ giao thức web: <code>https://</code> hoặc <code>http://</code>.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-theme-top py-2 px-3 d-flex justify-content-between">
+                    <button type="button" class="btn btn-sm btn-outline-danger d-none rounded-pill px-2.5 py-1" id="editor-link-unlink-btn">Xóa link</button>
+                    <div class="d-flex gap-2 ms-auto">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1 fw-semibold" id="editor-link-save-btn">Áp dụng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function previewThumbnail(event) {
     const input = event.target;
@@ -446,69 +491,5 @@ function previewThumbnail(event) {
         reader.readAsDataURL(input.files[0]);
     }
 }
-
-function updateEditorStats() {
-    const textarea = document.getElementById('content');
-    if (!textarea) return;
-    const text = textarea.value.trim();
-    const words = text ? text.split(/\s+/).length : 0;
-    const chars = text.length;
-    const minutes = Math.max(1, Math.ceil(words / 200));
-
-    const wordsEl = document.getElementById('stat-words');
-    const charsEl = document.getElementById('stat-chars');
-    const readingEl = document.getElementById('stat-reading');
-
-    if (wordsEl) wordsEl.textContent = words.toLocaleString() + ' từ';
-    if (charsEl) charsEl.textContent = chars.toLocaleString() + ' ký tự';
-    if (readingEl) readingEl.textContent = '~' + minutes + ' phút đọc';
-}
-
-function formatDoc(command) {
-    const textarea = document.getElementById('content');
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const sel = textarea.value.substring(start, end);
-    let before = textarea.value.substring(0, start);
-    let after = textarea.value.substring(end);
-    let replace = '';
-
-    switch(command) {
-        case 'bold':
-            replace = `**${sel || 'văn bản đậm'}**`;
-            break;
-        case 'italic':
-            replace = `*${sel || 'văn bản nghiêng'}*`;
-            break;
-        case 'h2':
-            replace = `\n## ${sel || 'Tiêu đề mục'}\n`;
-            break;
-        case 'h3':
-            replace = `\n### ${sel || 'Tiêu đề phụ'}\n`;
-            break;
-        case 'quote':
-            replace = `\n> ${sel || 'Trích dẫn hay'}\n`;
-            break;
-        case 'code':
-            replace = `\`\`\`\n${sel || '// Viết code tại đây'}\n\`\`\``;
-            break;
-        case 'list':
-            replace = `\n- ${sel || 'Mục danh sách'}\n`;
-            break;
-        case 'link':
-            replace = `[${sel || 'Tiêu đề liên kết'}](https://)`;
-            break;
-        case 'hr':
-            replace = `\n\n---\n\n`;
-            break;
-    }
-
-    textarea.value = before + replace + after;
-    textarea.focus();
-    updateEditorStats();
-}
-
-document.addEventListener('DOMContentLoaded', updateEditorStats);
 </script>
 @endsection

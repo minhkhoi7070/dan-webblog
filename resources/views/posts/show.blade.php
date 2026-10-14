@@ -67,7 +67,7 @@
 
         <!-- Article Body Typography (Reading Experience) -->
         <div class="editorial-content mb-5 text-break">
-            {!! nl2br(e($post->body)) !!}
+            {!! $post->rendered_body !!}
         </div>
 
         <!-- Tags List -->
