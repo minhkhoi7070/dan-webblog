@@ -26,14 +26,20 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('posts.stats') }}" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium">
+            <a href="{{ route('posts.stats') }}" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium btn-cancel-action">
                 Hủy bỏ
             </a>
-            <button type="submit" form="create-post-form" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5">
-                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button type="submit" form="create-post-form" name="action" value="draft" class="btn btn-sm btn-outline-theme rounded-pill px-3.5 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5 btn-action-draft">
+                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                 </svg>
-                Lưu bản nháp
+                <span>Lưu bản nháp</span>
+            </button>
+            <button type="submit" form="create-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit">
+                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+                <span>Gửi bài viết để Admin duyệt</span>
             </button>
         </div>
     </div>
@@ -354,29 +360,29 @@
                                 type="submit"
                                 name="action"
                                 value="submit"
-                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2"
+                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit"
                             >
                                 <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                 </svg>
-                                Gửi bài viết để Admin duyệt
+                                <span>Gửi bài viết để Admin duyệt</span>
                             </button>
 
                             <button
                                 type="submit"
                                 name="action"
                                 value="draft"
-                                class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium d-flex align-items-center justify-content-center gap-2"
+                                class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium d-flex align-items-center justify-content-center gap-2 btn-action-draft"
                             >
                                 <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                                 </svg>
-                                Lưu bản nháp
+                                <span>Lưu bản nháp</span>
                             </button>
 
                             <a
                                 href="{{ route('posts.stats') }}"
-                                class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center"
+                                class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
                             >
                                 Hủy bỏ & Quay lại
                             </a>
@@ -443,37 +449,8 @@
                         @enderror
                     </div>
 
-                    <!-- Tags Selection -->
-                    <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                        <label class="label-uppercase text-theme mb-1 d-block">
-                            Thẻ bài viết (Tags)
-                        </label>
-                        <p class="small text-theme-muted mb-3" style="font-size: 12px;">Gắn các thẻ chủ đề liên quan:</p>
-
-                        @php
-                            $selectedTags = old('tags', []);
-                        @endphp
-
-                        <div class="d-flex flex-wrap gap-1.5 overflow-y-auto no-scrollbar" style="max-height: 190px;">
-                            @foreach ($tags as $tag)
-                                <input
-                                    type="checkbox"
-                                    class="btn-check"
-                                    id="tag-{{ $tag->id }}"
-                                    name="tags[]"
-                                    value="{{ $tag->id }}"
-                                    autocomplete="off"
-                                    @checked(in_array($tag->id, (array)$selectedTags))
-                                >
-                                <label class="btn btn-sm btn-outline-theme rounded-pill py-1 px-2.5 small" for="tag-{{ $tag->id }}" style="font-size: 12px;">
-                                    #{{ $tag->name }}
-                                </label>
-                            @endforeach
-                        </div>
-                        @error('tags')
-                            <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
+                    <!-- Tags Selection (Dynamic Tag Selector) -->
+                    <x-post-tag-selector :tags="$tags" :selected-tags="old('tags', [])" form-id="create-post-form" />
                 </div>
             </div>
         </div>
@@ -769,6 +746,13 @@
     </div>
 
 <script>
+let isDirty = false;
+let isSubmitting = false;
+
+window.__postEditorSetDirty = function() {
+    isDirty = true;
+};
+
 function previewThumbnail(event) {
     const input = event.target;
     if (input.files && input.files[0]) {
@@ -777,9 +761,95 @@ function previewThumbnail(event) {
             document.getElementById('image-preview').src = e.target.result;
             document.getElementById('upload-placeholder').classList.add('d-none');
             document.getElementById('preview-container').classList.remove('d-none');
+            isDirty = true;
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('create-post-form');
+    if (!form) return;
+
+    // Track input dirty state
+    ['title', 'excerpt', 'category_id'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => { isDirty = true; });
+            el.addEventListener('change', () => { isDirty = true; });
+        }
+    });
+
+    // Warn on leaving if dirty
+    window.addEventListener('beforeunload', function(e) {
+        if (isDirty && !isSubmitting) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    // Cancel action buttons confirmation
+    document.querySelectorAll('.btn-cancel-action').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            if (isDirty && !isSubmitting) {
+                if (!confirm('Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này?')) {
+                    e.preventDefault();
+                }
+            }
+        });
+    });
+
+    // Remember which button/action was clicked
+    let lastClickedAction = 'submit';
+
+    document.querySelectorAll('button[name="action"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            lastClickedAction = this.value || 'submit';
+        });
+    });
+
+    // Handle form submit with double-click prevention & loading states
+    form.addEventListener('submit', function(e) {
+        if (isSubmitting) {
+            e.preventDefault();
+            return;
+        }
+
+        isSubmitting = true;
+
+        // Ensure an action input is sent with the form if not already present
+        let actionInput = form.querySelector('input[name="action"][type="hidden"]');
+        if (!actionInput) {
+            actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            form.appendChild(actionInput);
+        }
+        actionInput.value = lastClickedAction;
+
+        // Apply loading indicator to buttons
+        const allSubmitBtns = document.querySelectorAll('button[type="submit"][form="create-post-form"], #create-post-form button[type="submit"]');
+        allSubmitBtns.forEach(btn => {
+            btn.disabled = true;
+
+            const isSubmitAction = (btn.value === 'submit' || (lastClickedAction === 'submit' && btn.classList.contains('btn-action-submit')));
+            const isDraftAction = (btn.value === 'draft' || (lastClickedAction === 'draft' && btn.classList.contains('btn-action-draft')));
+
+            const textSpan = btn.querySelector('span') || btn;
+
+            if (isSubmitAction && lastClickedAction === 'submit') {
+                btn.innerHTML = `
+                    <span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true" style="width: 13px; height: 13px;"></span>
+                    <span>Đang gửi duyệt...</span>
+                `;
+            } else if (isDraftAction && lastClickedAction === 'draft') {
+                btn.innerHTML = `
+                    <span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true" style="width: 13px; height: 13px;"></span>
+                    <span>Đang lưu...</span>
+                `;
+            }
+        });
+    });
+});
 </script>
 @endsection

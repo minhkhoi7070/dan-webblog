@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -196,19 +197,24 @@ class PostController extends Controller
         $action = $request->input('action');
         $status = ($action === 'submit') ? 'pending' : 'draft';
 
-        $post = Post::create([
-            'user_id' => $request->user()->id,
-            'category_id' => $request->validated('category_id'),
-            'title' => $request->validated('title'),
-            'slug' => $slug,
-            'excerpt' => $excerpt,
-            'body' => $body,
-            'thumbnail' => $thumbnail,
-            'status' => $status,
-            'views' => 0,
-        ]);
+        $post = DB::transaction(function () use ($request, $status, $body, $excerpt, $slug, $thumbnail) {
+            $post = Post::create([
+                'user_id' => $request->user()->id,
+                'category_id' => $request->validated('category_id'),
+                'title' => $request->validated('title'),
+                'slug' => $slug,
+                'excerpt' => $excerpt,
+                'body' => $body,
+                'thumbnail' => $thumbnail,
+                'status' => $status,
+                'views' => 0,
+            ]);
 
-        $post->tags()->sync($request->input('tags', []));
+            $tagIds = array_unique($request->input('tags', []));
+            $post->tags()->sync($tagIds);
+
+            return $post;
+        });
 
         if ($status === 'pending') {
             return redirect()->route('posts.edit', $post)
@@ -304,13 +310,18 @@ class PostController extends Controller
         if ($action === 'submit' && in_array($post->status, ['draft', 'rejected'], true)) {
             $post->status = 'pending';
             $successMessage = 'Bài viết đã được lưu và gửi đến Admin để kiểm duyệt thành công (Đang chờ Admin duyệt).';
+        } elseif ($action === 'submit' && $post->status === 'pending') {
+            $successMessage = 'Bài viết đã được cập nhật và đang chờ Admin duyệt.';
         } else {
             $successMessage = 'Bài viết đã được cập nhật thành công.';
         }
 
-        $post->save();
+        DB::transaction(function () use ($post, $request) {
+            $post->save();
 
-        $post->tags()->sync($request->input('tags', []));
+            $tagIds = array_unique($request->input('tags', []));
+            $post->tags()->sync($tagIds);
+        });
 
         return redirect()->route('posts.edit', $post)
             ->with('success', $successMessage);

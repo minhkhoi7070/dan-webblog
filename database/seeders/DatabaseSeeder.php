@@ -38,15 +38,15 @@ class DatabaseSeeder extends Seeder
             'slug' => Str::slug($name),
         ]));
 
-        // 5. Create Tags
-        $tags = collect([
-            'Laravel', 'PHP', 'JavaScript', 'CSS', 'Vue.js',
-            'React', 'Database', 'API', 'Architecture', 'Security',
+        // 5. Seed default tags and ensure sample tags are present
+        $this->call(TagSeeder::class);
+
+        collect([
+            'JavaScript', 'CSS', 'Vue.js', 'React', 'API', 'Architecture',
             'Tutorial', 'Tips', 'DevOps', 'Mobile',
-        ])->map(fn (string $name) => Tag::create([
-            'name' => $name,
-            'slug' => Str::slug($name),
-        ]));
+        ])->each(fn (string $name) => Tag::findOrCreateByName($name));
+
+        $tags = Tag::all();
 
         // 6. Create Posts with all required statuses: published, draft, pending, rejected
         $publishedPosts = collect();

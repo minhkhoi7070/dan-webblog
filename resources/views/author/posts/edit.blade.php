@@ -51,21 +51,48 @@
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
-                    Xem bài live
+                    <span>Xem bài live</span>
                 </a>
             @endif
 
-            <a href="{{ route('posts.stats') }}" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium">
+            <a href="{{ route('posts.stats') }}" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium btn-cancel-action">
                 Quay lại
             </a>
 
-            <!-- Save Changes Primary Button -->
-            <button type="submit" form="edit-post-form" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5">
-                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Lưu thay đổi
-            </button>
+            @if($post->status === 'draft')
+                <button type="submit" form="edit-post-form" name="action" value="draft" class="btn btn-sm btn-outline-theme rounded-pill px-3.5 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5 btn-action-draft">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    <span>Lưu bản nháp</span>
+                </button>
+                <button type="submit" form="edit-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    <span>Gửi bài viết để Admin duyệt</span>
+                </button>
+            @elseif($post->status === 'rejected')
+                <button type="submit" form="edit-post-form" name="action" value="draft" class="btn btn-sm btn-outline-theme rounded-pill px-3.5 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5 btn-action-draft">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    <span>Lưu bản nháp</span>
+                </button>
+                <button type="submit" form="edit-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Gửi lại để Admin duyệt (Resubmit)</span>
+                </button>
+            @else
+                <button type="submit" form="edit-post-form" name="action" value="draft" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-draft">
+                    <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Lưu thay đổi bài viết</span>
+                </button>
+            @endif
         </div>
     </div>
 
@@ -423,36 +450,126 @@
                     </h2>
 
                     <div class="d-flex flex-column gap-2">
-                        <!-- Update Button -->
-                        <button
-                            type="submit"
-                            form="edit-post-form"
-                            class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2"
-                        >
-                            <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            Lưu thay đổi bài viết
-                        </button>
-
-                        <!-- Submit / Resubmit for Review Button -->
-                        @if(in_array($post->status, ['draft', 'rejected'], true))
-                            <form action="{{ route('posts.submit', $post) }}" method="POST" class="m-0">
-                                @csrf
-                                <button
-                                    type="submit"
-                                    class="btn btn-warning rounded-pill w-100 py-2 fw-bold small text-dark d-flex align-items-center justify-content-center gap-2 shadow-xs"
-                                >
-                                    <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    {{ $post->status === 'rejected' ? 'Gửi lại xét duyệt (Resubmit)' : 'Gửi xét duyệt (Submit)' }}
-                                </button>
-                            </form>
-                        @elseif($post->status === 'pending')
-                            <div class="p-2.5 rounded-3 bg-surface-2 border border-theme text-warning small text-center">
-                                Bài viết đang trong hàng đợi duyệt của Ban biên tập.
+                        @if($post->status === 'draft')
+                            <div class="p-2.5 rounded-3 bg-surface-2 border border-theme mb-1 small text-theme-secondary">
+                                <p class="fw-semibold text-theme mb-0.5">Luồng kiểm duyệt bài viết:</p>
+                                Bài viết sẽ được gửi đến Admin để kiểm duyệt. Bài chỉ hiển thị công khai sau khi được phê duyệt.
                             </div>
+
+                            <button
+                                type="submit"
+                                form="edit-post-form"
+                                name="action"
+                                value="submit"
+                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit"
+                            >
+                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
+                                <span>Gửi bài viết để Admin duyệt</span>
+                            </button>
+
+                            <button
+                                type="submit"
+                                form="edit-post-form"
+                                name="action"
+                                value="draft"
+                                class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium d-flex align-items-center justify-content-center gap-2 btn-action-draft"
+                            >
+                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                                <span>Lưu bản nháp</span>
+                            </button>
+
+                            <a
+                                href="{{ route('posts.stats') }}"
+                                class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
+                            >
+                                Hủy bỏ & Quay lại
+                            </a>
+                        @elseif($post->status === 'rejected')
+                            <div class="p-2.5 rounded-3 bg-surface-2 border border-danger border-opacity-25 mb-1 small text-theme-secondary">
+                                <p class="fw-semibold text-danger mb-0.5">Bài viết bị từ chối:</p>
+                                Vui lòng chỉnh sửa nội dung theo góp ý và gửi lại để Ban biên tập xét duyệt.
+                            </div>
+
+                            <button
+                                type="submit"
+                                form="edit-post-form"
+                                name="action"
+                                value="submit"
+                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit"
+                            >
+                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Gửi lại để Admin duyệt (Resubmit)</span>
+                            </button>
+
+                            <button
+                                type="submit"
+                                form="edit-post-form"
+                                name="action"
+                                value="draft"
+                                class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium d-flex align-items-center justify-content-center gap-2 btn-action-draft"
+                            >
+                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                                <span>Lưu bản nháp</span>
+                            </button>
+
+                            <a
+                                href="{{ route('posts.stats') }}"
+                                class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
+                            >
+                                Hủy bỏ & Quay lại
+                            </a>
+                        @elseif($post->status === 'pending')
+                            <div class="p-2.5 rounded-3 bg-surface-2 border border-warning border-opacity-50 text-warning small text-center mb-1">
+                                Bài viết đang trong hàng đợi kiểm duyệt của Ban biên tập.
+                            </div>
+
+                            <button
+                                type="submit"
+                                form="edit-post-form"
+                                name="action"
+                                value="draft"
+                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-draft"
+                            >
+                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Lưu thay đổi bài viết</span>
+                            </button>
+
+                            <a
+                                href="{{ route('posts.stats') }}"
+                                class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
+                            >
+                                Quay lại danh sách
+                            </a>
+                        @else
+                            <button
+                                type="submit"
+                                form="edit-post-form"
+                                name="action"
+                                value="draft"
+                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-draft"
+                            >
+                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Lưu thay đổi bài viết</span>
+                            </button>
+
+                            <a
+                                href="{{ route('posts.stats') }}"
+                                class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
+                            >
+                                Quay lại danh sách
+                            </a>
                         @endif
 
                         <!-- Delete Button Form -->
@@ -559,39 +676,12 @@
                     @enderror
                 </div>
 
-                <!-- Tags Selection -->
-                <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                    <label class="label-uppercase text-theme mb-1 d-block">
-                        Thẻ bài viết (Tags)
-                    </label>
-                    <p class="small text-theme-muted mb-3" style="font-size: 12px;">Gắn các thẻ chủ đề liên quan:</p>
-
-                    @php
-                        $currentTagIds = $post->tags->pluck('id')->all();
-                        $selectedTags = old('tags', $currentTagIds);
-                    @endphp
-
-                    <div class="d-flex flex-wrap gap-1.5 overflow-y-auto no-scrollbar" style="max-height: 190px;">
-                        @foreach ($tags as $tag)
-                            <input
-                                type="checkbox"
-                                class="btn-check"
-                                id="tag-{{ $tag->id }}"
-                                name="tags[]"
-                                value="{{ $tag->id }}"
-                                form="edit-post-form"
-                                autocomplete="off"
-                                @checked(in_array($tag->id, (array)$selectedTags))
-                            >
-                            <label class="btn btn-sm btn-outline-theme rounded-pill py-1 px-2.5 small" for="tag-{{ $tag->id }}" style="font-size: 12px;">
-                                #{{ $tag->name }}
-                            </label>
-                        @endforeach
-                    </div>
-                    @error('tags')
-                        <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
-                    @enderror
-                </div>
+                <!-- Tags Selection (Dynamic Tag Selector) -->
+                @php
+                    $currentTagIds = $post->tags->pluck('id')->all();
+                    $selectedTags = old('tags', $currentTagIds);
+                @endphp
+                <x-post-tag-selector :tags="$tags" :selected-tags="$selectedTags" form-id="edit-post-form" />
             </div>
         </div>
     </div>
@@ -887,6 +977,13 @@
     </div>
 
 <script>
+let isDirty = false;
+let isSubmitting = false;
+
+window.__postEditorSetDirty = function() {
+    isDirty = true;
+};
+
 function previewThumbnail(event) {
     const input = event.target;
     if (input.files && input.files[0]) {
@@ -899,9 +996,93 @@ function previewThumbnail(event) {
             if (currentWrapper) {
                 currentWrapper.style.opacity = '0.35';
             }
+            isDirty = true;
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('edit-post-form');
+    if (!form) return;
+
+    // Track input dirty state
+    ['title', 'excerpt', 'category_id'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => { isDirty = true; });
+            el.addEventListener('change', () => { isDirty = true; });
+        }
+    });
+
+    // Warn on leaving if dirty
+    window.addEventListener('beforeunload', function(e) {
+        if (isDirty && !isSubmitting) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    // Cancel action buttons confirmation
+    document.querySelectorAll('.btn-cancel-action').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            if (isDirty && !isSubmitting) {
+                if (!confirm('Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này?')) {
+                    e.preventDefault();
+                }
+            }
+        });
+    });
+
+    // Remember which button/action was clicked
+    let lastClickedAction = 'draft';
+
+    document.querySelectorAll('button[name="action"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            lastClickedAction = this.value || 'draft';
+        });
+    });
+
+    // Handle form submit with double-click prevention & loading states
+    form.addEventListener('submit', function(e) {
+        if (isSubmitting) {
+            e.preventDefault();
+            return;
+        }
+
+        isSubmitting = true;
+
+        // Ensure an action input is sent with the form if not already present
+        let actionInput = form.querySelector('input[name="action"][type="hidden"]');
+        if (!actionInput) {
+            actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            form.appendChild(actionInput);
+        }
+        actionInput.value = lastClickedAction;
+
+        // Apply loading indicator to buttons
+        const allSubmitBtns = document.querySelectorAll('button[type="submit"][form="edit-post-form"], #edit-post-form button[type="submit"]');
+        allSubmitBtns.forEach(btn => {
+            btn.disabled = true;
+
+            const isSubmitAction = (btn.value === 'submit' || (lastClickedAction === 'submit' && btn.classList.contains('btn-action-submit')));
+            const isDraftAction = (btn.value === 'draft' || (lastClickedAction === 'draft' && btn.classList.contains('btn-action-draft')));
+
+            if (isSubmitAction && lastClickedAction === 'submit') {
+                btn.innerHTML = `
+                    <span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true" style="width: 13px; height: 13px;"></span>
+                    <span>Đang gửi duyệt...</span>
+                `;
+            } else if (isDraftAction && lastClickedAction === 'draft') {
+                btn.innerHTML = `
+                    <span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true" style="width: 13px; height: 13px;"></span>
+                    <span>Đang lưu...</span>
+                `;
+            }
+        });
+    });
+});
 </script>
 @endsection

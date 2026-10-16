@@ -143,6 +143,15 @@
                         </svg>
                         <span class="sidebar-label small">Chuyên mục</span>
                     </a>
+                    <a href="{{ route('admin.tags.index') }}"
+                       class="d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}"
+                       title="Quản lý thẻ bài viết"
+                       aria-label="Quản lý thẻ bài viết">
+                        <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                        </svg>
+                        <span class="sidebar-label small">Thẻ (Tags)</span>
+                    </a>
                     <a href="{{ route('admin.comments.index') }}"
                        class="d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none {{ request()->routeIs('admin.comments.*') ? 'active' : '' }}"
                        title="Quản lý bình luận"

@@ -38,6 +38,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Category CRUD
     Route::resource('categories', CategoryController::class);
 
+    // Tag CRUD
+    Route::resource('tags', App\Http\Controllers\Admin\TagController::class)->except(['show']);
+
     // Post moderation
     Route::get('/posts', [App\Http\Controllers\Admin\PostController::class, 'index'])->name('posts.index');
     Route::get('/posts/{post}', [App\Http\Controllers\Admin\PostController::class, 'show'])->name('posts.show');
@@ -66,6 +69,8 @@ Route::middleware(['auth', 'role:author,admin'])->group(function () {
     Route::match(['put', 'patch'], '/posts/{post}', [PostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
     Route::post('/posts/{post}/submit', [PostController::class, 'submit'])->name('posts.submit');
+    Route::post('/tags', [App\Http\Controllers\TagController::class, 'store'])->name('tags.store');
+    Route::get('/tags/search', [App\Http\Controllers\TagController::class, 'search'])->name('tags.search');
 });
 
 // =============================================================================
