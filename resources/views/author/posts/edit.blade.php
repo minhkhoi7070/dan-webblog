@@ -108,39 +108,8 @@
         </div>
     @endif
 
-    <!-- Pending Notice -->
-    @if($post->status === 'pending')
-        <div class="alert alert-warning mb-4 shadow-xs border border-warning border-opacity-25 rounded-3" role="alert">
-            <div class="d-flex align-items-center gap-2">
-                <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span class="small fw-medium"><strong>Đang chờ Admin duyệt:</strong> Bài viết đã được gửi đến Admin để kiểm duyệt. Bài chỉ hiển thị công khai sau khi được phê duyệt.</span>
-            </div>
-        </div>
-    @endif
-
-    <!-- Rejection Alert / Resubmit Guidance -->
-    @if($post->status === 'rejected')
-        <div class="alert alert-danger mb-4 shadow-xs border border-danger border-opacity-25 rounded-3" role="alert">
-            <div class="d-flex align-items-start gap-2.5">
-                <svg style="width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <div class="w-100">
-                    <h3 class="h6 fw-bold mb-1">Bài viết bị từ chối / Yêu cầu chỉnh sửa</h3>
-                    @if($post->rejection_reason)
-                        <div class="p-2.5 my-2 rounded-2 bg-dark bg-opacity-25 border border-danger border-opacity-25 small font-monospace">
-                            <strong>Lý do từ Ban biên tập:</strong> {{ $post->rejection_reason }}
-                        </div>
-                    @endif
-                    <p class="small mb-0">
-                        Vui lòng rà soát lại tiêu đề, tóm tắt và nội dung bài viết theo tiêu chuẩn cộng đồng, sau đó nhấn <strong>"Gửi lại xét duyệt (Resubmit)"</strong> ở góc phải để gửi lại cho Ban biên tập.
-                    </p>
-                </div>
-            </div>
-        </div>
-    @endif
+    <!-- Redesigned Status Banner Component -->
+    <x-post-status-banner :post="$post" />
 
     <!-- Error Summary Alert -->
     @if ($errors->any())
@@ -624,57 +593,8 @@
                     @enderror
                 </div>
 
-                <!-- Thumbnail Upload & Current Image Preview -->
-                <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                    <label class="label-uppercase text-theme mb-2 d-block">
-                        Ảnh bìa bài viết (Thumbnail)
-                    </label>
-
-                    @if($post->thumbnail)
-                        <div id="current-thumbnail-wrapper" class="mb-3">
-                            <p class="small text-theme-muted mb-1" style="font-size: 11px;">Ảnh hiện tại:</p>
-                            <div class="rounded-3 overflow-hidden border border-theme">
-                                <img
-                                    src="{{ str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset($post->thumbnail) }}"
-                                    alt="{{ $post->title }}"
-                                    class="img-fluid w-100"
-                                    style="max-height: 140px; object-fit: cover;"
-                                >
-                            </div>
-                        </div>
-                    @endif
-
-                    <div
-                        id="drop-zone"
-                        class="border border-2 border-dashed border-theme rounded-3 p-3 text-center position-relative bg-surface-2 transition-colors"
-                        style="cursor: pointer;"
-                    >
-                        <input
-                            type="file"
-                            name="thumbnail"
-                            id="thumbnail"
-                            form="edit-post-form"
-                            accept="image/jpeg,image/png,image/webp,image/jpg"
-                            class="position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer"
-                            onchange="previewThumbnail(event)"
-                        >
-                        <div id="upload-placeholder" class="py-2">
-                            <svg class="mx-auto mb-1 text-theme-muted" style="width: 26px; height: 26px;" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                            <p class="small text-theme fw-medium mb-1">Tải ảnh mới để thay thế</p>
-                            <p class="small text-theme-muted mb-0" style="font-size: 11px;">JPG, PNG, WEBP tối đa 2MB</p>
-                        </div>
-
-                        <div id="preview-container" class="d-none">
-                            <img id="image-preview" src="#" alt="Thumbnail preview" class="img-fluid rounded-3 mb-2" style="max-height: 140px; object-fit: cover;">
-                            <p class="small mb-0 text-accent" style="font-size: 11px;">Bấm để đổi ảnh khác</p>
-                        </div>
-                    </div>
-                    @error('thumbnail')
-                        <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
-                    @enderror
-                </div>
+                <!-- Thumbnail Upload & Management -->
+                <x-thumbnail-uploader :current-thumbnail="$post->thumbnail" form-id="edit-post-form" />
 
                 <!-- Tags Selection (Dynamic Tag Selector) -->
                 @php
@@ -712,6 +632,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Chỉnh Sửa Thuộc Tính Hình Ảnh & ALT -->
+    <x-editor-image-modal />
 
     <!-- Modal Hướng Dẫn Phím Tắt -->
     <div class="modal fade" id="editor-shortcuts-modal" tabindex="-1" aria-labelledby="editorShortcutsModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
@@ -983,24 +906,6 @@ let isSubmitting = false;
 window.__postEditorSetDirty = function() {
     isDirty = true;
 };
-
-function previewThumbnail(event) {
-    const input = event.target;
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('image-preview').src = e.target.result;
-            document.getElementById('upload-placeholder').classList.add('d-none');
-            document.getElementById('preview-container').classList.remove('d-none');
-            const currentWrapper = document.getElementById('current-thumbnail-wrapper');
-            if (currentWrapper) {
-                currentWrapper.style.opacity = '0.35';
-            }
-            isDirty = true;
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('edit-post-form');

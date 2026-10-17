@@ -192,20 +192,22 @@ style="margin-top: -4px;"
                     <x-avatar :user="Auth::user()" size="sm" />
 
                     <div class="sidebar-account__meta sidebar-label">
-                        <div class="sidebar-account__name-row">
-                            <span class="sidebar-account__name text-truncate">
-                                {{ Auth::user()->name }}
+                        <div class="sidebar-account__name" title="{{ Auth::user()->name }}">
+                            {{ Auth::user()->name }}
+                        </div>
+
+                        <div class="sidebar-account__sub-row">
+                            <span class="sidebar-account__username text-truncate" title="{{ '@' . (Auth::user()->username ?? strtolower(str_replace(' ', '', Auth::user()->name))) }}">
+                                {{ '@' . (Auth::user()->username ?? strtolower(str_replace(' ', '', Auth::user()->name))) }}
                             </span>
 
                             @if(Auth::user()->role === 'admin')
-                                <span class="sidebar-account__badge">Admin</span>
+                                <span class="sidebar-account__badge sidebar-account__badge--admin">Admin</span>
                             @elseif(Auth::user()->role === 'author')
-                                <span class="sidebar-account__badge">Tác giả</span>
+                                <span class="sidebar-account__badge sidebar-account__badge--author">Tác giả</span>
+                            @elseif(Auth::user()->role === 'viewer')
+                                <span class="sidebar-account__badge sidebar-account__badge--viewer">Độc giả</span>
                             @endif
-                        </div>
-
-                        <div class="sidebar-account__username text-truncate">
-                            {{ '@' . (Auth::user()->username ?? strtolower(str_replace(' ', '', Auth::user()->name))) }}
                         </div>
                     </div>
                 </a>

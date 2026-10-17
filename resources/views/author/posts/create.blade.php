@@ -413,41 +413,7 @@
                     </div>
 
                     <!-- Thumbnail Upload (Featured Image) -->
-                    <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                        <label class="label-uppercase text-theme mb-2 d-block">
-                            Ảnh bìa đại diện (Thumbnail)
-                        </label>
-
-                        <div
-                            id="drop-zone"
-                            class="border border-2 border-dashed border-theme rounded-3 p-3 text-center position-relative bg-surface-2 transition-colors"
-                            style="cursor: pointer;"
-                        >
-                            <input
-                                type="file"
-                                name="thumbnail"
-                                id="thumbnail"
-                                accept="image/jpeg,image/png,image/webp,image/jpg"
-                                class="position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer"
-                                onchange="previewThumbnail(event)"
-                            >
-                            <div id="upload-placeholder" class="py-3">
-                                <svg class="mx-auto mb-2 text-theme-muted" style="width: 28px; height: 28px;" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                                <p class="small text-theme fw-medium mb-1">Tải ảnh bìa lên bài viết</p>
-                                <p class="small text-theme-muted mb-0" style="font-size: 11px;">JPG, PNG, WEBP tối đa 2MB</p>
-                            </div>
-
-                            <div id="preview-container" class="d-none">
-                                <img id="image-preview" src="#" alt="Thumbnail preview" class="img-fluid rounded-3 mb-2" style="max-height: 160px; object-fit: cover;">
-                                <p class="small mb-0 text-accent" style="font-size: 11px;">Bấm để đổi ảnh khác</p>
-                            </div>
-                        </div>
-                        @error('thumbnail')
-                            <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
+                    <x-thumbnail-uploader form-id="create-post-form" />
 
                     <!-- Tags Selection (Dynamic Tag Selector) -->
                     <x-post-tag-selector :tags="$tags" :selected-tags="old('tags', [])" form-id="create-post-form" />
@@ -481,6 +447,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Chỉnh Sửa Thuộc Tính Hình Ảnh & ALT -->
+    <x-editor-image-modal />
 
     <!-- Modal Hướng Dẫn Phím Tắt -->
     <div class="modal fade" id="editor-shortcuts-modal" tabindex="-1" aria-labelledby="editorShortcutsModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
@@ -752,20 +721,6 @@ let isSubmitting = false;
 window.__postEditorSetDirty = function() {
     isDirty = true;
 };
-
-function previewThumbnail(event) {
-    const input = event.target;
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('image-preview').src = e.target.result;
-            document.getElementById('upload-placeholder').classList.add('d-none');
-            document.getElementById('preview-container').classList.remove('d-none');
-            isDirty = true;
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('create-post-form');

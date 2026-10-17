@@ -53,6 +53,7 @@ class StorePostRequest extends FormRequest
             'content' => ['required_without:body', 'nullable', 'string'],
             'body' => ['required_without:content', 'nullable', 'string'],
             'thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_thumbnail' => ['nullable', 'boolean'],
             'tags' => ['nullable', 'array', 'max:10'],
             'tags.*' => ['integer', 'exists:tags,id'],
             'action' => ['nullable', 'string', 'in:draft,submit'],

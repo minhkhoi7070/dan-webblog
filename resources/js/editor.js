@@ -284,15 +284,209 @@ export const CustomShortcuts = Extension.create({
             'Ctrl-Alt-d': () => this.editor.commands.toggleStrike(),
             'Mod-Shift-x': () => this.editor.commands.toggleStrike(),
             // Alignment
-            'Mod-Alt-l': () => this.editor.commands.setTextAlign('left'),
-            'Ctrl-Alt-l': () => this.editor.commands.setTextAlign('left'),
-            'Mod-Alt-e': () => this.editor.commands.setTextAlign('center'),
-            'Ctrl-Alt-e': () => this.editor.commands.setTextAlign('center'),
-            'Mod-Alt-r': () => this.editor.commands.setTextAlign('right'),
-            'Ctrl-Alt-r': () => this.editor.commands.setTextAlign('right'),
+            'Mod-Alt-l': () => {
+                if (this.editor.isActive('image')) {
+                    return this.editor.commands.updateAttributes('image', { alignment: 'left' });
+                }
+                return this.editor.commands.setTextAlign('left');
+            },
+            'Ctrl-Alt-l': () => {
+                if (this.editor.isActive('image')) {
+                    return this.editor.commands.updateAttributes('image', { alignment: 'left' });
+                }
+                return this.editor.commands.setTextAlign('left');
+            },
+            'Mod-Alt-e': () => {
+                if (this.editor.isActive('image')) {
+                    return this.editor.commands.updateAttributes('image', { alignment: 'center' });
+                }
+                return this.editor.commands.setTextAlign('center');
+            },
+            'Ctrl-Alt-e': () => {
+                if (this.editor.isActive('image')) {
+                    return this.editor.commands.updateAttributes('image', { alignment: 'center' });
+                }
+                return this.editor.commands.setTextAlign('center');
+            },
+            'Mod-Alt-r': () => {
+                if (this.editor.isActive('image')) {
+                    return this.editor.commands.updateAttributes('image', { alignment: 'right' });
+                }
+                return this.editor.commands.setTextAlign('right');
+            },
+            'Ctrl-Alt-r': () => {
+                if (this.editor.isActive('image')) {
+                    return this.editor.commands.updateAttributes('image', { alignment: 'right' });
+                }
+                return this.editor.commands.setTextAlign('right');
+            },
             'Mod-Alt-j': () => this.editor.commands.setTextAlign('justify'),
             'Ctrl-Alt-j': () => this.editor.commands.setTextAlign('justify'),
         };
+    },
+});
+
+/**
+ * Custom Image Extension supporting Alignment & Caption (Figure/Figcaption HTML5)
+ */
+export const CustomImage = Image.extend({
+    name: 'image',
+
+    addAttributes() {
+        return {
+            ...this.parent?.(),
+            alignment: {
+                default: 'center',
+                parseHTML: (element) => {
+                    const figure = element.closest('figure');
+                    if (figure && figure.getAttribute('data-align')) {
+                        return figure.getAttribute('data-align');
+                    }
+                    if (element.getAttribute('data-align')) {
+                        return element.getAttribute('data-align');
+                    }
+                    if (element.classList.contains('align-left') || (figure && figure.classList.contains('align-left'))) {
+                        return 'left';
+                    }
+                    if (element.classList.contains('align-right') || (figure && figure.classList.contains('align-right'))) {
+                        return 'right';
+                    }
+                    return 'center';
+                },
+                renderHTML: (attributes) => {
+                    const align = attributes.alignment || 'center';
+                    return {
+                        'data-align': align,
+                        class: `align-${align}`,
+                    };
+                },
+            },
+            caption: {
+                default: null,
+                parseHTML: (element) => {
+                    const figure = element.closest('figure');
+                    if (figure) {
+                        const figcaption = figure.querySelector('figcaption');
+                        if (figcaption) {
+                            return figcaption.textContent?.trim() || null;
+                        }
+                        if (figure.getAttribute('data-caption')) {
+                            return figure.getAttribute('data-caption');
+                        }
+                    }
+                    return element.getAttribute('data-caption') || null;
+                },
+                renderHTML: (attributes) => {
+                    if (!attributes.caption) {
+                        return {};
+                    }
+                    return {
+                        'data-caption': attributes.caption,
+                    };
+                },
+            },
+        };
+    },
+
+    parseHTML() {
+        return [
+            {
+                tag: 'figure.editor-image-figure',
+                getAttrs: (element) => {
+                    const img = element.querySelector('img');
+                    if (!img) return false;
+                    const figcaption = element.querySelector('figcaption');
+                    let align = element.getAttribute('data-align');
+                    if (!align) {
+                        if (element.classList.contains('align-left')) align = 'left';
+                        else if (element.classList.contains('align-right')) align = 'right';
+                        else align = 'center';
+                    }
+                    return {
+                        src: img.getAttribute('src'),
+                        alt: img.getAttribute('alt'),
+                        title: img.getAttribute('title'),
+                        alignment: align || 'center',
+                        caption: figcaption ? figcaption.textContent?.trim() : null,
+                    };
+                },
+            },
+            {
+                tag: 'figure',
+                getAttrs: (element) => {
+                    const img = element.querySelector('img');
+                    if (!img) return false;
+                    const figcaption = element.querySelector('figcaption');
+                    let align = element.getAttribute('data-align');
+                    if (!align) {
+                        if (element.classList.contains('align-left')) align = 'left';
+                        else if (element.classList.contains('align-right')) align = 'right';
+                        else align = 'center';
+                    }
+                    return {
+                        src: img.getAttribute('src'),
+                        alt: img.getAttribute('alt'),
+                        title: img.getAttribute('title'),
+                        alignment: align || 'center',
+                        caption: figcaption ? figcaption.textContent?.trim() : null,
+                    };
+                },
+            },
+            {
+                tag: 'img[src]',
+                getAttrs: (element) => {
+                    let align = element.getAttribute('data-align');
+                    if (!align) {
+                        if (element.classList.contains('align-left')) align = 'left';
+                        else if (element.classList.contains('align-right')) align = 'right';
+                        else align = 'center';
+                    }
+                    return {
+                        src: element.getAttribute('src'),
+                        alt: element.getAttribute('alt'),
+                        title: element.getAttribute('title'),
+                        alignment: align || 'center',
+                        caption: element.getAttribute('data-caption') || null,
+                    };
+                },
+            },
+        ];
+    },
+
+    renderHTML({ HTMLAttributes }) {
+        const align = HTMLAttributes['data-align'] || HTMLAttributes.alignment || 'center';
+        const caption = HTMLAttributes['data-caption'] || HTMLAttributes.caption || null;
+
+        const imgAttrs = {
+            src: HTMLAttributes.src,
+            alt: HTMLAttributes.alt || '',
+            title: HTMLAttributes.title || '',
+            loading: 'lazy',
+            class: `editor-content-image align-${align}`,
+            'data-align': align,
+        };
+        if (caption) {
+            imgAttrs['data-caption'] = caption;
+            return [
+                'figure',
+                {
+                    class: `editor-image-figure align-${align}`,
+                    'data-align': align,
+                    'data-caption': caption,
+                },
+                ['img', imgAttrs],
+                ['figcaption', { class: 'editor-image-caption' }, caption],
+            ];
+        }
+
+        return [
+            'figure',
+            {
+                class: `editor-image-figure align-${align}`,
+                'data-align': align,
+            },
+            ['img', imgAttrs],
+        ];
     },
 });
 
@@ -400,13 +594,9 @@ export function initPostEditor() {
                 },
                 validate: (href) => /^(https?:\/\/|\/|#|mailto:)/i.test(href),
             }),
-            Image.configure({
+            CustomImage.configure({
                 inline: false,
                 allowBase64: false,
-                HTMLAttributes: {
-                    class: 'editor-content-image',
-                    loading: 'lazy',
-                },
             }),
         ],
         content: initialContent,
@@ -438,9 +628,11 @@ export function initPostEditor() {
             textarea.value = editor.getHTML();
             updateEditorStats(editor);
             updateToolbarState(editor);
+            updateFloatingImageToolbar(editor);
         },
         onSelectionUpdate: ({ editor }) => {
             updateToolbarState(editor);
+            updateFloatingImageToolbar(editor);
         },
     });
 
@@ -454,6 +646,8 @@ export function initPostEditor() {
 
     setupToolbar(editor);
     setupLinkModal(editor);
+    setupImageAltModal(editor);
+    setupFloatingImageToolbar(editor);
     setupShortcutsModal();
     setupImageUpload(editor);
     updateEditorStats(editor);
@@ -529,10 +723,10 @@ function updateToolbarState(editor) {
         'bullet-list': () => editor.isActive('bulletList'),
         'ordered-list': () => editor.isActive('orderedList'),
         link: () => editor.isActive('link'),
-        'align-left': () => editor.isActive({ textAlign: 'left' }),
-        'align-center': () => editor.isActive({ textAlign: 'center' }),
-        'align-right': () => editor.isActive({ textAlign: 'right' }),
-        'align-justify': () => editor.isActive({ textAlign: 'justify' }),
+        'align-left': () => editor.isActive('image') ? (editor.getAttributes('image').alignment === 'left') : editor.isActive({ textAlign: 'left' }),
+        'align-center': () => editor.isActive('image') ? ((editor.getAttributes('image').alignment || 'center') === 'center') : editor.isActive({ textAlign: 'center' }),
+        'align-right': () => editor.isActive('image') ? (editor.getAttributes('image').alignment === 'right') : editor.isActive({ textAlign: 'right' }),
+        'align-justify': () => editor.isActive('image') ? false : editor.isActive({ textAlign: 'justify' }),
     };
 
     document.querySelectorAll('[data-editor-action]').forEach((btn) => {
@@ -655,16 +849,37 @@ function setupToolbar(editor) {
                     editor.chain().focus().toggleOrderedList().run();
                     break;
                 case 'align-left':
-                    editor.chain().focus().setTextAlign('left').run();
+                    if (editor.isActive('image')) {
+                        editor.chain().focus().updateAttributes('image', { alignment: 'left' }).run();
+                    } else {
+                        editor.chain().focus().setTextAlign('left').run();
+                    }
+                    updateToolbarState(editor);
+                    updateFloatingImageToolbar(editor);
                     break;
                 case 'align-center':
-                    editor.chain().focus().setTextAlign('center').run();
+                    if (editor.isActive('image')) {
+                        editor.chain().focus().updateAttributes('image', { alignment: 'center' }).run();
+                    } else {
+                        editor.chain().focus().setTextAlign('center').run();
+                    }
+                    updateToolbarState(editor);
+                    updateFloatingImageToolbar(editor);
                     break;
                 case 'align-right':
-                    editor.chain().focus().setTextAlign('right').run();
+                    if (editor.isActive('image')) {
+                        editor.chain().focus().updateAttributes('image', { alignment: 'right' }).run();
+                    } else {
+                        editor.chain().focus().setTextAlign('right').run();
+                    }
+                    updateToolbarState(editor);
+                    updateFloatingImageToolbar(editor);
                     break;
                 case 'align-justify':
-                    editor.chain().focus().setTextAlign('justify').run();
+                    if (!editor.isActive('image')) {
+                        editor.chain().focus().setTextAlign('justify').run();
+                    }
+                    updateToolbarState(editor);
                     break;
                 case 'indent':
                     // Genuine structural list nesting if in list, otherwise block indent
@@ -1015,13 +1230,15 @@ function setupImageUpload(editor) {
             const data = await response.json();
 
             if (response.ok && data.url) {
-                const altText = file.name.replace(/\.[^/.]+$/, '').trim() || 'Hình ảnh bài viết';
+                // Insert with default center alignment and null caption
                 editor.chain().focus().setImage({
                     src: data.url,
-                    alt: altText,
-                    title: altText,
+                    alt: '',
+                    title: '',
+                    alignment: 'center',
+                    caption: null,
                 }).run();
-                showEditorToast('Đã tải lên và chèn hình ảnh thành công!', 'success');
+                showEditorToast('Đã tải lên và chèn hình ảnh thành công! Bạn có thể chọn ảnh để căn chỉnh hoặc nhấp đúp để thêm chú thích.', 'success');
             } else {
                 const errMsg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Tải ảnh thất bại.');
                 showEditorToast(errMsg, 'danger');
@@ -1036,6 +1253,367 @@ function setupImageUpload(editor) {
             fileInput.value = '';
         }
     });
+}
+
+let floatingImageToolbarEl = null;
+
+export function setupFloatingImageToolbar(editor) {
+    if (!floatingImageToolbarEl) {
+        floatingImageToolbarEl = document.createElement('div');
+        floatingImageToolbarEl.id = 'editor-image-floating-toolbar';
+        floatingImageToolbarEl.className = 'editor-image-floating-bar d-none';
+        floatingImageToolbarEl.innerHTML = `
+            <div class="d-flex align-items-center gap-1 p-1 rounded-pill shadow-lg border border-theme bg-theme-surface text-theme">
+                <button type="button" class="btn btn-sm btn-link p-1 px-2 rounded-pill hover-bg-surface-2" data-float-align="left" title="Căn trái">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h14"/></svg>
+                </button>
+                <button type="button" class="btn btn-sm btn-link p-1 px-2 rounded-pill hover-bg-surface-2" data-float-align="center" title="Căn giữa (Mặc định)">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10M5 18h14"/></svg>
+                </button>
+                <button type="button" class="btn btn-sm btn-link p-1 px-2 rounded-pill hover-bg-surface-2" data-float-align="right" title="Căn phải">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M10 12h10M6 18h14"/></svg>
+                </button>
+                <div class="vr my-1 border-theme opacity-50" style="height: 16px;"></div>
+                <button type="button" class="btn btn-sm btn-link p-1 px-2.5 rounded-pill hover-bg-surface-2 d-flex align-items-center gap-1 small text-decoration-none" data-float-action="edit" title="Chỉnh sửa chú thích & ALT">
+                    <svg style="width: 13px; height: 13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    <span style="font-size: 11px;">Chú thích & ALT</span>
+                </button>
+                <div class="vr my-1 border-theme opacity-50" style="height: 16px;"></div>
+                <button type="button" class="btn btn-sm btn-link text-danger p-1 px-2 rounded-pill hover-bg-surface-2" data-float-action="delete" title="Xóa ảnh">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+            </div>
+        `;
+        document.body.appendChild(floatingImageToolbarEl);
+
+        floatingImageToolbarEl.querySelectorAll('[data-float-align]').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const align = btn.getAttribute('data-float-align');
+                editor.chain().focus().updateAttributes('image', { alignment: align }).run();
+                updateToolbarState(editor);
+                updateFloatingImageToolbar(editor);
+            });
+        });
+
+        const editBtn = floatingImageToolbarEl.querySelector('[data-float-action="edit"]');
+        if (editBtn) {
+            editBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const selectedDom = editor.view.dom.querySelector('.ProseMirror-selectednode');
+                const img = selectedDom ? (selectedDom.tagName === 'IMG' ? selectedDom : selectedDom.querySelector('img')) : null;
+                if (img && window.__openEditorImageModal) {
+                    window.__openEditorImageModal(img);
+                }
+            });
+        }
+
+        const deleteBtn = floatingImageToolbarEl.querySelector('[data-float-action="delete"]');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                editor.chain().focus().deleteSelection().run();
+                floatingImageToolbarEl.classList.add('d-none');
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            if (floatingImageToolbarEl && !floatingImageToolbarEl.classList.contains('d-none')) {
+                updateFloatingImageToolbar(editor);
+            }
+        }, { passive: true });
+
+        window.addEventListener('resize', () => {
+            if (floatingImageToolbarEl && !floatingImageToolbarEl.classList.contains('d-none')) {
+                updateFloatingImageToolbar(editor);
+            }
+        }, { passive: true });
+    }
+}
+
+export function updateFloatingImageToolbar(editor) {
+    if (!floatingImageToolbarEl) return;
+
+    if (!editor.isActive('image')) {
+        floatingImageToolbarEl.classList.add('d-none');
+        return;
+    }
+
+    const selectedDom = editor.view.dom.querySelector('.ProseMirror-selectednode')
+        || (editor.state.selection.node?.type?.name === 'image' ? editor.view.nodeDOM(editor.state.selection.from) : null);
+
+    if (!selectedDom) {
+        floatingImageToolbarEl.classList.add('d-none');
+        return;
+    }
+
+    const rect = selectedDom.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) {
+        floatingImageToolbarEl.classList.add('d-none');
+        return;
+    }
+
+    floatingImageToolbarEl.classList.remove('d-none');
+    const barWidth = floatingImageToolbarEl.offsetWidth || 260;
+    const barHeight = floatingImageToolbarEl.offsetHeight || 38;
+
+    const left = Math.max(12, Math.min(window.innerWidth - barWidth - 12, rect.left + (rect.width - barWidth) / 2));
+    let top = rect.top - barHeight - 8 + window.scrollY;
+    if (top < window.scrollY + 10) {
+        top = rect.bottom + 8 + window.scrollY;
+    }
+
+    floatingImageToolbarEl.style.left = `${left}px`;
+    floatingImageToolbarEl.style.top = `${top}px`;
+
+    const attrs = editor.getAttributes('image');
+    const currentAlign = attrs.alignment || 'center';
+    floatingImageToolbarEl.querySelectorAll('[data-float-align]').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-float-align') === currentAlign);
+    });
+}
+
+function setupImageAltModal(editor) {
+    const modalEl = document.getElementById('editor-image-modal');
+    if (!modalEl) return;
+
+    if (modalEl.parentElement !== document.body) {
+        document.body.appendChild(modalEl);
+    }
+
+    let currentEditingImg = null;
+    let currentEditingPos = null;
+
+    modalEl.addEventListener('hidden.bs.modal', () => {
+        document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+        currentEditingImg = null;
+        currentEditingPos = null;
+    });
+
+    const alignButtons = modalEl.querySelectorAll('[data-editor-image-align]');
+    const alignInput = document.getElementById('editor-image-align-input');
+    const captionInput = document.getElementById('editor-image-caption');
+    const altInput = document.getElementById('editor-image-alt');
+    const titleInput = document.getElementById('editor-image-title');
+    const previewEl = document.getElementById('editor-image-preview');
+    const filenameEl = document.getElementById('editor-image-filename');
+    const srcEl = document.getElementById('editor-image-src');
+    const saveBtn = document.getElementById('editor-image-save-btn');
+    const formEl = document.getElementById('editor-image-form');
+
+    function setModalAlign(align) {
+        if (!['left', 'center', 'right'].includes(align)) align = 'center';
+        if (alignInput) alignInput.value = align;
+        alignButtons.forEach((btn) => {
+            btn.classList.toggle('active', btn.getAttribute('data-editor-image-align') === align);
+        });
+    }
+
+    alignButtons.forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            setModalAlign(btn.getAttribute('data-editor-image-align'));
+        });
+    });
+
+    function openImageModal(img) {
+        if (!img) return;
+        if (modalEl.classList.contains('show')) return;
+
+        currentEditingImg = img;
+        currentEditingPos = null;
+
+        // Resolve exact ProseMirror document position
+        try {
+            const pos = editor.view.posAtDOM(img, 0);
+            if (pos !== undefined && pos !== null) {
+                const nodeAt = editor.state.doc.nodeAt(pos);
+                if (nodeAt && nodeAt.type.name === 'image') {
+                    currentEditingPos = pos;
+                } else if (pos > 0) {
+                    const prevNode = editor.state.doc.nodeAt(pos - 1);
+                    if (prevNode && prevNode.type.name === 'image') {
+                        currentEditingPos = pos - 1;
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('posAtDOM resolution error:', e);
+        }
+
+        // Fallback scan if pos wasn't resolved by posAtDOM
+        if (currentEditingPos === null) {
+            const imgSrc = img.getAttribute('src');
+            editor.state.doc.descendants((node, pos) => {
+                if (node.type.name === 'image' && node.attrs.src === imgSrc) {
+                    if (currentEditingPos === null) {
+                        currentEditingPos = pos;
+                    }
+                }
+            });
+        }
+
+        const nodeAt = currentEditingPos !== null ? editor.state.doc.nodeAt(currentEditingPos) : null;
+        const currentAlt = nodeAt?.attrs?.alt ?? img.getAttribute('alt') ?? '';
+        const currentTitle = nodeAt?.attrs?.title ?? img.getAttribute('title') ?? '';
+        const currentAlign = nodeAt?.attrs?.alignment
+            ?? img.getAttribute('data-align')
+            ?? img.closest('figure')?.getAttribute('data-align')
+            ?? (img.classList.contains('align-left') ? 'left' : (img.classList.contains('align-right') ? 'right' : 'center'));
+        const currentCaption = nodeAt?.attrs?.caption
+            ?? img.getAttribute('data-caption')
+            ?? img.closest('figure')?.getAttribute('data-caption')
+            ?? img.closest('figure')?.querySelector('figcaption')?.textContent?.trim()
+            ?? '';
+
+        const src = img.getAttribute('src') || '';
+        const filename = src.split('/').pop() || 'Hình ảnh';
+
+        setModalAlign(currentAlign);
+        if (captionInput) captionInput.value = currentCaption;
+        if (altInput) altInput.value = currentAlt;
+        if (titleInput) titleInput.value = currentTitle;
+        if (previewEl) {
+            previewEl.src = src;
+            previewEl.alt = currentAlt;
+            previewEl.style.display = 'block';
+        }
+        if (filenameEl) filenameEl.textContent = filename;
+        if (srcEl) srcEl.textContent = src;
+
+        if (window.bootstrap && window.bootstrap.Modal) {
+            const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+            setTimeout(() => (captionInput ? captionInput.focus() : altInput?.focus()), 250);
+        }
+    }
+
+    // Expose openImageModal globally for floating toolbar
+    window.__openEditorImageModal = openImageModal;
+
+    function handleSave() {
+        if (!currentEditingImg) return;
+        const newAlt = (altInput?.value || '').trim();
+        const newTitle = (titleInput?.value || '').trim();
+        const newAlign = (alignInput?.value || 'center');
+        const newCaption = (captionInput?.value || '').trim();
+
+        // 1. Update attributes via TipTap API if pos is located
+        if (currentEditingPos !== null) {
+            try {
+                editor.chain()
+                    .focus()
+                    .setNodeSelection(currentEditingPos)
+                    .updateAttributes('image', {
+                        alt: newAlt,
+                        title: newTitle || (newAlt ? newAlt : null),
+                        alignment: newAlign,
+                        caption: newCaption || null,
+                    })
+                    .run();
+            } catch (err) {
+                console.warn('TipTap updateAttributes error:', err);
+            }
+        }
+
+        // 2. Also update DOM image and figure directly for immediate visual consistency
+        if (currentEditingImg) {
+            if (newAlt) currentEditingImg.setAttribute('alt', newAlt);
+            else currentEditingImg.removeAttribute('alt');
+
+            if (newTitle) currentEditingImg.setAttribute('title', newTitle);
+            else if (newAlt) currentEditingImg.setAttribute('title', newAlt);
+            else currentEditingImg.removeAttribute('title');
+
+            currentEditingImg.setAttribute('data-align', newAlign);
+            currentEditingImg.className = currentEditingImg.className.replace(/\balign-(left|center|right)\b/g, '').trim() + ` align-${newAlign}`;
+
+            if (newCaption) currentEditingImg.setAttribute('data-caption', newCaption);
+            else currentEditingImg.removeAttribute('data-caption');
+
+            const figure = currentEditingImg.closest('figure');
+            if (figure) {
+                figure.setAttribute('data-align', newAlign);
+                figure.className = figure.className.replace(/\balign-(left|center|right)\b/g, '').trim() + ` align-${newAlign}`;
+                let figcaption = figure.querySelector('figcaption');
+                if (newCaption) {
+                    if (!figcaption) {
+                        figcaption = document.createElement('figcaption');
+                        figcaption.className = 'editor-image-caption';
+                        figure.appendChild(figcaption);
+                    }
+                    figcaption.textContent = newCaption;
+                } else if (figcaption) {
+                    figcaption.remove();
+                }
+            }
+        }
+
+        // 3. Sync hidden textarea and mark form dirty
+        const textarea = document.getElementById('content');
+        if (textarea) {
+            textarea.value = editor.getHTML();
+        }
+        if (window.__postEditorSetDirty) {
+            window.__postEditorSetDirty();
+        }
+
+        closeModal();
+        updateToolbarState(editor);
+        updateFloatingImageToolbar(editor);
+        showEditorToast('Đã lưu căn chỉnh và chú thích hình ảnh thành công.', 'success');
+    }
+
+    function closeModal() {
+        if (window.bootstrap && window.bootstrap.Modal) {
+            const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.hide();
+        }
+    }
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleSave();
+        });
+    }
+
+    if (formEl) {
+        formEl.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleSave();
+        });
+    }
+
+    [captionInput, altInput, titleInput].forEach((input) => {
+        if (input) {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSave();
+                }
+            });
+        }
+    });
+
+    // Double-click listener on editor DOM
+    const editorEl = document.getElementById('tiptap-editor');
+    if (editorEl) {
+        editorEl.addEventListener('dblclick', (e) => {
+            const img = e.target.closest('img') || e.target.closest('figure')?.querySelector('img');
+            if (img) {
+                e.preventDefault();
+                e.stopPropagation();
+                openImageModal(img);
+            }
+        });
+    }
 }
 
 function showEditorToast(message, type = 'info') {

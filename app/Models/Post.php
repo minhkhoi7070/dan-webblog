@@ -64,8 +64,11 @@ class Post extends Model
     {
         static::deleting(function (Post $post) {
             if ($post->thumbnail && str_starts_with($post->thumbnail, 'storage/')) {
-                $oldPath = str_replace('storage/', '', $post->thumbnail);
-                Storage::disk('public')->delete($oldPath);
+                $isShared = static::where('thumbnail', $post->thumbnail)->where('id', '!=', $post->id)->exists();
+                if (! $isShared) {
+                    $oldPath = str_replace('storage/', '', $post->thumbnail);
+                    Storage::disk('public')->delete($oldPath);
+                }
             }
         });
     }

@@ -29,7 +29,7 @@ class PostContentService
             return false;
         }
 
-        return (bool) preg_match('/<\s*(p|h[1-6]|ul|ol|li|blockquote|div|table|img|a|strong|em|u|s|del|strike|mark|span|hr|pre|code)\b/i', $content);
+        return (bool) preg_match('/<\s*(p|h[1-6]|ul|ol|li|blockquote|div|table|img|a|strong|em|u|s|del|strike|mark|span|hr|pre|code|figure|figcaption)\b/i', $content);
     }
 
     /**
@@ -176,9 +176,24 @@ class PostContentService
                             if (! preg_match('/^(https?:\/\/|\/storage\/|\/images\/)/i', $src)) {
                                 $node->removeAttribute('src');
                             }
-                        } elseif (! in_array($attrName, ['alt', 'title', 'class', 'loading', 'width', 'height'], true)) {
+                        } elseif (! in_array($attrName, ['alt', 'title', 'class', 'loading', 'width', 'height', 'data-align', 'data-caption'], true)) {
                             $node->removeAttribute($attrName);
                         }
+                    } elseif ($tagName === 'figure') {
+                        if (! in_array($attrName, ['class', 'style', 'data-align', 'data-caption'], true)) {
+                            $node->removeAttribute($attrName);
+                        }
+                    } elseif ($tagName === 'figcaption') {
+                        if (! in_array($attrName, ['class', 'style'], true)) {
+                            $node->removeAttribute($attrName);
+                        }
+                    } elseif ($attrName === 'data-align') {
+                        $val = strtolower(trim($attr->value));
+                        if (! in_array($val, ['left', 'center', 'right'], true)) {
+                            $node->removeAttribute('data-align');
+                        }
+                    } elseif ($attrName === 'data-caption') {
+                        $node->setAttribute('data-caption', e(strip_tags($attr->value)));
                     } elseif ($attrName === 'style') {
                         $cleanStyle = static::sanitizeCssStyle($attr->value);
                         if ($cleanStyle !== null && $cleanStyle !== '') {
@@ -200,6 +215,22 @@ class PostContentService
                         $node->removeAttribute($attrName);
                     }
                 }
+            }
+
+            // Post-attribute normalization
+            if ($tagName === 'figure') {
+                $existingClass = $node->getAttribute('class');
+                if (! str_contains($existingClass, 'editor-image-figure')) {
+                    $existingClass = trim($existingClass.' editor-image-figure');
+                }
+                $align = $node->getAttribute('data-align');
+                if ($align && in_array($align, ['left', 'center', 'right'], true)) {
+                    if (! str_contains($existingClass, 'align-'.$align)) {
+                        $existingClass = preg_replace('/\balign-(left|center|right)\b/', '', $existingClass);
+                        $existingClass = trim($existingClass.' align-'.$align);
+                    }
+                }
+                $node->setAttribute('class', $existingClass);
             }
 
             // Post-attribute normalization
@@ -237,8 +268,16 @@ class PostContentService
 
                 $existingClass = $node->getAttribute('class');
                 if (! str_contains($existingClass, 'editor-content-image')) {
-                    $node->setAttribute('class', trim($existingClass.' editor-content-image'));
+                    $existingClass = trim($existingClass.' editor-content-image');
                 }
+                $align = $node->getAttribute('data-align');
+                if ($align && in_array($align, ['left', 'center', 'right'], true)) {
+                    if (! str_contains($existingClass, 'align-'.$align)) {
+                        $existingClass = preg_replace('/\balign-(left|center|right)\b/', '', $existingClass);
+                        $existingClass = trim($existingClass.' align-'.$align);
+                    }
+                }
+                $node->setAttribute('class', $existingClass);
                 $node->setAttribute('loading', 'lazy');
             }
         }

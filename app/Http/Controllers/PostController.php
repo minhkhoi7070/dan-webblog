@@ -286,14 +286,29 @@ class PostController extends Controller
     {
         Gate::authorize('update', $post);
 
+        $removeThumbnail = $request->boolean('remove_thumbnail');
+
         if ($request->hasFile('thumbnail')) {
-            // Delete old file if present
+            // Delete old file if present in storage and not shared by other posts
             if ($post->thumbnail && str_starts_with($post->thumbnail, 'storage/')) {
                 $oldPath = str_replace('storage/', '', $post->thumbnail);
-                Storage::disk('public')->delete($oldPath);
+                $isShared = Post::where('thumbnail', $post->thumbnail)->where('id', '!=', $post->id)->exists();
+                if (! $isShared) {
+                    Storage::disk('public')->delete($oldPath);
+                }
             }
             $path = $request->file('thumbnail')->store('thumbnails', 'public');
             $post->thumbnail = 'storage/'.$path;
+        } elseif ($removeThumbnail) {
+            // User explicitly removed the thumbnail
+            if ($post->thumbnail && str_starts_with($post->thumbnail, 'storage/')) {
+                $oldPath = str_replace('storage/', '', $post->thumbnail);
+                $isShared = Post::where('thumbnail', $post->thumbnail)->where('id', '!=', $post->id)->exists();
+                if (! $isShared) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $post->thumbnail = null;
         }
 
         $body = $request->input('body') ?? $request->input('content');
@@ -336,7 +351,10 @@ class PostController extends Controller
 
         if ($post->thumbnail && str_starts_with($post->thumbnail, 'storage/')) {
             $oldPath = str_replace('storage/', '', $post->thumbnail);
-            Storage::disk('public')->delete($oldPath);
+            $isShared = Post::where('thumbnail', $post->thumbnail)->where('id', '!=', $post->id)->exists();
+            if (! $isShared) {
+                Storage::disk('public')->delete($oldPath);
+            }
         }
 
         $post->delete();
@@ -390,6 +408,10 @@ class PostController extends Controller
 
         $statusFilter = $request->query('status');
         $search = $request->query('q');
+        $search = is_string($search) ? trim($search) : null;
+        if ($search === '') {
+            $search = null;
+        }
 
         $posts = (clone $query)
             ->with(['category', 'tags'])
