@@ -44,16 +44,18 @@ class ActivityController extends Controller
             ->take(10)
             ->get();
 
+        $user->loadCount(['comments', 'likedPosts', 'favoritePosts', 'following']);
+
         return view('activity.index', [
             'comments' => $comments,
             'likedPosts' => $likedPosts,
             'favoritedPosts' => $favoritedPosts,
             'following' => $following,
             'stats' => [
-                'comments_count' => $user->comments()->count(),
-                'likes_count' => $user->likedPosts()->count(),
-                'favorites_count' => $user->favoritePosts()->count(),
-                'following_count' => $user->following()->count(),
+                'comments_count' => (int) $user->comments_count,
+                'likes_count' => (int) $user->liked_posts_count,
+                'favorites_count' => (int) $user->favorite_posts_count,
+                'following_count' => (int) $user->following_count,
             ],
         ]);
     }

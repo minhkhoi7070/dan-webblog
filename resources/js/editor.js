@@ -560,7 +560,12 @@ function checkContrastWarning(textColor, bgColor) {
 // MAIN EDITOR INITIALIZATION
 // ============================================================================
 
+let currentEditorInstance = null;
+
 export function initPostEditor() {
+    if (currentEditorInstance) {
+        return currentEditorInstance;
+    }
     const editorElement = document.getElementById('tiptap-editor');
     const textarea = document.getElementById('content');
     if (!editorElement || !textarea) return null;
@@ -653,6 +658,7 @@ export function initPostEditor() {
     updateEditorStats(editor);
     updateToolbarState(editor);
 
+    currentEditorInstance = editor;
     return editor;
 }
 

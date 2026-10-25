@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
 use App\Models\Category;
+use App\Models\Comment;
+use App\Models\Like;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
+use App\Services\PostContentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -36,9 +40,20 @@ class PostController extends Controller
             ->published()
             ->with(['user', 'category', 'tags'])
             ->withCount(['comments' => fn ($q) => $q->where('status', 'approved'), 'likers', 'favoritedBy'])
+            ->when(Auth::check(), function ($query) {
+                $userId = Auth::id();
+                $query->withExists([
+                    'likers as is_liked' => fn ($q) => $q->where('user_id', $userId),
+                    'favoritedBy as is_saved' => fn ($q) => $q->where('user_id', $userId),
+                ]);
+            })
             ->when($search, fn ($query) => $query->search($search))
-            ->when($categorySlug, function ($query) use ($categorySlug) {
-                $query->whereHas('category', fn ($q) => $q->where('slug', $categorySlug));
+            ->when($categorySlug, function ($query) use ($categorySlug, $activeCategory) {
+                if ($activeCategory) {
+                    $query->where('category_id', $activeCategory->id);
+                } else {
+                    $query->whereHas('category', fn ($q) => $q->where('slug', $categorySlug));
+                }
             })
             ->when($tagSlug, function ($query) use ($tagSlug) {
                 $query->whereHas('tags', fn ($q) => $q->where('slug', $tagSlug));
@@ -103,6 +118,13 @@ class PostController extends Controller
             'favoritedBy',
         ]);
 
+        if (Auth::check()) {
+            $post->loadExists([
+                'likers as is_liked' => fn ($q) => $q->where('user_id', Auth::id()),
+                'favoritedBy as is_saved' => fn ($q) => $q->where('user_id', Auth::id()),
+            ]);
+        }
+
         // Related published posts from the same category
         $relatedPosts = Post::query()
             ->published()
@@ -131,6 +153,13 @@ class PostController extends Controller
             ->where('user_id', $user->id)
             ->with(['user', 'category', 'tags'])
             ->withCount(['comments' => fn ($q) => $q->where('status', 'approved'), 'likers', 'favoritedBy'])
+            ->when(Auth::check(), function ($query) {
+                $userId = Auth::id();
+                $query->withExists([
+                    'likers as is_liked' => fn ($q) => $q->where('user_id', $userId),
+                    'favoritedBy as is_saved' => fn ($q) => $q->where('user_id', $userId),
+                ]);
+            })
             ->when($search, fn ($query) => $query->search($search))
             ->latest('published_at')
             ->paginate(10)
@@ -190,7 +219,7 @@ class PostController extends Controller
         }
 
         $body = $request->input('body') ?? $request->input('content');
-        $body = \App\Services\PostContentService::cleanHtml($body);
+        $body = PostContentService::cleanHtml($body);
         $excerpt = $request->validated('excerpt') ?: Str::limit(strip_tags($body), 150);
         $slug = Str::slug($request->validated('title')).'-'.Str::lower(Str::random(6));
 
@@ -312,7 +341,7 @@ class PostController extends Controller
         }
 
         $body = $request->input('body') ?? $request->input('content');
-        $body = \App\Services\PostContentService::cleanHtml($body);
+        $body = PostContentService::cleanHtml($body);
         $excerpt = $request->validated('excerpt') ?: Str::limit(strip_tags($body), 150);
 
         // Security: Do not allow user input to tamper with status directly!
@@ -394,17 +423,28 @@ class PostController extends Controller
 
         $query = $user->isAdmin() ? Post::query() : Post::where('user_id', $user->id);
 
-        $totalPosts = (clone $query)->count();
-        $draftCount = (clone $query)->where('status', 'draft')->count();
-        $pendingCount = (clone $query)->where('status', 'pending')->count();
-        $publishedCount = (clone $query)->where('status', 'published')->count();
-        $rejectedCount = (clone $query)->where('status', 'rejected')->count();
+        $statsRow = (clone $query)->toBase()
+            ->selectRaw('
+                COUNT(*) as total,
+                COUNT(CASE WHEN status = ? THEN 1 END) as draft,
+                COUNT(CASE WHEN status = ? THEN 1 END) as pending,
+                COUNT(CASE WHEN status = ? THEN 1 END) as published,
+                COUNT(CASE WHEN status = ? THEN 1 END) as rejected,
+                COALESCE(SUM(views), 0) as total_views
+            ', ['draft', 'pending', 'published', 'rejected'])
+            ->first();
 
-        $totalViews = (clone $query)->sum('views');
+        $totalPosts = (int) ($statsRow->total ?? 0);
+        $draftCount = (int) ($statsRow->draft ?? 0);
+        $pendingCount = (int) ($statsRow->pending ?? 0);
+        $publishedCount = (int) ($statsRow->published ?? 0);
+        $rejectedCount = (int) ($statsRow->rejected ?? 0);
+        $totalViews = (int) ($statsRow->total_views ?? 0);
 
-        // Total likes & comments on author's posts
-        $totalLikes = (clone $query)->withCount('likers')->get()->sum('likers_count');
-        $totalComments = (clone $query)->withCount('comments')->get()->sum('comments_count');
+        // Total likes & comments on author posts (efficient subquery count instead of hydrating all models)
+        $postIdsQuery = (clone $query)->select('id');
+        $totalLikes = (int) Like::whereIn('post_id', $postIdsQuery)->count();
+        $totalComments = (int) Comment::whereIn('post_id', $postIdsQuery)->count();
 
         $statusFilter = $request->query('status');
         $search = $request->query('q');

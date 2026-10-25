@@ -25,15 +25,23 @@ class InteractionController extends Controller
         abort_if($user->is_locked, 403, 'Account is locked.');
         abort_if($post->status !== 'published', 404, 'Post not found.');
 
-        $isLiked = $post->likers()->where('user_id', $user->id)->exists();
-
-        if ($isLiked) {
-            $post->likers()->detach($user->id);
-            $liked = false;
+        if ($request->has('desired_state')) {
+            $liked = $request->boolean('desired_state');
+            if ($liked) {
+                $post->likers()->syncWithoutDetaching([$user->id]);
+            } else {
+                $post->likers()->detach($user->id);
+            }
         } else {
-            // syncWithoutDetaching ensures duplicate like requests are idempotent
-            $post->likers()->syncWithoutDetaching([$user->id]);
-            $liked = true;
+            $isLiked = $post->likers()->where('user_id', $user->id)->exists();
+            if ($isLiked) {
+                $post->likers()->detach($user->id);
+                $liked = false;
+            } else {
+                // syncWithoutDetaching ensures duplicate like requests are idempotent
+                $post->likers()->syncWithoutDetaching([$user->id]);
+                $liked = true;
+            }
         }
 
         return response()->json([
@@ -57,14 +65,22 @@ class InteractionController extends Controller
         abort_if($user->is_locked, 403, 'Account is locked.');
         abort_if($post->status !== 'published', 404, 'Post not found.');
 
-        $isSaved = $post->favoritedBy()->where('user_id', $user->id)->exists();
-
-        if ($isSaved) {
-            $post->favoritedBy()->detach($user->id);
-            $saved = false;
+        if ($request->has('desired_state')) {
+            $saved = $request->boolean('desired_state');
+            if ($saved) {
+                $post->favoritedBy()->syncWithoutDetaching([$user->id]);
+            } else {
+                $post->favoritedBy()->detach($user->id);
+            }
         } else {
-            $post->favoritedBy()->syncWithoutDetaching([$user->id]);
-            $saved = true;
+            $isSaved = $post->favoritedBy()->where('user_id', $user->id)->exists();
+            if ($isSaved) {
+                $post->favoritedBy()->detach($user->id);
+                $saved = false;
+            } else {
+                $post->favoritedBy()->syncWithoutDetaching([$user->id]);
+                $saved = true;
+            }
         }
 
         return response()->json([
@@ -93,14 +109,22 @@ class InteractionController extends Controller
             ], 422);
         }
 
-        $isFollowing = $currentUser->following()->where('following_id', $user->id)->exists();
-
-        if ($isFollowing) {
-            $currentUser->following()->detach($user->id);
-            $following = false;
+        if ($request->has('desired_state')) {
+            $following = $request->boolean('desired_state');
+            if ($following) {
+                $currentUser->following()->syncWithoutDetaching([$user->id]);
+            } else {
+                $currentUser->following()->detach($user->id);
+            }
         } else {
-            $currentUser->following()->syncWithoutDetaching([$user->id]);
-            $following = true;
+            $isFollowing = $currentUser->following()->where('following_id', $user->id)->exists();
+            if ($isFollowing) {
+                $currentUser->following()->detach($user->id);
+                $following = false;
+            } else {
+                $currentUser->following()->syncWithoutDetaching([$user->id]);
+                $following = true;
+            }
         }
 
         return response()->json([

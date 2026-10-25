@@ -113,7 +113,7 @@
             <!-- Thumbnail -->
             @if($post->thumbnail)
                 <div class="mb-4 rounded-xl overflow-hidden border border-theme shadow-xs" style="max-height: 420px;">
-                    <img src="{{ str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset($post->thumbnail) }}" alt="{{ $post->title }}" class="w-100 h-100 object-fit-cover">
+                    <img src="{{ str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset($post->thumbnail) }}" alt="{{ $post->title }}" loading="lazy" class="w-100 h-100 object-fit-cover">
                 </div>
             @endif
 

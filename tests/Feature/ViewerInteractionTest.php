@@ -347,4 +347,72 @@ class ViewerInteractionTest extends TestCase
             ->assertSee('John Viewer')
             ->assertSee('Web development enthusiast');
     }
+
+    public function test_viewer_like_endpoint_is_idempotent_with_desired_state(): void
+    {
+        $viewer = User::factory()->create();
+        $post = Post::factory()->published()->create();
+
+        // 1. Desired state = true on unliked post -> liked
+        $response1 = $this->actingAs($viewer)
+            ->postJson(route('posts.like', $post->id), ['desired_state' => true]);
+        $response1->assertOk()->assertExactJson(['liked' => true, 'likes_count' => 1]);
+
+        // 2. Calling desired state = true again -> remains liked, count stays 1 (idempotent)
+        $response2 = $this->actingAs($viewer)
+            ->postJson(route('posts.like', $post->id), ['desired_state' => true]);
+        $response2->assertOk()->assertExactJson(['liked' => true, 'likes_count' => 1]);
+
+        // 3. Desired state = false -> unliked
+        $response3 = $this->actingAs($viewer)
+            ->postJson(route('posts.like', $post->id), ['desired_state' => false]);
+        $response3->assertOk()->assertExactJson(['liked' => false, 'likes_count' => 0]);
+
+        // 4. Calling desired state = false again -> remains unliked, count stays 0 (idempotent)
+        $response4 = $this->actingAs($viewer)
+            ->postJson(route('posts.like', $post->id), ['desired_state' => false]);
+        $response4->assertOk()->assertExactJson(['liked' => false, 'likes_count' => 0]);
+    }
+
+    public function test_viewer_favorite_endpoint_is_idempotent_with_desired_state(): void
+    {
+        $viewer = User::factory()->create();
+        $post = Post::factory()->published()->create();
+
+        // 1. Desired state = true -> saved
+        $response1 = $this->actingAs($viewer)
+            ->postJson(route('posts.favorite', $post->id), ['desired_state' => true]);
+        $response1->assertOk()->assertExactJson(['saved' => true]);
+
+        // 2. Repeat desired state = true -> stays saved
+        $response2 = $this->actingAs($viewer)
+            ->postJson(route('posts.favorite', $post->id), ['desired_state' => true]);
+        $response2->assertOk()->assertExactJson(['saved' => true]);
+
+        // 3. Desired state = false -> unsaved
+        $response3 = $this->actingAs($viewer)
+            ->postJson(route('posts.favorite', $post->id), ['desired_state' => false]);
+        $response3->assertOk()->assertExactJson(['saved' => false]);
+    }
+
+    public function test_viewer_follow_endpoint_is_idempotent_with_desired_state(): void
+    {
+        $viewer = User::factory()->create();
+        $author = User::factory()->author()->create();
+
+        // 1. Desired state = true -> following
+        $response1 = $this->actingAs($viewer)
+            ->postJson(route('authors.follow', $author->id), ['desired_state' => true]);
+        $response1->assertOk()->assertExactJson(['following' => true]);
+
+        // 2. Repeat desired state = true -> stays following
+        $response2 = $this->actingAs($viewer)
+            ->postJson(route('authors.follow', $author->id), ['desired_state' => true]);
+        $response2->assertOk()->assertExactJson(['following' => true]);
+
+        // 3. Desired state = false -> unfollowed
+        $response3 = $this->actingAs($viewer)
+            ->postJson(route('authors.follow', $author->id), ['desired_state' => false]);
+        $response3->assertOk()->assertExactJson(['following' => false]);
+    }
 }

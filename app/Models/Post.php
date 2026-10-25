@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\PostContentService;
 use Database\Factories\PostFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -94,7 +95,7 @@ class Post extends Model
      */
     public function getRenderedBodyAttribute(): string
     {
-        return \App\Services\PostContentService::renderHtml($this->body);
+        return PostContentService::renderHtml($this->body);
     }
 
     /**
@@ -102,7 +103,7 @@ class Post extends Model
      */
     public function getEditorContentAttribute(): string
     {
-        return \App\Services\PostContentService::toEditorHtml($this->body);
+        return PostContentService::toEditorHtml($this->body);
     }
 
     /**
@@ -186,6 +187,14 @@ class Post extends Model
             return false;
         }
 
+        if (array_key_exists('is_liked', $this->attributes) && auth()->id() === $user->id) {
+            return (bool) $this->attributes['is_liked'];
+        }
+
+        if ($this->relationLoaded('likers')) {
+            return $this->likers->contains('id', $user->id);
+        }
+
         return $this->likers()->where('user_id', $user->id)->exists();
     }
 
@@ -196,6 +205,14 @@ class Post extends Model
     {
         if (! $user) {
             return false;
+        }
+
+        if (array_key_exists('is_saved', $this->attributes) && auth()->id() === $user->id) {
+            return (bool) $this->attributes['is_saved'];
+        }
+
+        if ($this->relationLoaded('favoritedBy')) {
+            return $this->favoritedBy->contains('id', $user->id);
         }
 
         return $this->favoritedBy()->where('user_id', $user->id)->exists();

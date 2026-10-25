@@ -19,9 +19,14 @@ class FavoriteController extends Controller
             ->published()
             ->with(['user', 'category', 'tags'])
             ->withCount(['comments', 'likers', 'favoritedBy'])
+            ->withExists([
+                'likers as is_liked' => fn ($q) => $q->where('user_id', $user->id),
+            ])
             ->latest('favorites.created_at')
             ->paginate(10)
             ->withQueryString();
+
+        $posts->each(fn ($post) => $post->setAttribute('is_saved', true));
 
         if ($request->has('page')) {
             $requestedPage = (int) $request->query('page');

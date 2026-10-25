@@ -61,6 +61,7 @@
                 <img src="{{ asset($post->thumbnail) }}"
                      alt="{{ $post->title }}"
                      class="img-fluid w-100"
+                     fetchpriority="high"
                      style="max-height: 480px; object-fit: cover; aspect-ratio: 16/9;">
             </div>
         @endif
@@ -130,7 +131,7 @@
 
             <!-- Comment Input Box (Authenticated) -->
             @auth
-                <form action="{{ route('comments.store', $post->id) }}" method="POST" data-form="comment-form" class="mb-4">
+                <form action="{{ route('comments.store', $post->id) }}" method="POST" data-form="comment-form" data-user-name="{{ auth()->user()->name }}" data-user-avatar="{{ auth()->user()->avatar ?? '' }}" class="mb-4">
                     @csrf
                     <div class="comment-error text-danger small mb-2 fw-medium"></div>
                     <div class="d-flex gap-3 align-items-start">
@@ -222,6 +223,8 @@
                                   action="{{ route('comments.store', $post->id) }}"
                                   method="POST"
                                   data-form="comment-form"
+                                  data-user-name="{{ auth()->user()->name }}"
+                                  data-user-avatar="{{ auth()->user()->avatar ?? '' }}"
                                   class="reply-form d-none mt-3 ps-4 ms-2">
                                 @csrf
                                 <input type="hidden" name="parent_id" value="{{ $comment->id }}">

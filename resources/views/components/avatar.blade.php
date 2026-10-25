@@ -32,7 +32,7 @@
 <div {{ $attributes->merge(['class' => 'position-relative d-inline-block flex-shrink-0 user-select-none']) }} style="width: {{ $dimension }}px; height: {{ $dimension }}px;">
     <div class="w-100 h-100 rounded-circle overflow-hidden brand-gradient text-white fw-bold d-flex align-items-center justify-content-center border-theme shadow-sm" style="font-size: {{ $fontSize }}px;" data-theme-preserve>
         @if($avatar)
-            <img src="{{ asset($avatar) }}" alt="{{ $name }}" class="w-100 h-100" style="object-fit: cover;">
+            <img src="{{ asset($avatar) }}" alt="{{ $name }}" loading="lazy" class="w-100 h-100" style="object-fit: cover;">
         @else
             <span>{{ $initials }}</span>
         @endif

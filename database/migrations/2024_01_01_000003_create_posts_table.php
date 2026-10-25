@@ -24,7 +24,6 @@ return new class extends Migration
             $table->unsignedBigInteger('views')->default(0);
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
-
             $table->index('status');
             $table->index('published_at');
             $table->index('views');

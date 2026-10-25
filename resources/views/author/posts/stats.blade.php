@@ -204,7 +204,7 @@
                             <td class="ps-3 ps-sm-4 py-3">
                                 <div class="d-flex align-items-center gap-3">
                                     @if($post->thumbnail)
-                                        <img src="{{ asset($post->thumbnail) }}" alt="" class="rounded-3 flex-shrink-0 border border-theme shadow-xs" style="width: 46px; height: 46px; object-fit: cover;">
+                                        <img src="{{ asset($post->thumbnail) }}" alt="" loading="lazy" class="rounded-3 flex-shrink-0 border border-theme shadow-xs" style="width: 46px; height: 46px; object-fit: cover;">
                                     @else
                                         <div class="rounded-3 bg-surface-2 text-theme-muted d-flex align-items-center justify-content-center flex-shrink-0 border border-theme fw-bold" style="width: 46px; height: 46px; font-size: 11px; font-family: var(--font-serif, 'Lora', serif);">
                                             B

@@ -1,11 +1,22 @@
 /**
- * BlogMNM Interactions: Like, Favorite, Follow, and Comments AJAX Engine
- * Integrated with Bootstrap 5 and BlogMNM Monochrome Theme
+ * BlogMNM Interactions: Like, Favorite, Follow, and Comments Optimistic Engine
+ * Threads-like instant visual response (<50ms) with queue-based race condition protection.
+ * Integrated with Bootstrap 5 and BlogMNM Monochrome Theme.
  */
 document.addEventListener('DOMContentLoaded', () => {
     const getCsrfToken = () => {
         const meta = document.querySelector('meta[name="csrf-token"]');
         return meta ? meta.getAttribute('content') : '';
+    };
+
+    const escapeHtml = (text) => {
+        if (!text) return '';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     };
 
     const showToast = (message, type = 'success') => {
@@ -66,18 +77,126 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 1. LIKE ACTION
-    document.addEventListener('click', async (e) => {
-        const btn = e.target.closest('[data-action="like"]');
-        if (!btn) return;
-        e.preventDefault();
+    // =========================================================================
+    // STATE QUEUE ENGINE: Handles Desired States, Race Conditions & Mutexes
+    // =========================================================================
+    const interactionQueues = new Map();
 
-        const url = btn.getAttribute('data-url');
-        if (!url) return;
+    // -------------------------------------------------------------------------
+    // 1. OPTIMISTIC LIKE ACTION (Threads-like Heart & Number Ticker)
+    // -------------------------------------------------------------------------
+    const updateLikeCountWithAnimation = (container, newCount, direction = 'up', shouldAnimate = true) => {
+        if (!container) return;
 
-        btn.disabled = true;
-        btn.classList.add('opacity-50', 'is-loading');
-        btn.style.pointerEvents = 'none';
+        const currentSpan = container.querySelector('.like-count-value');
+        const oldText = currentSpan ? currentSpan.textContent.trim() : container.textContent.trim();
+        const newText = newCount > 0 ? String(newCount) : '';
+
+        if (oldText === newText) return;
+
+        if (!shouldAnimate) {
+            container.innerHTML = newText ? `<span class="like-count-value">${escapeHtml(newText)}</span>` : '';
+            return;
+        }
+
+        // If starting from empty (0 -> 1)
+        if (!oldText) {
+            container.innerHTML = `<span class="like-count-value count-slide-in-up">${escapeHtml(newText)}</span>`;
+            setTimeout(() => {
+                const el = container.querySelector('.like-count-value');
+                if (el) el.classList.remove('count-slide-in-up');
+            }, 200);
+            return;
+        }
+
+        // If going to empty (1 -> 0)
+        if (!newText) {
+            if (currentSpan) {
+                currentSpan.className = 'like-count-value count-slide-out-down';
+                setTimeout(() => {
+                    if (container.querySelector('.like-count-value') === currentSpan) {
+                        container.innerHTML = '';
+                    }
+                }, 190);
+            } else {
+                container.innerHTML = '';
+            }
+            return;
+        }
+
+        // Direction based on up (like) or down (unlike)
+        const outClass = direction === 'up' ? 'count-slide-out-up' : 'count-slide-out-down';
+        const inClass = direction === 'up' ? 'count-slide-in-up' : 'count-slide-in-down';
+
+        // Clear any previous exiting spans if user clicked rapidly
+        container.querySelectorAll('.is-exiting').forEach((el) => el.remove());
+
+        if (currentSpan) {
+            currentSpan.className = `like-count-value is-exiting ${outClass}`;
+        }
+
+        const nextSpan = document.createElement('span');
+        nextSpan.className = `like-count-value ${inClass}`;
+        nextSpan.textContent = newText;
+        container.appendChild(nextSpan);
+
+        setTimeout(() => {
+            if (currentSpan && currentSpan.parentNode === container) {
+                currentSpan.remove();
+            }
+            nextSpan.className = 'like-count-value';
+        }, 200);
+    };
+
+    const applyLikeUI = (postId, liked, count, shouldAnimate = true) => {
+        const allBtns = document.querySelectorAll(`[data-action="like"][data-post-id="${postId}"]`);
+        allBtns.forEach((btn) => {
+            btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+            btn.setAttribute('aria-label', liked ? 'Bỏ thích bài viết' : 'Thích bài viết');
+            btn.setAttribute('title', liked ? 'Bỏ thích' : 'Thích');
+
+            const countSpan = btn.querySelector('.like-count');
+            if (countSpan) {
+                const direction = liked ? 'up' : 'down';
+                updateLikeCountWithAnimation(countSpan, count, direction, shouldAnimate);
+            }
+
+            const icon = btn.querySelector('.like-icon') || btn.querySelector('svg');
+            if (liked) {
+                btn.classList.add('text-danger');
+                btn.classList.remove('text-secondary', 'text-theme-secondary');
+                if (icon) {
+                    icon.setAttribute('fill', 'currentColor');
+                    if (shouldAnimate) {
+                        icon.classList.remove('like-heart-pop');
+                        // Trigger reflow to restart animation reliably on repeated rapid clicks
+                        void icon.offsetWidth;
+                        icon.classList.add('like-heart-pop');
+                    }
+                }
+            } else {
+                btn.classList.remove('text-danger');
+                btn.classList.add('text-theme-secondary');
+                if (icon) {
+                    icon.setAttribute('fill', 'none');
+                    icon.classList.remove('like-heart-pop');
+                }
+            }
+        });
+    };
+
+    const dispatchLikeSync = async (postId, url) => {
+        const key = `like:${postId}`;
+        const queue = interactionQueues.get(key);
+        if (!queue || queue.inFlight) return;
+
+        // If server is already in desired state, no request needed
+        if (queue.desiredState === queue.lastConfirmedState) {
+            return;
+        }
+
+        queue.inFlight = true;
+        const targetState = queue.desiredState;
 
         try {
             const response = await fetch(url, {
@@ -87,6 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({ desired_state: targetState }),
             });
 
             if (response.status === 401) {
@@ -100,53 +220,154 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            const postId = btn.getAttribute('data-post-id');
-            const allLikeBtns = document.querySelectorAll(`[data-action="like"][data-post-id="${postId}"]`);
+            queue.lastConfirmedState = data.liked;
 
-            allLikeBtns.forEach(el => {
-                const countSpan = el.querySelector('.like-count');
-                const icon = el.querySelector('svg');
-
-                if (countSpan) {
-                    countSpan.textContent = data.likes_count > 0 ? data.likes_count : '';
-                }
-
-                if (data.liked) {
-                    el.classList.add('text-danger');
-                    el.classList.remove('text-secondary', 'text-theme-secondary');
-                    if (icon) {
-                        icon.setAttribute('fill', 'currentColor');
-                    }
-                } else {
-                    el.classList.remove('text-danger');
-                    el.classList.add('text-theme-secondary');
-                    if (icon) {
-                        icon.setAttribute('fill', 'none');
-                    }
-                }
-            });
+            // Reconcile server count if user didn't change mind while request was in-flight
+            if (queue.desiredState === data.liked) {
+                queue.currentCount = data.likes_count;
+                queue.rollbackState = data.liked;
+                queue.rollbackCount = data.likes_count;
+                applyLikeUI(postId, data.liked, data.likes_count, false);
+            }
         } catch (error) {
             console.error('Like error:', error);
-            showToast(error.message, 'error');
+            // Rollback only if user intent still matches the failed request
+            if (queue.desiredState === targetState) {
+                queue.desiredState = queue.rollbackState;
+                queue.currentCount = queue.rollbackCount;
+                applyLikeUI(postId, queue.rollbackState, queue.rollbackCount, false);
+                showToast(error.message || 'Không thể lưu lượt thích. Vui lòng thử lại.', 'error');
+            }
         } finally {
-            btn.disabled = false;
-            btn.classList.remove('opacity-50', 'is-loading');
-            btn.style.pointerEvents = '';
+            queue.inFlight = false;
+            // If user clicked again while in-flight, immediately sync the newest desired state
+            if (queue.desiredState !== queue.lastConfirmedState) {
+                dispatchLikeSync(postId, url);
+            }
         }
-    });
+    };
 
-    // 2. FAVORITE / BOOKMARK ACTION
-    document.addEventListener('click', async (e) => {
-        const btn = e.target.closest('[data-action="favorite"]');
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="like"]');
         if (!btn) return;
+
+        // If it's a guest link, let normal navigation to /login proceed
+        if (btn.tagName === 'A' && btn.getAttribute('href')?.includes('/login')) {
+            return;
+        }
+
+        const postId = btn.getAttribute('data-post-id');
+        const url = btn.getAttribute('data-url');
+        if (!postId || !url) return;
+
         e.preventDefault();
 
-        const url = btn.getAttribute('data-url');
-        if (!url) return;
+        const key = `like:${postId}`;
+        let queue = interactionQueues.get(key);
 
-        btn.disabled = true;
-        btn.classList.add('opacity-50', 'is-loading');
-        btn.style.pointerEvents = 'none';
+        // Determine current optimistic state
+        const currentState = queue
+            ? queue.desiredState
+            : (btn.getAttribute('aria-pressed') === 'true' || btn.classList.contains('text-danger'));
+
+        const nextState = !currentState;
+
+        // Calculate count
+        let currentCount = 0;
+        if (queue && typeof queue.currentCount === 'number') {
+            currentCount = queue.currentCount;
+        } else {
+            const countSpan = btn.querySelector('.like-count');
+            currentCount = countSpan ? (parseInt(countSpan.textContent.trim(), 10) || 0) : 0;
+        }
+
+        const nextCount = nextState ? currentCount + 1 : Math.max(0, currentCount - 1);
+
+        // 1. Instant visual update (<10ms)
+        applyLikeUI(postId, nextState, nextCount, true);
+
+        // 2. Queue state update
+        if (!queue) {
+            queue = {
+                desiredState: nextState,
+                currentCount: nextCount,
+                inFlight: false,
+                lastConfirmedState: currentState,
+                rollbackState: currentState,
+                rollbackCount: currentCount,
+            };
+            interactionQueues.set(key, queue);
+        } else {
+            queue.desiredState = nextState;
+            queue.currentCount = nextCount;
+        }
+
+        // 3. Dispatch background sync
+        dispatchLikeSync(postId, url);
+    });
+
+    // -------------------------------------------------------------------------
+    // 2. OPTIMISTIC FAVORITE / SAVE ACTION
+    // -------------------------------------------------------------------------
+    const applyFavoriteUI = (postId, saved, shouldAnimate = true) => {
+        const allBtns = document.querySelectorAll(`[data-action="favorite"][data-post-id="${postId}"]`);
+        allBtns.forEach((btn) => {
+            btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
+            btn.setAttribute('aria-label', saved ? 'Xóa khỏi danh sách lưu' : 'Lưu bài viết');
+            btn.setAttribute('title', saved ? 'Đã lưu' : 'Lưu bài viết');
+
+            const label = btn.querySelector('.favorite-label');
+            if (label) {
+                label.textContent = saved ? 'Đã lưu' : 'Lưu';
+            }
+
+            const icon = btn.querySelector('.favorite-icon') || btn.querySelector('svg');
+            if (saved) {
+                btn.classList.add('text-warning');
+                btn.classList.remove('text-secondary', 'text-theme-secondary');
+                if (icon) {
+                    icon.setAttribute('fill', 'currentColor');
+                    if (shouldAnimate) {
+                        icon.classList.remove('bookmark-pop');
+                        void icon.offsetWidth;
+                        icon.classList.add('bookmark-pop');
+                    }
+                }
+            } else {
+                btn.classList.remove('text-warning');
+                btn.classList.add('text-theme-secondary');
+                if (icon) {
+                    icon.setAttribute('fill', 'none');
+                    icon.classList.remove('bookmark-pop');
+                }
+            }
+
+            // On /favorites page, visually dim the card without removing it or causing layout shift
+            const isFavoritesPage = window.location.pathname.includes('/favorites');
+            if (isFavoritesPage) {
+                const card = btn.closest('.post-card') || btn.closest('article');
+                if (card) {
+                    if (!saved) {
+                        card.setAttribute('data-unsaved', 'true');
+                    } else {
+                        card.removeAttribute('data-unsaved');
+                    }
+                }
+            }
+        });
+    };
+
+    const dispatchFavoriteSync = async (postId, url) => {
+        const key = `favorite:${postId}`;
+        const queue = interactionQueues.get(key);
+        if (!queue || queue.inFlight) return;
+
+        if (queue.desiredState === queue.lastConfirmedState) {
+            return;
+        }
+
+        queue.inFlight = true;
+        const targetState = queue.desiredState;
 
         try {
             const response = await fetch(url, {
@@ -156,6 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({ desired_state: targetState }),
             });
 
             if (response.status === 401) {
@@ -169,51 +391,108 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            const postId = btn.getAttribute('data-post-id');
-            const allFavBtns = document.querySelectorAll(`[data-action="favorite"][data-post-id="${postId}"]`);
+            queue.lastConfirmedState = data.saved;
 
-            allFavBtns.forEach(el => {
-                const icon = el.querySelector('svg');
-                const label = el.querySelector('.favorite-label');
-
-                if (data.saved) {
-                    el.classList.add('text-warning');
-                    el.classList.remove('text-secondary', 'text-theme-secondary');
-                    if (icon) {
-                        icon.setAttribute('fill', 'currentColor');
-                    }
-                    if (label) label.textContent = 'Đã lưu';
-                } else {
-                    el.classList.remove('text-warning');
-                    el.classList.add('text-theme-secondary');
-                    if (icon) {
-                        icon.setAttribute('fill', 'none');
-                    }
-                    if (label) label.textContent = 'Lưu';
-                }
-            });
+            if (queue.desiredState === data.saved) {
+                queue.rollbackState = data.saved;
+                applyFavoriteUI(postId, data.saved, false);
+            }
         } catch (error) {
             console.error('Favorite error:', error);
-            showToast(error.message, 'error');
+            if (queue.desiredState === targetState) {
+                queue.desiredState = queue.rollbackState;
+                applyFavoriteUI(postId, queue.rollbackState, false);
+                showToast(error.message || 'Không thể lưu bài viết. Vui lòng thử lại.', 'error');
+            }
         } finally {
-            btn.disabled = false;
-            btn.classList.remove('opacity-50', 'is-loading');
-            btn.style.pointerEvents = '';
+            queue.inFlight = false;
+            if (queue.desiredState !== queue.lastConfirmedState) {
+                dispatchFavoriteSync(postId, url);
+            }
         }
-    });
+    };
 
-    // 3. FOLLOW AUTHOR ACTION
-    document.addEventListener('click', async (e) => {
-        const btn = e.target.closest('[data-action="follow"]');
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="favorite"]');
         if (!btn) return;
+
+        if (btn.tagName === 'A' && btn.getAttribute('href')?.includes('/login')) {
+            return;
+        }
+
+        const postId = btn.getAttribute('data-post-id');
+        const url = btn.getAttribute('data-url');
+        if (!postId || !url) return;
+
         e.preventDefault();
 
-        const url = btn.getAttribute('data-url');
-        if (!url) return;
+        const key = `favorite:${postId}`;
+        let queue = interactionQueues.get(key);
 
-        btn.disabled = true;
-        btn.classList.add('opacity-50', 'is-loading');
-        btn.style.pointerEvents = 'none';
+        const currentState = queue
+            ? queue.desiredState
+            : (btn.getAttribute('aria-pressed') === 'true' || btn.classList.contains('text-warning'));
+
+        const nextState = !currentState;
+
+        // 1. Instant visual update
+        applyFavoriteUI(postId, nextState, true);
+
+        // 2. Queue state update
+        if (!queue) {
+            queue = {
+                desiredState: nextState,
+                inFlight: false,
+                lastConfirmedState: currentState,
+                rollbackState: currentState,
+            };
+            interactionQueues.set(key, queue);
+        } else {
+            queue.desiredState = nextState;
+        }
+
+        // 3. Dispatch background sync
+        dispatchFavoriteSync(postId, url);
+    });
+
+    // -------------------------------------------------------------------------
+    // 3. OPTIMISTIC FOLLOW ACTION
+    // -------------------------------------------------------------------------
+    const applyFollowUI = (authorId, following) => {
+        const allBtns = document.querySelectorAll(`[data-action="follow"][data-author-id="${authorId}"]`);
+        allBtns.forEach((btn) => {
+            btn.setAttribute('aria-pressed', following ? 'true' : 'false');
+            btn.setAttribute('aria-label', following ? 'Hủy theo dõi tác giả' : 'Theo dõi tác giả');
+            btn.textContent = following ? 'Đang theo dõi' : 'Theo dõi';
+
+            if (following) {
+                btn.classList.remove('btn-primary', 'btn-editorial-primary');
+                btn.classList.add('btn-outline-theme');
+            } else {
+                btn.classList.remove('btn-outline-theme');
+                btn.classList.add('btn-primary', 'btn-editorial-primary');
+            }
+        });
+
+        // Reconcile author profile follower count
+        const followerCountEl = document.getElementById('follower-count');
+        if (followerCountEl) {
+            const current = parseInt(followerCountEl.textContent.trim(), 10) || 0;
+            followerCountEl.textContent = following ? current + 1 : Math.max(0, current - 1);
+        }
+    };
+
+    const dispatchFollowSync = async (authorId, url) => {
+        const key = `follow:${authorId}`;
+        const queue = interactionQueues.get(key);
+        if (!queue || queue.inFlight) return;
+
+        if (queue.desiredState === queue.lastConfirmedState) {
+            return;
+        }
+
+        queue.inFlight = true;
+        const targetState = queue.desiredState;
 
         try {
             const response = await fetch(url, {
@@ -223,6 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({ desired_state: targetState }),
             });
 
             if (response.status === 401) {
@@ -240,37 +520,73 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            const authorId = btn.getAttribute('data-author-id');
-            const allFollowBtns = document.querySelectorAll(`[data-action="follow"][data-author-id="${authorId}"]`);
+            queue.lastConfirmedState = data.following;
 
-            allFollowBtns.forEach(el => {
-                if (data.following) {
-                    el.textContent = 'Đang theo dõi';
-                    el.classList.remove('btn-primary', 'btn-editorial-primary');
-                    el.classList.add('btn-outline-theme');
-                } else {
-                    el.textContent = 'Theo dõi';
-                    el.classList.remove('btn-outline-theme');
-                    el.classList.add('btn-editorial-primary');
-                }
-            });
-
-            const followerCountEl = document.getElementById('follower-count');
-            if (followerCountEl) {
-                let current = parseInt(followerCountEl.textContent, 10) || 0;
-                followerCountEl.textContent = data.following ? current + 1 : Math.max(0, current - 1);
+            if (queue.desiredState === data.following) {
+                queue.rollbackState = data.following;
+                applyFollowUI(authorId, data.following);
             }
         } catch (error) {
             console.error('Follow error:', error);
-            showToast(error.message, 'error');
+            if (queue.desiredState === targetState) {
+                queue.desiredState = queue.rollbackState;
+                applyFollowUI(authorId, queue.rollbackState);
+                showToast(error.message || 'Không thể cập nhật theo dõi. Vui lòng thử lại.', 'error');
+            }
         } finally {
-            btn.disabled = false;
-            btn.classList.remove('opacity-50', 'is-loading');
-            btn.style.pointerEvents = '';
+            queue.inFlight = false;
+            if (queue.desiredState !== queue.lastConfirmedState) {
+                dispatchFollowSync(authorId, url);
+            }
         }
+    };
+
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="follow"]');
+        if (!btn) return;
+
+        if (btn.tagName === 'A' && btn.getAttribute('href')?.includes('/login')) {
+            return;
+        }
+
+        const authorId = btn.getAttribute('data-author-id');
+        const url = btn.getAttribute('data-url');
+        if (!authorId || !url) return;
+
+        e.preventDefault();
+
+        const key = `follow:${authorId}`;
+        let queue = interactionQueues.get(key);
+
+        const currentState = queue
+            ? queue.desiredState
+            : (btn.getAttribute('aria-pressed') === 'true' || btn.classList.contains('btn-outline-theme'));
+
+        const nextState = !currentState;
+
+        // 1. Instant visual update
+        applyFollowUI(authorId, nextState);
+
+        // 2. Queue state update
+        if (!queue) {
+            queue = {
+                desiredState: nextState,
+                inFlight: false,
+                lastConfirmedState: currentState,
+                rollbackState: currentState,
+            };
+            interactionQueues.set(key, queue);
+        } else {
+            queue.desiredState = nextState;
+        }
+
+        // 3. Dispatch background sync
+        dispatchFollowSync(authorId, url);
     });
 
+    // -------------------------------------------------------------------------
     // 4. INLINE REPLY TOGGLE
+    // -------------------------------------------------------------------------
     document.addEventListener('click', (e) => {
         const replyToggle = e.target.closest('[data-action="toggle-reply"]');
         if (!replyToggle) return;
@@ -287,24 +603,106 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 5. AJAX COMMENT FORM SUBMISSION
+    // -------------------------------------------------------------------------
+    // 5. OPTIMISTIC COMMENT & REPLY SUBMISSION
+    // -------------------------------------------------------------------------
     document.addEventListener('submit', async (e) => {
         const form = e.target.closest('[data-form="comment-form"]');
         if (!form) return;
         e.preventDefault();
 
-        const submitBtn = form.querySelector('button[type="submit"]');
         const textarea = form.querySelector('textarea[name="body"]');
         const errorContainer = form.querySelector('.comment-error');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const bodyText = textarea ? textarea.value.trim() : '';
 
-        if (errorContainer) errorContainer.textContent = '';
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-50');
+        if (!bodyText) {
+            if (textarea) textarea.focus();
+            return;
         }
 
-        const formData = new FormData(form);
+        if (errorContainer) errorContainer.textContent = '';
 
+        const formData = new FormData(form);
+        const parentId = formData.get('parent_id');
+        const userName = form.getAttribute('data-user-name') || 'Bạn';
+        const initial = userName.charAt(0).toUpperCase();
+
+        // 1. Create Optimistic Preview Element
+        const tempId = `temp-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const commentsContainer = document.getElementById('comments-list');
+        let tempElement = null;
+
+        if (parentId) {
+            const parentCommentEl = document.getElementById(`comment-${parentId}`);
+            let repliesContainer = parentCommentEl ? parentCommentEl.querySelector('.replies-container') : null;
+            if (!repliesContainer && parentCommentEl) {
+                repliesContainer = document.createElement('div');
+                repliesContainer.className = 'replies-container mt-3 ps-3 ps-sm-4 border-theme-left d-flex flex-column gap-2';
+                parentCommentEl.appendChild(repliesContainer);
+            }
+            if (repliesContainer) {
+                tempElement = document.createElement('div');
+                tempElement.id = `comment-${tempId}`;
+                tempElement.className = 'reply-item p-3 comment-optimistic';
+                tempElement.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle brand-gradient fw-bold d-flex align-items-center justify-content-center text-white" style="width: 24px; height: 24px; font-size: 11px;" data-theme-preserve>
+                                ${initial}
+                            </div>
+                            <span class="fw-bold small text-theme" style="font-size: 12.5px;">${escapeHtml(userName)}</span>
+                            <span class="text-theme-muted small" style="font-size: 11px;">&bull; Vừa xong</span>
+                            <span class="comment-pending-indicator text-theme-muted ms-1"><span class="comment-pending-dot"></span>Đang gửi...</span>
+                        </div>
+                    </div>
+                    <p class="small text-theme mb-0 ps-4 lh-base">${escapeHtml(bodyText)}</p>
+                `;
+                repliesContainer.appendChild(tempElement);
+                tempElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        } else if (commentsContainer) {
+            const emptyPlaceholder = commentsContainer.querySelector('.empty-state, .text-center.py-4');
+            if (emptyPlaceholder) {
+                emptyPlaceholder.remove();
+            }
+
+            tempElement = document.createElement('div');
+            tempElement.id = `comment-${tempId}`;
+            tempElement.className = 'comment-item p-3 p-sm-4 comment-optimistic mb-3';
+            tempElement.innerHTML = `
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle brand-gradient fw-bold d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px; font-size: 13px;" data-theme-preserve>
+                            ${initial}
+                        </div>
+                        <div>
+                            <span class="fw-bold small text-theme">${escapeHtml(userName)}</span>
+                            <span class="small text-theme-muted ms-2" style="font-size: 11px;">Vừa xong</span>
+                            <span class="comment-pending-indicator text-theme-muted ms-2"><span class="comment-pending-dot"></span>Đang gửi...</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="small text-theme mb-2 ps-4 ms-2 lh-base">${escapeHtml(bodyText)}</p>
+            `;
+            commentsContainer.prepend(tempElement);
+            tempElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // 2. Increment comment badges optimistically
+        const counterEls = document.querySelectorAll('.comment-count-badge');
+        counterEls.forEach((el) => {
+            const count = parseInt(el.textContent.trim(), 10) || 0;
+            el.textContent = count + 1;
+        });
+
+        // 3. Clear textarea & close reply box immediately
+        if (textarea) textarea.value = '';
+        if (form.classList.contains('reply-form')) {
+            form.classList.add('d-none');
+        }
+
+        // 4. Background Server Sync
         try {
             const response = await fetch(form.action, {
                 method: 'POST',
@@ -321,14 +719,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (response.status === 422) {
-                const data = await response.json();
+                const data = await response.json().catch(() => ({}));
                 const errorMsg = data.errors?.body?.[0] || data.errors?.parent_id?.[0] || 'Vui lòng kiểm tra lại nội dung bình luận.';
-                if (errorContainer) {
-                    errorContainer.textContent = errorMsg;
-                } else {
-                    showToast(errorMsg, 'error');
-                }
-                return;
+                throw new Error(errorMsg);
             }
 
             if (!response.ok) {
@@ -337,84 +730,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
 
-            if (textarea) textarea.value = '';
-
-            if (form.classList.contains('reply-form')) {
-                form.classList.add('d-none');
-            }
-
-            const parentId = formData.get('parent_id');
-            const commentsContainer = document.getElementById('comments-list');
-            const initial = (data.comment.user_name || 'U').charAt(0).toUpperCase();
-
-            if (parentId) {
-                const parentCommentEl = document.getElementById(`comment-${parentId}`);
-                let repliesContainer = parentCommentEl ? parentCommentEl.querySelector('.replies-container') : null;
-                if (!repliesContainer && parentCommentEl) {
-                    repliesContainer = document.createElement('div');
-                    repliesContainer.className = 'replies-container mt-3 ps-3 ps-sm-4 border-theme-left d-flex flex-column gap-2';
-                    parentCommentEl.appendChild(repliesContainer);
+            // 5. Confirm optimistic element with server ID
+            if (tempElement && data.comment) {
+                tempElement.id = `comment-${data.comment.id}`;
+                tempElement.classList.remove('comment-optimistic');
+                const pendingBadge = tempElement.querySelector('.comment-pending-indicator');
+                if (pendingBadge) {
+                    pendingBadge.remove();
                 }
-                if (repliesContainer) {
-                    const replyCard = document.createElement('div');
-                    replyCard.className = 'p-3 rounded-3 bg-theme-surface border border-theme text-sm';
-                    replyCard.innerHTML = `
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <div class="rounded-circle brand-gradient fw-bold d-flex align-items-center justify-content-center text-white" style="width: 24px; height: 24px; font-size: 11px;" data-theme-preserve>
-                                ${initial}
-                            </div>
-                            <span class="fw-semibold text-theme small">${data.comment.user_name}</span>
-                            <span class="text-theme-secondary small">&bull; Vừa xong</span>
-                        </div>
-                        <p class="small text-theme mb-0 ps-4 lh-base">${data.comment.body}</p>
+
+                // If root comment, attach inline reply action button
+                if (!parentId) {
+                    const actionContainer = document.createElement('div');
+                    actionContainer.className = 'ps-4 ms-2';
+                    actionContainer.innerHTML = `
+                        <button type="button"
+                                data-action="toggle-reply"
+                                data-comment-id="${data.comment.id}"
+                                class="btn btn-sm btn-link p-0 text-theme-secondary text-decoration-none small hover-accent">
+                            Trả lời &crarr;
+                        </button>
                     `;
-                    repliesContainer.appendChild(replyCard);
-                    replyCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    tempElement.appendChild(actionContainer);
                 }
-            } else if (commentsContainer) {
-                const emptyPlaceholder = commentsContainer.querySelector('.text-center.py-4');
-                if (emptyPlaceholder) {
-                    emptyPlaceholder.remove();
-                }
-
-                const newCommentEl = document.createElement('div');
-                newCommentEl.className = 'p-3 p-sm-4 rounded-4 bg-theme-surface border border-theme mb-3';
-                newCommentEl.id = `comment-${data.comment.id}`;
-                newCommentEl.innerHTML = `
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="rounded-circle brand-gradient fw-bold d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px; font-size: 13px;" data-theme-preserve>
-                                ${initial}
-                            </div>
-                            <div>
-                                <span class="fw-semibold text-theme small">${data.comment.user_name}</span>
-                                <span class="text-theme-secondary small ms-2">Vừa xong</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-theme mb-0 ps-4 ms-2 lh-base">${data.comment.body}</p>
-                `;
-                commentsContainer.prepend(newCommentEl);
-                newCommentEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
-
-            const counterEls = document.querySelectorAll('.comment-count-badge');
-            counterEls.forEach(el => {
-                const count = parseInt(el.textContent, 10) || 0;
-                el.textContent = count + 1;
-            });
         } catch (error) {
             console.error('Comment error:', error);
-            showToast(error.message, 'error');
-        } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-50');
+
+            // Rollback optimistic element
+            if (tempElement) {
+                tempElement.remove();
+            }
+
+            // Decrement badge back
+            counterEls.forEach((el) => {
+                const count = parseInt(el.textContent.trim(), 10) || 1;
+                el.textContent = Math.max(0, count - 1);
+            });
+
+            // Restore user's input so they never lose what was typed
+            if (textarea) {
+                textarea.value = bodyText;
+                textarea.focus();
+            }
+
+            // Re-open reply box if it was a reply
+            if (form.classList.contains('reply-form')) {
+                form.classList.remove('d-none');
+            }
+
+            if (errorContainer) {
+                errorContainer.textContent = error.message;
+            } else {
+                showToast(error.message, 'error');
             }
         }
     });
 
-    // 6. GLOBAL BOOTSTRAP CONFIRM MODAL ENGINE
+    // =========================================================================
+    // 6. GLOBAL BOOTSTRAP CONFIRM MODAL ENGINE (Preserved for Admin/CMS actions)
+    // =========================================================================
     let currentConfirmForm = null;
     let currentPromptName = null;
 
@@ -423,7 +798,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!form) return;
 
         if (form.dataset.confirmed === 'true') {
-            // Form was already confirmed by user in modal, allow submission
             return;
         }
 
@@ -561,7 +935,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 formInput.value = val;
             }
 
-            // Set loading state - disable submit, cancel, and close buttons
             confirmSubmitBtn.disabled = true;
             if (confirmCancelBtn) confirmCancelBtn.disabled = true;
             if (closeBtnEl) closeBtnEl.disabled = true;
@@ -576,14 +949,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (confirmModalEl) {
-        // Prevent accidental closing (ESC or backdrop) while submission is in progress
         confirmModalEl.addEventListener('hide.bs.modal', (e) => {
             if (confirmSubmitBtn && confirmSubmitBtn.disabled) {
                 e.preventDefault();
             }
         });
 
-        // Accessibility: auto-focus input or confirm button when modal is shown
         confirmModalEl.addEventListener('shown.bs.modal', () => {
             const promptBoxEl = document.getElementById('confirm-modal-prompt-box');
             if (promptBoxEl && !promptBoxEl.classList.contains('d-none') && promptInputEl) {
@@ -593,7 +964,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Reset state after modal is hidden
         confirmModalEl.addEventListener('hidden.bs.modal', () => {
             currentConfirmForm = null;
             currentPromptName = null;
