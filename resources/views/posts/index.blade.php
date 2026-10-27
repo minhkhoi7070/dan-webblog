@@ -1,11 +1,13 @@
 @extends('layouts.public')
 
 @section('content')
-    <h1 class="visually-hidden">BlogMNM — Khám phá tin tức & góc nhìn công nghệ</h1>
+    <h1 class="visually-hidden">CloudBlog — Khám phá tin tức & góc nhìn công nghệ</h1>
 
     <div class="w-100 d-flex justify-content-center px-0 px-sm-3 py-0 py-sm-3 py-md-4">
-        <div
-            class="w-100 feed-container bg-theme-surface border-0 border-sm-start border-sm-end border-sm-top border-sm-bottom border-theme rounded-0 rounded-sm-4 overflow-hidden mb-4">
+        <div class="w-100 feed-container bg-theme-surface border-0 border-sm-start border-sm-end border-sm-top border-sm-bottom border-theme rounded-0 rounded-sm-4 overflow-hidden mb-4"
+             data-feed-shell
+             data-feed-base-url="{{ route('posts.index') }}"
+             data-feed-home-url="{{ route('home') }}">
 
             <!-- Feed Top Header (Editorial / Substack Style Header) -->
             <div class="sticky-top bg-theme-surface border-theme-bottom px-3 px-sm-4 feed-top-header">
@@ -15,7 +17,11 @@
                             Dành cho bạn
                         </span>
                         @auth
-                            <a href="{{ route('activity.index') }}" class="feed-tab" role="tab" aria-selected="false">
+                            <a href="{{ route('following.index') }}" class="feed-tab" role="tab" aria-selected="false">
+                                Đang theo dõi
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}" class="feed-tab" role="tab" aria-selected="false" title="Đăng nhập để xem bài viết từ tác giả đang theo dõi">
                                 Đang theo dõi
                             </a>
                         @endauth
@@ -94,97 +100,73 @@
             @endauth
 
             <!-- Category Filter Horizontal Chips -->
-            <div class="px-3 px-sm-4 py-2.5 border-theme-bottom bg-theme-surface">
-                <div class="d-flex align-items-center gap-2 overflow-x-auto no-scrollbar py-1" role="navigation"
-                    aria-label="Bộ lọc chuyên mục">
+            <nav class="px-3 px-sm-4 py-2.5 border-theme-bottom bg-theme-surface" aria-label="Bộ lọc chuyên mục">
+                <div class="d-flex align-items-center gap-2 overflow-x-auto no-scrollbar py-1" role="navigation">
                     <!-- All Categories -->
                     <a href="{{ route('posts.index', array_filter(['q' => $search])) }}"
-                        class="btn btn-sm rounded-pill flex-shrink-0 py-1 px-3 small {{ empty($currentCategorySlug) ? 'btn-editorial-primary' : 'btn-outline-theme' }}">
+                        data-feed-category=""
+                        data-feed-category-chip
+                        class="btn btn-sm rounded-pill flex-shrink-0 py-1 px-3 small {{ empty($currentCategorySlug) ? 'btn-editorial-primary' : 'btn-outline-theme' }}"
+                        @if(empty($currentCategorySlug)) aria-current="page" @endif>
                         Tất cả
                     </a>
 
                     <!-- Categories -->
                     @foreach ($categories as $category)
                         <a href="{{ route('posts.index', array_filter(['category' => $category->slug, 'q' => $search])) }}"
-                            class="btn btn-sm rounded-pill flex-shrink-0 py-1 px-3 small {{ $currentCategorySlug === $category->slug ? 'btn-editorial-primary' : 'btn-outline-theme' }}">
+                            data-feed-category="{{ $category->slug }}"
+                            data-feed-category-chip
+                            class="btn btn-sm rounded-pill flex-shrink-0 py-1 px-3 small {{ $currentCategorySlug === $category->slug ? 'btn-editorial-primary' : 'btn-outline-theme' }}"
+                            @if($currentCategorySlug === $category->slug) aria-current="page" @endif>
                             {{ $category->name }}
                         </a>
                     @endforeach
                 </div>
+            </nav>
 
-                <!-- Active Filter Indicator Banner -->
-                @if ($search || $currentCategorySlug || $currentTagSlug)
-                    <div
-                        class="px-3 px-sm-4 py-2 d-flex align-items-center justify-content-between gap-3 border-theme-bottom">
-                        <div class="d-flex align-items-center gap-2 min-w-0">
-                            <span
-                                class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-circle text-accent"
-                                style="width: 28px; height: 28px; background: var(--color-accent-subtle, rgba(59, 130, 246, 0.08));"
-                                aria-hidden="true">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                                </svg>
-                            </span>
-
-                            <div class="d-flex align-items-center gap-1 flex-wrap min-w-0 small">
-                                <span class="text-theme-secondary">Đang lọc</span>
-
-                                @if ($search)
-                                    <span class="fw-semibold text-theme">
-                                        "{{ $search }}"
-                                    </span>
-                                @endif
-
-                                @if ($currentCategorySlug)
-                                    @if ($search)
-                                        <span class="text-theme-muted">·</span>
-                                    @endif
-                                    <span class="fw-semibold text-theme">
-                                        {{ $activeCategory->name ?? $currentCategorySlug }}
-                                    </span>
-                                @endif
-
-                                @if ($currentTagSlug)
-                                    @if ($search || $currentCategorySlug)
-                                        <span class="text-theme-muted">·</span>
-                                    @endif
-                                    <span class="fw-semibold text-theme">
-                                        #{{ $currentTagSlug }}
-                                    </span>
-                                @endif
-
-                                <span class="text-theme-muted">
-                                    · {{ $posts->total() }} kết quả
-                                </span>
-                            </div>
-                        </div>
-
-                        <a href="{{ route('posts.index') }}"
-                            class="flex-shrink-0 small text-theme-muted text-decoration-none hover-accent"
-                            aria-label="Xóa bộ lọc">
-                            Xóa lọc
-                        </a>
-                    </div>
-                @endif
-
-                <!-- Single Column Posts Feed -->
-                <div class="d-flex flex-column">
-                    @forelse($posts as $post)
-                        <x-post-card :post="$post" />
-                    @empty
-                        <x-empty-state title="Chưa có bài viết nào phù hợp"
-                            description="Thử tìm kiếm với từ khóa khác hoặc khám phá các chuyên mục được quan tâm."
-                            :action-url="route('posts.index')" action-label="Quay lại tất cả bài viết" />
-                    @endforelse
-                </div>
-
-                <!-- Pagination Section -->
-                @if ($posts->hasPages())
-                    <div class="p-3 p-sm-4 border-theme-top bg-theme-surface d-flex justify-content-center">
-                        {{ $posts->links() }}
-                    </div>
-                @endif
+            <p id="feed-status" role="status" aria-live="polite" class="visually-hidden"></p>
+            <div id="feed-error" role="alert" class="alert alert-danger mx-3 mx-sm-4 my-2 small" hidden>
+                <span data-feed-error-message></span>
+                <button type="button" data-feed-retry class="btn btn-sm btn-outline-theme ms-2">Thử lại</button>
             </div>
+
+            <!-- Feed Results Container -->
+            @include('posts.partials.feed-results')
         </div>
-    @endsection
+    </div>
+
+    <!-- Skeleton Loading Template -->
+    <template id="feed-skeleton-template">
+        <div class="feed-skeleton-list" aria-hidden="true">
+            @for ($i = 0; $i < 4; $i++)
+                <div class="feed-skeleton-card">
+                    <!-- Author Row -->
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="skeleton-shimmer rounded-circle" style="width: 32px; height: 32px; flex-shrink: 0;"></div>
+                        <div class="d-flex flex-column gap-1 flex-grow-1">
+                            <div class="skeleton-shimmer" style="width: 120px; height: 13px;"></div>
+                            <div class="skeleton-shimmer" style="width: 60px; height: 10px;"></div>
+                        </div>
+                    </div>
+                    <!-- Title & Excerpt -->
+                    <div class="mt-2 mb-3">
+                        <div class="skeleton-shimmer mb-2" style="width: 75%; height: 18px;"></div>
+                        <div class="skeleton-shimmer mb-2" style="width: 50%; height: 18px;"></div>
+                        <div class="skeleton-shimmer mb-1.5" style="width: 90%; height: 13px;"></div>
+                        <div class="skeleton-shimmer" style="width: 65%; height: 13px;"></div>
+                    </div>
+                    <!-- Category Badge -->
+                    <div class="mb-3">
+                        <div class="skeleton-shimmer rounded-pill" style="width: 80px; height: 22px;"></div>
+                    </div>
+                    <!-- Footer Actions -->
+                    <div class="d-flex align-items-center gap-4 pt-2 border-theme-top">
+                        <div class="skeleton-shimmer rounded" style="width: 45px; height: 16px;"></div>
+                        <div class="skeleton-shimmer rounded" style="width: 45px; height: 16px;"></div>
+                        <div class="skeleton-shimmer rounded ms-auto" style="width: 30px; height: 16px;"></div>
+                    </div>
+                </div>
+            @endfor
+        </div>
+    </template>
+@endsection

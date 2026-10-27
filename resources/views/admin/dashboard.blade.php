@@ -91,7 +91,8 @@
     .admin-dashboard .metric-value {
         margin: .75rem 0 0;
         color: var(--color-text-primary);
-        font-family: var(--font-serif, 'Lora', Georgia, serif);
+        font-family: var(--font-sans);
+        font-variant-numeric: tabular-nums;
         font-size: clamp(1.9rem, 2.6vw, 2.35rem);
         font-weight: 700;
         line-height: 1;
@@ -412,6 +413,44 @@
             text-align: center;
         }
     }
+
+    @keyframes realtime-pulse {
+        0% { transform: scale(0.95); opacity: 0.8; }
+        50% { transform: scale(1.2); opacity: 1; }
+        100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    .admin-dashboard .realtime-live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(22, 163, 74, 0.12);
+        border: 1px solid rgba(22, 163, 74, 0.3);
+        color: #16a34a;
+        font-size: 11px;
+        font-weight: 650;
+        letter-spacing: 0.02em;
+    }
+
+    .admin-dashboard .realtime-live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background-color: #16a34a;
+        animation: realtime-pulse 2s infinite ease-in-out;
+    }
+
+    .admin-dashboard .metric-value,
+    .admin-dashboard .status-value {
+        transition: color 0.4s ease, transform 0.4s ease;
+    }
+
+    .admin-dashboard .metric-flash {
+        color: #16a34a !important;
+        transform: scale(1.04);
+    }
 </style>
 
 @php
@@ -425,11 +464,16 @@
                 <p class="dashboard-section-kicker">Tổng quan hệ thống</p>
                 <h2 id="overview-heading" class="dashboard-section-title">Chỉ số vận hành</h2>
             </div>
-            {{-- Live Clock: 3-box widget (HH / MM / SS) --}}
-            <div id="admin-live-clock"
-                 class="d-flex align-items-center gap-1"
-                 style="font-variant-numeric: tabular-nums;"
-                 aria-label="Đồng hồ hệ thống">
+            <div class="d-flex align-items-center gap-2">
+                <div class="realtime-live-badge" title="Hệ thống đang đồng bộ dữ liệu thời gian thực (Real-time)">
+                    <span class="realtime-live-dot" aria-hidden="true"></span>
+                    <span>Real-time</span>
+                </div>
+                {{-- Live Clock: 3-box widget (HH / MM / SS) --}}
+                <div id="admin-live-clock"
+                     class="d-flex align-items-center gap-1"
+                     style="font-variant-numeric: tabular-nums;"
+                     aria-label="Đồng hồ hệ thống">
 
                 {{-- Box: GIỜ --}}
                 <div class="d-flex flex-column align-items-center justify-content-center rounded-2 bg-body-tertiary border px-2"
@@ -467,6 +511,7 @@
                           style="font-size: 0.5rem; letter-spacing: 0.06em;">Giây</span>
                 </div>
             </div>
+            </div>
         </div>
 
         <div class="row g-3">
@@ -480,10 +525,10 @@
                             </svg>
                         </span>
                     </div>
-                    <p class="metric-value">{{ number_format($metrics['users']) }}</p>
+                    <p class="metric-value" data-metric="users">{{ number_format($metrics['users']) }}</p>
                     <div class="metric-footer">
-                        <span>Tác giả <strong class="text-theme">{{ number_format($metrics['authors']) }}</strong></span>
-                        <span>Độc giả <strong class="text-theme">{{ number_format($metrics['viewers']) }}</strong></span>
+                        <span>Tác giả <strong class="text-theme" data-metric="authors">{{ number_format($metrics['authors']) }}</strong></span>
+                        <span>Độc giả <strong class="text-theme" data-metric="viewers">{{ number_format($metrics['viewers']) }}</strong></span>
                         <a href="{{ route('admin.users.index') }}">Quản lý &rarr;</a>
                     </div>
                 </article>
@@ -500,7 +545,7 @@
                             </svg>
                         </span>
                     </div>
-                   <p class="metric-value">
+                   <p class="metric-value" data-metric="views">
     {{ number_format($metrics['views']) }}
 </p>
                     <div class="metric-footer">
@@ -520,10 +565,10 @@
                             </svg>
                         </span>
                     </div>
-                    <p class="metric-value">{{ number_format($metrics['comments']) }}</p>
+                    <p class="metric-value" data-metric="comments">{{ number_format($metrics['comments']) }}</p>
                     <div class="metric-footer">
                         <span>Cần xử lý</span>
-                        <span class="badge {{ $moderationTotal > 0 ? 'bg-warning-subtle text-warning border border-warning' : 'bg-surface-2 border border-theme text-theme-muted' }}">
+                        <span class="badge {{ $moderationTotal > 0 ? 'bg-warning-subtle text-warning border border-warning' : 'bg-surface-2 border border-theme text-theme-muted' }}" data-metric="moderation">
                             {{ number_format($moderationTotal) }}
                         </span>
                         @if($moderationTotal > 0)
@@ -547,27 +592,27 @@
         <div class="status-grid">
             <a href="{{ route('admin.posts.index') }}" class="status-card">
                 <span class="status-label">Tổng bài</span>
-                <p class="status-value">{{ number_format($metrics['posts']) }}</p>
+                <p class="status-value" data-metric="posts">{{ number_format($metrics['posts']) }}</p>
             </a>
 
             <a href="{{ route('admin.posts.index', ['status' => 'pending']) }}" class="status-card {{ $metrics['pending'] > 0 ? 'active-filter' : '' }}">
                 <span class="status-label text-warning">Chờ duyệt</span>
-                <p class="status-value text-warning">{{ number_format($metrics['pending']) }}</p>
+                <p class="status-value text-warning" data-metric="pending">{{ number_format($metrics['pending']) }}</p>
             </a>
 
             <a href="{{ route('admin.posts.index', ['status' => 'published']) }}" class="status-card">
                 <span class="status-label" style="color: var(--color-success, #16a34a);">Xuất bản</span>
-                <p class="status-value" style="color: var(--color-success, #16a34a);">{{ number_format($metrics['published']) }}</p>
+                <p class="status-value" style="color: var(--color-success, #16a34a);" data-metric="published">{{ number_format($metrics['published']) }}</p>
             </a>
 
             <a href="{{ route('admin.posts.index', ['status' => 'draft']) }}" class="status-card">
                 <span class="status-label">Bản nháp</span>
-                <p class="status-value text-theme-secondary">{{ number_format($metrics['draft']) }}</p>
+                <p class="status-value text-theme-secondary" data-metric="draft">{{ number_format($metrics['draft']) }}</p>
             </a>
 
             <a href="{{ route('admin.posts.index', ['status' => 'rejected']) }}" class="status-card">
                 <span class="status-label text-danger">Bị từ chối</span>
-                <p class="status-value text-danger">{{ number_format($metrics['rejected']) }}</p>
+                <p class="status-value text-danger" data-metric="rejected">{{ number_format($metrics['rejected']) }}</p>
             </a>
         </div>
     </section>
@@ -579,7 +624,7 @@
                     <div class="queue-head">
                         <div class="queue-head-main">
                             <span class="queue-dot" aria-hidden="true"></span>
-                            <h2 class="queue-title">Hàng đợi bài viết chờ duyệt ({{ $recentPendingPosts->count() }})</h2>
+                            <h2 class="queue-title">Hàng đợi bài viết chờ duyệt (<span data-metric="queue-posts-count">{{ $recentPendingPosts->count() }}</span>)</h2>
                         </div>
                         <a href="{{ route('admin.posts.index', ['status' => 'pending']) }}" class="queue-all-link">Xem tất cả &rarr;</a>
                     </div>
@@ -641,7 +686,7 @@
                     <div class="queue-head">
                         <div class="queue-head-main">
                             <span class="queue-dot" aria-hidden="true"></span>
-                            <h2 class="queue-title">Bình luận cần hậu kiểm ({{ $recentPendingComments->count() }})</h2>
+                            <h2 class="queue-title">Bình luận cần hậu kiểm (<span data-metric="queue-comments-count">{{ $recentPendingComments->count() }}</span>)</h2>
                         </div>
                         <a href="{{ route('admin.comments.index') }}" class="queue-all-link">Xem tất cả &rarr;</a>
                     </div>
@@ -723,36 +768,99 @@
     </section>
 </div>
 
-{{-- Live Clock: real-time tick script --}}
+{{-- Live Clock & Real-time Metrics Polling --}}
 <script>
 (function () {
     'use strict';
 
+    // 1. Live Clock
     var clockEl = document.getElementById('admin-live-clock');
-    if (!clockEl) return;
+    if (clockEl) {
+        var hhEl = document.getElementById('clock-hh');
+        var mmEl = document.getElementById('clock-mm');
+        var ssEl = document.getElementById('clock-ss');
 
-    var hhEl = document.getElementById('clock-hh');
-    var mmEl = document.getElementById('clock-mm');
-    var ssEl = document.getElementById('clock-ss');
-    if (!hhEl || !mmEl || !ssEl) return;
+        if (hhEl && mmEl && ssEl) {
+            function pad(n) {
+                return n < 10 ? '0' + n : String(n);
+            }
 
-    function pad(n) {
-        return n < 10 ? '0' + n : String(n);
+            function tick() {
+                var now = new Date();
+                hhEl.textContent = pad(now.getHours());
+                mmEl.textContent = pad(now.getMinutes());
+                ssEl.textContent = pad(now.getSeconds());
+            }
+
+            if (window._adminClockInterval) {
+                clearInterval(window._adminClockInterval);
+            }
+
+            tick();
+            window._adminClockInterval = setInterval(tick, 1000);
+        }
     }
 
-    function tick() {
-        var now = new Date();
-        hhEl.textContent = pad(now.getHours());
-        mmEl.textContent = pad(now.getMinutes());
-        ssEl.textContent = pad(now.getSeconds());
+    // 2. Real-time Metrics Sync Polling
+    var realtimeUrl = @json(route('admin.metrics.realtime'));
+    var isPolling = false;
+
+    function updateMetric(selector, value) {
+        var el = document.querySelector(selector);
+        if (!el) return;
+
+        var formatted = new Intl.NumberFormat('vi-VN').format(value);
+        if (el.textContent.trim() !== formatted) {
+            el.textContent = formatted;
+            el.classList.add('metric-flash');
+            setTimeout(function () {
+                el.classList.remove('metric-flash');
+            }, 1200);
+        }
     }
 
-    if (window._adminClockInterval) {
-        clearInterval(window._adminClockInterval);
+    function syncRealtimeMetrics() {
+        if (document.hidden || isPolling) return;
+        isPolling = true;
+
+        fetch(realtimeUrl, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function (res) {
+            return res.ok ? res.json() : null;
+        })
+        .then(function (data) {
+            if (!data || !data.metrics) return;
+            var m = data.metrics;
+
+            updateMetric('[data-metric="users"]', m.users);
+            updateMetric('[data-metric="authors"]', m.authors);
+            updateMetric('[data-metric="viewers"]', m.viewers);
+            updateMetric('[data-metric="views"]', m.views);
+            updateMetric('[data-metric="comments"]', m.comments);
+            updateMetric('[data-metric="moderation"]', m.moderation_comments);
+            updateMetric('[data-metric="posts"]', m.posts);
+            updateMetric('[data-metric="pending"]', m.pending);
+            updateMetric('[data-metric="published"]', m.published);
+            updateMetric('[data-metric="draft"]', m.draft);
+            updateMetric('[data-metric="rejected"]', m.rejected);
+            updateMetric('[data-metric="queue-posts-count"]', data.pending_posts_count);
+            updateMetric('[data-metric="queue-comments-count"]', data.pending_comments_count);
+        })
+        .catch(function () {})
+        .finally(function () {
+            isPolling = false;
+        });
     }
 
-    tick();
-    window._adminClockInterval = setInterval(tick, 1000);
+    if (window._adminMetricsPollingInterval) {
+        clearInterval(window._adminMetricsPollingInterval);
+    }
+    // Poll every 10 seconds for real-time operational sync
+    window._adminMetricsPollingInterval = setInterval(syncRealtimeMetrics, 10000);
 })();
 </script>
 @endsection

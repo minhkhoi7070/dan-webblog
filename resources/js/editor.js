@@ -550,20 +550,133 @@ function checkContrastWarning(textColor, bgColor) {
     const darker = Math.min(lumText, lumBg);
     const ratio = (brighter + 0.05) / (darker + 0.05);
 
-    // If contrast is poor, surface a helpful hint without overriding user choice
     if (ratio < 2.5) {
         showEditorToast('Gợi ý: Độ tương phản giữa màu chữ và màu nền đang chọn khá thấp, có thể gây khó đọc.', 'warning');
     }
 }
 
 // ============================================================================
+// MODULE LIFECYCLE & STATE
+// ============================================================================
+
+let currentEditor = null;
+let isDirty = false;
+let isSubmitting = false;
+let cleanupHandlers = [];
+let floatingImageToolbarEl = null;
+
+function registerCleanup(fn) {
+    if (typeof fn === 'function') {
+        cleanupHandlers.push(fn);
+    }
+}
+
+function registerListener(target, type, handler, options) {
+    if (!target) return;
+    target.addEventListener(type, handler, options);
+    registerCleanup(() => {
+        target.removeEventListener(type, handler, options);
+    });
+}
+
+export function isPostEditorDirty() {
+    return Boolean(isDirty && !isSubmitting);
+}
+
+export function setPostEditorDirty(val = true) {
+    isDirty = Boolean(val);
+    if (typeof window !== 'undefined') {
+        window.__postEditorIsDirty = isDirty;
+    }
+}
+
+export function destroyPostEditor() {
+    if (currentEditor) {
+        try {
+            currentEditor.destroy();
+        } catch (e) {
+            console.warn('TipTap destroy error:', e);
+        }
+        currentEditor = null;
+    }
+
+    cleanupHandlers.forEach((cleanup) => {
+        try {
+            cleanup();
+        } catch (e) {
+            console.warn('Cleanup handler error:', e);
+        }
+    });
+    cleanupHandlers = [];
+
+    if (floatingImageToolbarEl) {
+        floatingImageToolbarEl.classList.add('d-none');
+        floatingImageToolbarEl.remove();
+        floatingImageToolbarEl = null;
+    }
+
+    // Clean up portaled modals attached directly to document.body
+    if (typeof document !== 'undefined') {
+        ['editor-link-modal', 'editor-image-modal', 'editor-shortcuts-modal', 'thumbnail-remove-confirm-modal'].forEach((id) => {
+            if (typeof document.getElementById !== 'function') return;
+            const modalEl = document.getElementById(id);
+            if (modalEl && document.body && modalEl.parentElement === document.body) {
+                if (typeof window !== 'undefined' && window.bootstrap?.Modal) {
+                    const inst = window.bootstrap.Modal.getInstance(modalEl);
+                    if (inst) inst.dispose();
+                }
+                modalEl.remove();
+            }
+        });
+
+        if (typeof document.querySelectorAll === 'function') {
+            document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
+        }
+        if (document.body) {
+            document.body.classList?.remove?.('modal-open');
+            document.body.style?.removeProperty?.('overflow');
+            document.body.style?.removeProperty?.('padding-right');
+        }
+    }
+
+    isDirty = false;
+    isSubmitting = false;
+    if (typeof window !== 'undefined') {
+        window.__postEditorIsDirty = false;
+    }
+}
+
+// Global exposure for Seamless Router & Interop
+if (typeof window !== 'undefined') {
+    window.destroyPostEditor = destroyPostEditor;
+    window.isPostEditorDirty = isPostEditorDirty;
+    window.setPostEditorDirty = setPostEditorDirty;
+    window.__postEditorSetDirty = () => setPostEditorDirty(true);
+}
+
+// ============================================================================
 // MAIN EDITOR INITIALIZATION
 // ============================================================================
 
-export function initPostEditor() {
-    const editorElement = document.getElementById('tiptap-editor');
-    const textarea = document.getElementById('content');
+export function initPostEditor(root = document) {
+    const editorElement = (root && root.querySelector)
+        ? (root.querySelector('#tiptap-editor') || document.getElementById('tiptap-editor'))
+        : document.getElementById('tiptap-editor');
+
+    const textarea = (root && root.querySelector)
+        ? (root.querySelector('#content') || document.getElementById('content'))
+        : document.getElementById('content');
+
     if (!editorElement || !textarea) return null;
+
+    // Teardown previous editor if re-entering or re-hydrating
+    if (currentEditor) {
+        destroyPostEditor();
+    }
+
+    isDirty = false;
+    isSubmitting = false;
+    editorElement.innerHTML = '';
 
     const initialContent = textarea.value || '';
 
@@ -606,7 +719,6 @@ export function initPostEditor() {
                 spellcheck: 'false',
             },
             transformPastedHTML(html) {
-                // Client-side sanitization: strip script, iframe, and dangerous event handlers on paste
                 try {
                     const doc = new DOMParser().parseFromString(html, 'text/html');
                     doc.querySelectorAll('script, iframe, object, embed, style').forEach((el) => el.remove());
@@ -626,6 +738,7 @@ export function initPostEditor() {
         },
         onUpdate: ({ editor }) => {
             textarea.value = editor.getHTML();
+            setPostEditorDirty(true);
             updateEditorStats(editor);
             updateToolbarState(editor);
             updateFloatingImageToolbar(editor);
@@ -636,25 +749,31 @@ export function initPostEditor() {
         },
     });
 
-    // Ensure hidden textarea is synced before form submission
-    const form = textarea.closest('form');
-    if (form) {
-        form.addEventListener('submit', () => {
-            textarea.value = editor.getHTML();
-        });
-    }
+    currentEditor = editor;
 
-    setupToolbar(editor);
-    setupLinkModal(editor);
-    setupImageAltModal(editor);
+    setupToolbar(editor, root);
+    setupLinkModal(editor, root);
+    setupImageAltModal(editor, root);
     setupFloatingImageToolbar(editor);
-    setupShortcutsModal();
-    setupImageUpload(editor);
+    setupShortcutsModal(root);
+    setupImageUpload(editor, root);
+    setupThumbnailUploader(root);
+    setupTagSelector(root);
+    setupFormHandling(editor, root);
+
     updateEditorStats(editor);
     updateToolbarState(editor);
 
+    if (typeof window !== 'undefined') {
+        window.initPostEditor = initPostEditor;
+    }
+
     return editor;
 }
+
+// ============================================================================
+// STATS & TOOLBAR STATE
+// ============================================================================
 
 function updateEditorStats(editor) {
     if (!editor) return;
@@ -675,7 +794,6 @@ function updateEditorStats(editor) {
 function updateToolbarState(editor) {
     if (!editor) return;
 
-    // 1. Update Block Type Dropdown Label & State
     let currentLabel = 'Đoạn văn';
     let currentBlock = 'p';
 
@@ -712,7 +830,6 @@ function updateToolbarState(editor) {
         item.classList.toggle('active', blockType === currentBlock);
     });
 
-    // 2. Update Inline & Block Button States
     const actionMap = {
         bold: () => editor.isActive('bold'),
         italic: () => editor.isActive('italic'),
@@ -736,7 +853,6 @@ function updateToolbarState(editor) {
             btn.classList.toggle('active', Boolean(checkFn()));
         }
 
-        // Handle Undo / Redo disabled states
         if (action === 'undo') {
             const canUndo = editor.can().undo();
             btn.classList.toggle('opacity-50', !canUndo);
@@ -748,7 +864,6 @@ function updateToolbarState(editor) {
         }
     });
 
-    // 3. Update List Indent / Outdent disabled states based on active list item
     const indentBtn = document.querySelector('[data-editor-action="indent"]');
     const outdentBtn = document.querySelector('[data-editor-action="outdent"]');
 
@@ -775,10 +890,16 @@ function updateToolbarState(editor) {
     }
 }
 
-function setupToolbar(editor) {
-    // 1. Heading & Paragraph block dropdown selection
-    document.querySelectorAll('[data-editor-block]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
+// ============================================================================
+// TOOLBAR SETUP
+// ============================================================================
+
+function setupToolbar(editor, root) {
+    const scope = root && root.querySelectorAll ? root : document;
+
+    // 1. Heading & Paragraph block dropdown
+    scope.querySelectorAll('[data-editor-block]').forEach((btn) => {
+        registerListener(btn, 'click', (e) => {
             e.preventDefault();
             const blockType = btn.getAttribute('data-editor-block');
 
@@ -813,8 +934,8 @@ function setupToolbar(editor) {
     });
 
     // 2. Toolbar action buttons
-    document.querySelectorAll('[data-editor-action]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
+    scope.querySelectorAll('[data-editor-action]').forEach((btn) => {
+        registerListener(btn, 'click', (e) => {
             e.preventDefault();
             const action = btn.getAttribute('data-editor-action');
 
@@ -832,7 +953,6 @@ function setupToolbar(editor) {
                     editor.chain().focus().toggleStrike().run();
                     break;
                 case 'clear-format':
-                    // Unset character formatting while keeping structure intact
                     editor.chain().focus().unsetAllMarks().run();
                     showEditorToast('Đã xóa toàn bộ định dạng ký tự vùng chọn.', 'info');
                     break;
@@ -882,7 +1002,6 @@ function setupToolbar(editor) {
                     updateToolbarState(editor);
                     break;
                 case 'indent':
-                    // Genuine structural list nesting if in list, otherwise block indent
                     if (editor.isActive('listItem')) {
                         editor.chain().focus().sinkListItem('listItem').run();
                     } else {
@@ -890,7 +1009,6 @@ function setupToolbar(editor) {
                     }
                     break;
                 case 'outdent':
-                    // Genuine structural list lifting if in list, otherwise block outdent
                     if (editor.isActive('listItem')) {
                         editor.chain().focus().liftListItem('listItem').run();
                     } else {
@@ -923,8 +1041,8 @@ function setupToolbar(editor) {
     });
 
     // 3. Text color palette selection
-    document.querySelectorAll('[data-editor-color]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
+    scope.querySelectorAll('[data-editor-color]').forEach((btn) => {
+        registerListener(btn, 'click', (e) => {
             e.preventDefault();
             const color = btn.getAttribute('data-editor-color');
             if (color === 'reset') {
@@ -940,10 +1058,10 @@ function setupToolbar(editor) {
         });
     });
 
-    // Custom color input picker
+    // Custom color picker
     const customColorInput = document.getElementById('editor-custom-color-picker');
     if (customColorInput) {
-        customColorInput.addEventListener('input', (e) => {
+        registerListener(customColorInput, 'input', (e) => {
             const color = e.target.value;
             const currentBg = editor.getAttributes('textHighlight').color;
             if (currentBg) {
@@ -954,8 +1072,8 @@ function setupToolbar(editor) {
     }
 
     // 4. Highlight palette selection
-    document.querySelectorAll('[data-editor-highlight]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
+    scope.querySelectorAll('[data-editor-highlight]').forEach((btn) => {
+        registerListener(btn, 'click', (e) => {
             e.preventDefault();
             const highlightColor = btn.getAttribute('data-editor-highlight');
             if (highlightColor === 'reset') {
@@ -986,16 +1104,18 @@ async function pasteAsPlainText(editor) {
             showEditorToast('Bộ nhớ tạm (clipboard) đang trống.', 'info');
         }
     } catch {
-        // Fallback when clipboard permission is restricted
         showEditorToast('Trình duyệt chặn đọc Clipboard. Vui lòng nhấn Ctrl+Shift+V (Cmd+Shift+V) để dán văn bản thuần.', 'info');
     }
 }
+
+// ============================================================================
+// MODALS SETUP (LINK, IMAGE ALT, SHORTCUTS)
+// ============================================================================
 
 function openShortcutsModal() {
     const modalEl = document.getElementById('editor-shortcuts-modal');
     if (!modalEl) return;
 
-    // Portal pattern: ensure modal element is directly attached to document.body
     if (modalEl.parentElement !== document.body) {
         document.body.appendChild(modalEl);
     }
@@ -1017,28 +1137,23 @@ function setupShortcutsModal() {
     const modalEl = document.getElementById('editor-shortcuts-modal');
     if (!modalEl) return;
 
-    // Move to body immediately to prevent container hierarchy conflicts
     if (modalEl.parentElement !== document.body) {
         document.body.appendChild(modalEl);
     }
 
-    // Single-registration cleanup listener for modal dismissal
-    modalEl.addEventListener('hidden.bs.modal', () => {
-        // Ensure all leftover backdrops are completely cleaned up
+    registerListener(modalEl, 'hidden.bs.modal', () => {
         document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
         document.body.classList.remove('modal-open');
         document.body.style.removeProperty('overflow');
         document.body.style.removeProperty('padding-right');
 
-        // Restore focus to shortcuts toolbar button
         const triggerBtn = document.querySelector('[data-editor-action="shortcuts-help"]');
         if (triggerBtn) {
             triggerBtn.focus();
         }
     });
 
-    // Close on clicking backdrop (outside dialog)
-    modalEl.addEventListener('click', (e) => {
+    registerListener(modalEl, 'click', (e) => {
         if (e.target === modalEl) {
             if (window.bootstrap && window.bootstrap.Modal) {
                 window.bootstrap.Modal.getOrCreateInstance(modalEl).hide();
@@ -1049,8 +1164,7 @@ function setupShortcutsModal() {
         }
     });
 
-    // Cross-browser Escape key listener
-    document.addEventListener('keydown', (e) => {
+    registerListener(document, 'keydown', (e) => {
         if (e.key === 'Escape') {
             if (modalEl.classList.contains('show')) {
                 if (window.bootstrap && window.bootstrap.Modal) {
@@ -1062,77 +1176,6 @@ function setupShortcutsModal() {
             }
         }
     });
-}
-
-function setupLinkModal(editor) {
-    const modalEl = document.getElementById('editor-link-modal');
-    if (!modalEl) return;
-
-    // Move to body immediately
-    if (modalEl.parentElement !== document.body) {
-        document.body.appendChild(modalEl);
-    }
-
-    modalEl.addEventListener('hidden.bs.modal', () => {
-        document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
-        document.body.classList.remove('modal-open');
-        document.body.style.removeProperty('overflow');
-        document.body.style.removeProperty('padding-right');
-    });
-
-    const urlInput = document.getElementById('editor-link-url');
-    const saveBtn = document.getElementById('editor-link-save-btn');
-    const unlinkBtn = document.getElementById('editor-link-unlink-btn');
-
-    if (saveBtn) {
-        saveBtn.addEventListener('click', () => {
-            let url = (urlInput?.value || '').trim();
-            if (!url) {
-                showEditorToast('Vui lòng nhập địa chỉ liên kết URL.', 'danger');
-                return;
-            }
-
-            // Reject dangerous protocols
-            if (/^(javascript:|data:|vbscript:)/i.test(url)) {
-                showEditorToast('Giao thức URL không an toàn. Vui lòng nhập liên kết http:// hoặc https://', 'danger');
-                return;
-            }
-
-            // Auto prepend https:// if missing protocol
-            if (!/^(https?:\/\/|\/|#|mailto:)/i.test(url)) {
-                url = 'https://' + url;
-            }
-
-            editor.chain().focus().extendMarkRange('link').setLink({
-                href: url,
-                target: '_blank',
-                rel: 'noopener noreferrer',
-            }).run();
-
-            closeLinkModal();
-            showEditorToast('Đã áp dụng liên kết thành công.', 'success');
-        });
-    }
-
-    if (unlinkBtn) {
-        unlinkBtn.addEventListener('click', () => {
-            editor.chain().focus().unsetLink().run();
-            closeLinkModal();
-            showEditorToast('Đã xóa liên kết.', 'info');
-        });
-    }
-
-    // Allow clicking on links inside the editor to edit them
-    const editorEl = document.getElementById('tiptap-editor');
-    if (editorEl) {
-        editorEl.addEventListener('click', (e) => {
-            const linkTarget = e.target.closest('a');
-            if (linkTarget) {
-                e.preventDefault();
-                openLinkModal(editor);
-            }
-        });
-    }
 }
 
 function openLinkModal(editor) {
@@ -1171,6 +1214,77 @@ function closeLinkModal() {
     }
 }
 
+function setupLinkModal(editor) {
+    const modalEl = document.getElementById('editor-link-modal');
+    if (!modalEl) return;
+
+    if (modalEl.parentElement !== document.body) {
+        document.body.appendChild(modalEl);
+    }
+
+    registerListener(modalEl, 'hidden.bs.modal', () => {
+        document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+    });
+
+    const urlInput = document.getElementById('editor-link-url');
+    const saveBtn = document.getElementById('editor-link-save-btn');
+    const unlinkBtn = document.getElementById('editor-link-unlink-btn');
+
+    if (saveBtn) {
+        registerListener(saveBtn, 'click', () => {
+            let url = (urlInput?.value || '').trim();
+            if (!url) {
+                showEditorToast('Vui lòng nhập địa chỉ liên kết URL.', 'danger');
+                return;
+            }
+
+            if (/^(javascript:|data:|vbscript:)/i.test(url)) {
+                showEditorToast('Giao thức URL không an toàn. Vui lòng nhập liên kết http:// hoặc https://', 'danger');
+                return;
+            }
+
+            if (!/^(https?:\/\/|\/|#|mailto:)/i.test(url)) {
+                url = 'https://' + url;
+            }
+
+            editor.chain().focus().extendMarkRange('link').setLink({
+                href: url,
+                target: '_blank',
+                rel: 'noopener noreferrer',
+            }).run();
+
+            closeLinkModal();
+            showEditorToast('Đã áp dụng liên kết thành công.', 'success');
+        });
+    }
+
+    if (unlinkBtn) {
+        registerListener(unlinkBtn, 'click', () => {
+            editor.chain().focus().unsetLink().run();
+            closeLinkModal();
+            showEditorToast('Đã xóa liên kết.', 'info');
+        });
+    }
+
+    const editorEl = document.getElementById('tiptap-editor');
+    if (editorEl) {
+        registerListener(editorEl, 'click', (e) => {
+            const linkTarget = e.target.closest('a');
+            if (linkTarget) {
+                e.preventDefault();
+                openLinkModal(editor);
+            }
+        });
+    }
+}
+
+// ============================================================================
+// INLINE IMAGE UPLOAD
+// ============================================================================
+
 function triggerImageUpload() {
     const fileInput = document.getElementById('editor-image-file-input');
     if (fileInput) {
@@ -1183,18 +1297,16 @@ function setupImageUpload(editor) {
     const imageBtn = document.querySelector('[data-editor-action="image"]');
     if (!fileInput) return;
 
-    fileInput.addEventListener('change', async () => {
+    registerListener(fileInput, 'change', async () => {
         const file = fileInput.files[0];
         if (!file) return;
 
-        // Client validation: Max 2MB
         if (file.size > 2 * 1024 * 1024) {
             showEditorToast('Dung lượng hình ảnh vượt quá 2MB. Vui lòng chọn ảnh nhỏ hơn.', 'danger');
             fileInput.value = '';
             return;
         }
 
-        // Validate MIME type
         const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image/gif'];
         if (!validTypes.includes(file.type)) {
             showEditorToast('Định dạng hình ảnh không hợp lệ. Vui lòng chọn JPG, PNG, WEBP hoặc GIF.', 'danger');
@@ -1202,7 +1314,6 @@ function setupImageUpload(editor) {
             return;
         }
 
-        // Loading state on button
         const originalHtml = imageBtn ? imageBtn.innerHTML : '';
         if (imageBtn) {
             imageBtn.disabled = true;
@@ -1230,7 +1341,6 @@ function setupImageUpload(editor) {
             const data = await response.json();
 
             if (response.ok && data.url) {
-                // Insert with default center alignment and null caption
                 editor.chain().focus().setImage({
                     src: data.url,
                     alt: '',
@@ -1238,7 +1348,8 @@ function setupImageUpload(editor) {
                     alignment: 'center',
                     caption: null,
                 }).run();
-                showEditorToast('Đã tải lên và chèn hình ảnh thành công! Bạn có thể chọn ảnh để căn chỉnh hoặc nhấp đúp để thêm chú thích.', 'success');
+                setPostEditorDirty(true);
+                showEditorToast('Đã tải lên và chèn hình ảnh thành công!', 'success');
             } else {
                 const errMsg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Tải ảnh thất bại.');
                 showEditorToast(errMsg, 'danger');
@@ -1255,7 +1366,9 @@ function setupImageUpload(editor) {
     });
 }
 
-let floatingImageToolbarEl = null;
+// ============================================================================
+// FLOATING IMAGE TOOLBAR
+// ============================================================================
 
 export function setupFloatingImageToolbar(editor) {
     if (!floatingImageToolbarEl) {
@@ -1292,6 +1405,7 @@ export function setupFloatingImageToolbar(editor) {
                 e.stopPropagation();
                 const align = btn.getAttribute('data-float-align');
                 editor.chain().focus().updateAttributes('image', { alignment: align }).run();
+                setPostEditorDirty(true);
                 updateToolbarState(editor);
                 updateFloatingImageToolbar(editor);
             });
@@ -1317,20 +1431,18 @@ export function setupFloatingImageToolbar(editor) {
                 e.stopPropagation();
                 editor.chain().focus().deleteSelection().run();
                 floatingImageToolbarEl.classList.add('d-none');
+                setPostEditorDirty(true);
             });
         }
 
-        window.addEventListener('scroll', () => {
+        const onScrollOrResize = () => {
             if (floatingImageToolbarEl && !floatingImageToolbarEl.classList.contains('d-none')) {
                 updateFloatingImageToolbar(editor);
             }
-        }, { passive: true });
+        };
 
-        window.addEventListener('resize', () => {
-            if (floatingImageToolbarEl && !floatingImageToolbarEl.classList.contains('d-none')) {
-                updateFloatingImageToolbar(editor);
-            }
-        }, { passive: true });
+        registerListener(window, 'scroll', onScrollOrResize, { passive: true });
+        registerListener(window, 'resize', onScrollOrResize, { passive: true });
     }
 }
 
@@ -1387,7 +1499,7 @@ function setupImageAltModal(editor) {
     let currentEditingImg = null;
     let currentEditingPos = null;
 
-    modalEl.addEventListener('hidden.bs.modal', () => {
+    registerListener(modalEl, 'hidden.bs.modal', () => {
         document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
         document.body.classList.remove('modal-open');
         document.body.style.removeProperty('overflow');
@@ -1416,7 +1528,7 @@ function setupImageAltModal(editor) {
     }
 
     alignButtons.forEach((btn) => {
-        btn.addEventListener('click', (e) => {
+        registerListener(btn, 'click', (e) => {
             e.preventDefault();
             setModalAlign(btn.getAttribute('data-editor-image-align'));
         });
@@ -1429,7 +1541,6 @@ function setupImageAltModal(editor) {
         currentEditingImg = img;
         currentEditingPos = null;
 
-        // Resolve exact ProseMirror document position
         try {
             const pos = editor.view.posAtDOM(img, 0);
             if (pos !== undefined && pos !== null) {
@@ -1447,7 +1558,6 @@ function setupImageAltModal(editor) {
             console.warn('posAtDOM resolution error:', e);
         }
 
-        // Fallback scan if pos wasn't resolved by posAtDOM
         if (currentEditingPos === null) {
             const imgSrc = img.getAttribute('src');
             editor.state.doc.descendants((node, pos) => {
@@ -1494,7 +1604,6 @@ function setupImageAltModal(editor) {
         }
     }
 
-    // Expose openImageModal globally for floating toolbar
     window.__openEditorImageModal = openImageModal;
 
     function handleSave() {
@@ -1504,7 +1613,6 @@ function setupImageAltModal(editor) {
         const newAlign = (alignInput?.value || 'center');
         const newCaption = (captionInput?.value || '').trim();
 
-        // 1. Update attributes via TipTap API if pos is located
         if (currentEditingPos !== null) {
             try {
                 editor.chain()
@@ -1522,7 +1630,6 @@ function setupImageAltModal(editor) {
             }
         }
 
-        // 2. Also update DOM image and figure directly for immediate visual consistency
         if (currentEditingImg) {
             if (newAlt) currentEditingImg.setAttribute('alt', newAlt);
             else currentEditingImg.removeAttribute('alt');
@@ -1555,14 +1662,11 @@ function setupImageAltModal(editor) {
             }
         }
 
-        // 3. Sync hidden textarea and mark form dirty
         const textarea = document.getElementById('content');
         if (textarea) {
             textarea.value = editor.getHTML();
         }
-        if (window.__postEditorSetDirty) {
-            window.__postEditorSetDirty();
-        }
+        setPostEditorDirty(true);
 
         closeModal();
         updateToolbarState(editor);
@@ -1578,14 +1682,14 @@ function setupImageAltModal(editor) {
     }
 
     if (saveBtn) {
-        saveBtn.addEventListener('click', (e) => {
+        registerListener(saveBtn, 'click', (e) => {
             e.preventDefault();
             handleSave();
         });
     }
 
     if (formEl) {
-        formEl.addEventListener('submit', (e) => {
+        registerListener(formEl, 'submit', (e) => {
             e.preventDefault();
             handleSave();
         });
@@ -1593,7 +1697,7 @@ function setupImageAltModal(editor) {
 
     [captionInput, altInput, titleInput].forEach((input) => {
         if (input) {
-            input.addEventListener('keydown', (e) => {
+            registerListener(input, 'keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     handleSave();
@@ -1602,10 +1706,9 @@ function setupImageAltModal(editor) {
         }
     });
 
-    // Double-click listener on editor DOM
     const editorEl = document.getElementById('tiptap-editor');
     if (editorEl) {
-        editorEl.addEventListener('dblclick', (e) => {
+        registerListener(editorEl, 'dblclick', (e) => {
             const img = e.target.closest('img') || e.target.closest('figure')?.querySelector('img');
             if (img) {
                 e.preventDefault();
@@ -1616,10 +1719,641 @@ function setupImageAltModal(editor) {
     }
 }
 
+// ============================================================================
+// FORM HANDLING & DIRTY STATE GUARD
+// ============================================================================
+
+function setupFormHandling(editor, root) {
+    const scope = root && root.querySelector ? root : document;
+    const textarea = document.getElementById('content');
+    if (!textarea) return;
+
+    const form = scope.querySelector('#create-post-form')
+        || scope.querySelector('#edit-post-form')
+        || textarea.closest('form');
+
+    if (form) {
+        let lastClickedAction = 'submit';
+
+        // Capture action from button clicks inside or outside the form targeting this form
+        document.querySelectorAll(`button[type="submit"][form="${form.id}"], form#${form.id} button[type="submit"]`).forEach((btn) => {
+            registerListener(btn, 'click', () => {
+                lastClickedAction = btn.value || 'submit';
+            });
+        });
+
+        registerListener(form, 'submit', (e) => {
+            if (isSubmitting) {
+                e.preventDefault();
+                return;
+            }
+
+            isSubmitting = true;
+            textarea.value = editor.getHTML();
+
+            let actionInput = form.querySelector('input[name="action"][type="hidden"]');
+            if (!actionInput) {
+                actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                form.appendChild(actionInput);
+            }
+            actionInput.value = lastClickedAction;
+
+            const allSubmitBtns = document.querySelectorAll(`button[type="submit"][form="${form.id}"], form#${form.id} button[type="submit"]`);
+            allSubmitBtns.forEach((btn) => {
+                btn.disabled = true;
+
+                const isSubmitAction = (btn.value === 'submit' || (lastClickedAction === 'submit' && btn.classList.contains('btn-action-submit')));
+                const isDraftAction = (btn.value === 'draft' || (lastClickedAction === 'draft' && btn.classList.contains('btn-action-draft')));
+
+                if (isSubmitAction && lastClickedAction === 'submit') {
+                    btn.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true" style="width: 13px; height: 13px;"></span>
+                        <span>Đang gửi duyệt...</span>
+                    `;
+                } else if (isDraftAction && lastClickedAction === 'draft') {
+                    btn.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true" style="width: 13px; height: 13px;"></span>
+                        <span>Đang lưu...</span>
+                    `;
+                }
+            });
+        });
+    }
+
+    // Input listeners for title, excerpt, and category
+    ['title', 'excerpt', 'category_id'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+            const onInput = () => { setPostEditorDirty(true); };
+            registerListener(el, 'input', onInput);
+            registerListener(el, 'change', onInput);
+        }
+    });
+
+    // Native beforeunload for refresh (F5) and tab close
+    const onBeforeUnload = (e) => {
+        if (isDirty && !isSubmitting) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    };
+    registerListener(window, 'beforeunload', onBeforeUnload);
+}
+
+// ============================================================================
+// THUMBNAIL UPLOADER INITIALIZATION
+// ============================================================================
+
+export function setupThumbnailUploader(root = document) {
+    const scope = root && root.querySelector ? root : document;
+    const widget = scope.querySelector('#thumbnail-uploader-widget') || document.getElementById('thumbnail-uploader-widget');
+    if (!widget || widget.dataset.initialized) return;
+    widget.dataset.initialized = 'true';
+
+    const initialThumbnail = widget.getAttribute('data-initial-thumbnail') || '';
+    const fileInput = document.getElementById('thumbnail-file-input');
+    const removeInput = document.getElementById('thumbnail-remove-input');
+    const dropZone = document.getElementById('thumbnail-drop-zone');
+    const previewContainer = document.getElementById('thumbnail-preview-container');
+    const previewImg = document.getElementById('thumbnail-preview-img');
+    const badgeStatus = document.getElementById('thumbnail-badge-status');
+    const indicator = document.getElementById('thumbnail-indicator');
+    const pendingRemoval = document.getElementById('thumbnail-pending-removal');
+    const btnChange = document.getElementById('btn-change-thumbnail');
+    const btnRevert = document.getElementById('btn-revert-thumbnail');
+    const btnRemove = document.getElementById('btn-remove-thumbnail');
+    const btnUndoRemove = document.getElementById('btn-undo-remove');
+    const btnChooseNew = document.getElementById('btn-choose-new-instead');
+    const confirmModalEl = document.getElementById('thumbnail-remove-confirm-modal');
+    const btnConfirmRemove = document.getElementById('btn-confirm-remove-thumbnail');
+    const errorFeedback = document.getElementById('thumbnail-error-feedback');
+
+    if (!fileInput || !dropZone) return;
+
+    if (confirmModalEl && confirmModalEl.parentElement !== document.body) {
+        document.body.appendChild(confirmModalEl);
+    }
+
+    function clearError() {
+        if (errorFeedback) {
+            errorFeedback.textContent = '';
+            errorFeedback.classList.add('d-none');
+        }
+    }
+
+    function showError(msg) {
+        if (errorFeedback) {
+            errorFeedback.textContent = msg;
+            errorFeedback.classList.remove('d-none');
+        }
+    }
+
+    function showEmptyState() {
+        clearError();
+        fileInput.value = '';
+        if (removeInput) removeInput.value = '0';
+        dropZone.classList.remove('d-none');
+        if (previewContainer) previewContainer.classList.add('d-none');
+        if (pendingRemoval) pendingRemoval.classList.add('d-none');
+        if (indicator) {
+            indicator.textContent = 'Chưa có ảnh';
+            indicator.className = 'badge bg-surface-2 text-theme-muted border border-theme font-monospace small';
+        }
+    }
+
+    function showPreviewState(url, isNew = false) {
+        clearError();
+        if (removeInput) removeInput.value = '0';
+        if (previewImg) {
+            previewImg.src = url;
+            previewImg.style.display = 'block';
+        }
+        dropZone.classList.add('d-none');
+        if (pendingRemoval) pendingRemoval.classList.add('d-none');
+        if (previewContainer) previewContainer.classList.remove('d-none');
+
+        if (isNew) {
+            if (badgeStatus) badgeStatus.textContent = 'Ảnh mới đã chọn';
+            if (indicator) {
+                indicator.textContent = 'Ảnh mới';
+                indicator.className = 'badge bg-primary-subtle text-primary border border-primary border-opacity-25 font-monospace small';
+            }
+            if (btnRevert) {
+                if (initialThumbnail) {
+                    btnRevert.classList.remove('d-none');
+                    btnRevert.classList.add('d-inline-flex');
+                } else {
+                    btnRevert.classList.add('d-none');
+                    btnRevert.classList.remove('d-inline-flex');
+                }
+            }
+        } else {
+            if (badgeStatus) badgeStatus.textContent = 'Ảnh hiện tại';
+            if (indicator) {
+                indicator.textContent = 'Đã có ảnh';
+                indicator.className = 'badge bg-surface-2 text-theme-muted border border-theme font-monospace small';
+            }
+            if (btnRevert) {
+                btnRevert.classList.add('d-none');
+                btnRevert.classList.remove('d-inline-flex');
+            }
+        }
+    }
+
+    function showPendingRemovalState() {
+        clearError();
+        fileInput.value = '';
+        if (removeInput) removeInput.value = '1';
+        dropZone.classList.add('d-none');
+        if (previewContainer) previewContainer.classList.add('d-none');
+        if (pendingRemoval) pendingRemoval.classList.remove('d-none');
+        if (indicator) {
+            indicator.textContent = 'Chờ gỡ ảnh';
+            indicator.className = 'badge bg-danger-subtle text-danger border border-danger border-opacity-25 font-monospace small';
+        }
+        setPostEditorDirty(true);
+    }
+
+    function openFilePicker() {
+        fileInput.click();
+    }
+
+    registerListener(dropZone, 'click', openFilePicker);
+    registerListener(dropZone, 'keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openFilePicker();
+        }
+    });
+
+    if (btnChange) registerListener(btnChange, 'click', openFilePicker);
+    if (btnChooseNew) registerListener(btnChooseNew, 'click', openFilePicker);
+
+    ['dragenter', 'dragover'].forEach((eventName) => {
+        registerListener(dropZone, eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('border-primary', 'bg-surface-3');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach((eventName) => {
+        registerListener(dropZone, eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('border-primary', 'bg-surface-3');
+        });
+    });
+
+    registerListener(dropZone, 'drop', (e) => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files && dt.files.length) {
+            fileInput.files = dt.files;
+            handleFileSelected(dt.files[0]);
+        }
+    });
+
+    registerListener(fileInput, 'change', () => {
+        if (!fileInput.files || !fileInput.files[0]) return;
+        handleFileSelected(fileInput.files[0]);
+    });
+
+    function handleFileSelected(file) {
+        if (!file) return;
+
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+        if (!validTypes.includes(file.type)) {
+            showError('Định dạng file không hợp lệ. Vui lòng chọn ảnh JPG, PNG hoặc WEBP.');
+            fileInput.value = '';
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            showError('Dung lượng hình ảnh vượt quá 2MB. Vui lòng chọn ảnh nhỏ hơn.');
+            fileInput.value = '';
+            return;
+        }
+
+        clearError();
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            showPreviewState(e.target.result, true);
+            setPostEditorDirty(true);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    if (btnRevert) {
+        registerListener(btnRevert, 'click', (e) => {
+            e.preventDefault();
+            fileInput.value = '';
+            if (initialThumbnail) {
+                showPreviewState(initialThumbnail, false);
+            } else {
+                showEmptyState();
+            }
+            setPostEditorDirty(true);
+        });
+    }
+
+    if (btnRemove) {
+        registerListener(btnRemove, 'click', (e) => {
+            e.preventDefault();
+            if (!initialThumbnail && fileInput.files && fileInput.files[0]) {
+                showEmptyState();
+                setPostEditorDirty(true);
+                return;
+            }
+
+            if (window.bootstrap && window.bootstrap.Modal && confirmModalEl) {
+                const modal = window.bootstrap.Modal.getOrCreateInstance(confirmModalEl);
+                modal.show();
+            } else {
+                if (confirm('Bạn có chắc chắn muốn gỡ ảnh đại diện của bài viết này không?')) {
+                    showPendingRemovalState();
+                }
+            }
+        });
+    }
+
+    if (btnConfirmRemove) {
+        registerListener(btnConfirmRemove, 'click', (e) => {
+            e.preventDefault();
+            if (window.bootstrap && window.bootstrap.Modal && confirmModalEl) {
+                const modal = window.bootstrap.Modal.getOrCreateInstance(confirmModalEl);
+                modal.hide();
+            }
+            showPendingRemovalState();
+        });
+    }
+
+    if (btnUndoRemove) {
+        registerListener(btnUndoRemove, 'click', (e) => {
+            e.preventDefault();
+            if (initialThumbnail) {
+                showPreviewState(initialThumbnail, false);
+            } else {
+                showEmptyState();
+            }
+            setPostEditorDirty(true);
+        });
+    }
+}
+
+// ============================================================================
+// TAG SELECTOR INITIALIZATION
+// ============================================================================
+
+export function setupTagSelector(root = document) {
+    const scope = root && root.querySelector ? root : document;
+    const widget = scope.querySelector('#tag-manager-component') || document.getElementById('tag-manager-component');
+    if (!widget || widget.dataset.initialized) return;
+    widget.dataset.initialized = 'true';
+
+    const formId = widget.getAttribute('data-form-id') || 'create-post-form';
+    const MAX_TAGS = 10;
+
+    let initialSelectedIds = [];
+    let allTags = [];
+    try {
+        initialSelectedIds = JSON.parse(widget.getAttribute('data-initial-tags') || '[]');
+        allTags = JSON.parse(widget.getAttribute('data-all-tags') || '[]');
+    } catch (e) {
+        console.warn('Tag selector JSON parse error:', e);
+    }
+
+    const tagMap = new Map();
+    const selectedIds = new Set();
+
+    allTags.forEach((t) => tagMap.set(t.id, t));
+    initialSelectedIds.forEach((id) => {
+        if (tagMap.has(id)) selectedIds.add(id);
+    });
+
+    const chipsContainer = document.getElementById('selected-tags-chips');
+    const hiddenInputsContainer = document.getElementById('hidden-tag-inputs');
+    const searchInput = document.getElementById('tag-search-input');
+    const addBtn = document.getElementById('tag-add-btn');
+    const cloudContainer = document.getElementById('available-tags-cloud');
+    const counterEl = document.getElementById('tag-selected-count');
+    const limitAlert = document.getElementById('tag-limit-alert');
+    const feedbackEl = document.getElementById('tag-input-feedback');
+    const filterCountEl = document.getElementById('tag-filter-count');
+
+    if (!chipsContainer || !hiddenInputsContainer) return;
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function cleanTagName(name) {
+        if (!name) return '';
+        return name.replace(/^#+/, '').trim();
+    }
+
+    function showFeedback(msg) {
+        if (!feedbackEl) return;
+        if (msg) {
+            feedbackEl.textContent = msg;
+            feedbackEl.classList.remove('d-none');
+        } else {
+            feedbackEl.textContent = '';
+            feedbackEl.classList.add('d-none');
+        }
+    }
+
+    function render() {
+        if (counterEl) counterEl.textContent = selectedIds.size;
+        if (limitAlert) {
+            if (selectedIds.size >= MAX_TAGS) {
+                limitAlert.classList.remove('d-none');
+            } else {
+                limitAlert.classList.add('d-none');
+            }
+        }
+
+        chipsContainer.innerHTML = '';
+        if (selectedIds.size === 0) {
+            chipsContainer.innerHTML = `
+                <span id="no-tags-selected-placeholder" class="small text-theme-muted fst-italic py-1 px-1" style="font-size: 11.5px;">
+                    Chưa có thẻ nào được chọn.
+                </span>
+            `;
+        } else {
+            selectedIds.forEach((id) => {
+                const tag = tagMap.get(id);
+                if (!tag) return;
+
+                const chip = document.createElement('span');
+                chip.className = 'd-inline-flex align-items-center gap-1.5 py-1 ps-2.5 pe-1.5 rounded-pill bg-theme-surface text-theme border border-theme shadow-xs';
+                chip.style.fontSize = '12px';
+
+                chip.innerHTML = `
+                    <span class="fw-medium font-monospace">#${escapeHtml(tag.name)}</span>
+                    <button type="button" class="btn btn-link text-theme-muted p-0 d-inline-flex align-items-center justify-content-center hover-danger"
+                            style="width: 18px; height: 18px; border-radius: 999px; text-decoration: none;"
+                            aria-label="Gỡ thẻ ${escapeHtml(tag.name)}"
+                            title="Gỡ thẻ ${escapeHtml(tag.name)}">
+                        <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                `;
+
+                chip.querySelector('button').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    removeTag(id);
+                });
+
+                chipsContainer.appendChild(chip);
+            });
+        }
+
+        hiddenInputsContainer.innerHTML = '';
+        selectedIds.forEach((id) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'tags[]';
+            input.value = id;
+            if (formId) {
+                input.setAttribute('form', formId);
+            }
+            hiddenInputsContainer.appendChild(input);
+        });
+
+        filterCloud();
+    }
+
+    function filterCloud() {
+        if (!cloudContainer) return;
+        const query = cleanTagName(searchInput?.value || '').toLowerCase();
+        cloudContainer.innerHTML = '';
+
+        let visibleCount = 0;
+        let totalCount = 0;
+
+        tagMap.forEach((tag) => {
+            totalCount++;
+            const matches = !query || tag.name.toLowerCase().includes(query) || tag.slug.toLowerCase().includes(query);
+            if (!matches) return;
+
+            visibleCount++;
+            const isSelected = selectedIds.has(tag.id);
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `btn btn-sm rounded-pill font-monospace small px-2.5 py-0.5 d-inline-flex align-items-center gap-1 transition-all ${
+                isSelected
+                    ? 'btn-editorial-primary text-white border-0 shadow-xs'
+                    : 'btn-outline-theme hover-bg-surface-2'
+            }`;
+            btn.style.fontSize = '11.5px';
+
+            btn.innerHTML = `
+                <span>#${escapeHtml(tag.name)}</span>
+                ${isSelected ? '<svg style="width: 11px; height: 11px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
+            `;
+
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleTag(tag.id);
+            });
+
+            cloudContainer.appendChild(btn);
+        });
+
+        if (filterCountEl) {
+            filterCountEl.textContent = query ? `(Tìm thấy ${visibleCount}/${totalCount})` : `(${totalCount} thẻ)`;
+        }
+    }
+
+    function toggleTag(id) {
+        if (selectedIds.has(id)) {
+            removeTag(id);
+        } else {
+            addTag(id);
+        }
+    }
+
+    function addTag(id) {
+        if (selectedIds.size >= MAX_TAGS) {
+            if (limitAlert) limitAlert.classList.remove('d-none');
+            showFeedback('Không thể chọn quá 10 thẻ.');
+            return;
+        }
+        selectedIds.add(id);
+        showFeedback('');
+        setPostEditorDirty(true);
+        render();
+    }
+
+    function removeTag(id) {
+        selectedIds.delete(id);
+        showFeedback('');
+        setPostEditorDirty(true);
+        render();
+    }
+
+    async function handleAddNewTag() {
+        const raw = searchInput?.value || '';
+        const clean = cleanTagName(raw);
+
+        if (!clean) {
+            showFeedback('Vui lòng nhập tên thẻ bài viết.');
+            return;
+        }
+
+        if (clean.length > 50) {
+            showFeedback('Tên thẻ không được dài quá 50 ký tự.');
+            return;
+        }
+
+        for (const id of selectedIds) {
+            const t = tagMap.get(id);
+            if (t && t.name.toLowerCase() === clean.toLowerCase()) {
+                showFeedback(`Thẻ #${t.name} đã được chọn.`);
+                return;
+            }
+        }
+
+        if (selectedIds.size >= MAX_TAGS) {
+            if (limitAlert) limitAlert.classList.remove('d-none');
+            showFeedback('Không thể chọn thêm thẻ (Tối đa 10 thẻ).');
+            return;
+        }
+
+        let existingId = null;
+        for (const [id, t] of tagMap.entries()) {
+            if (t.name.toLowerCase() === clean.toLowerCase() || t.slug.toLowerCase() === clean.toLowerCase()) {
+                existingId = id;
+                break;
+            }
+        }
+
+        if (existingId !== null) {
+            addTag(existingId);
+            if (searchInput) searchInput.value = '';
+            filterCloud();
+            return;
+        }
+
+        const originalText = addBtn ? addBtn.innerHTML : '';
+        if (addBtn) {
+            addBtn.disabled = true;
+            addBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" style="width: 11px; height: 11px;"></span>';
+        }
+
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                || document.querySelector('input[name="_token"]')?.value;
+
+            const response = await fetch('/tags', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                },
+                body: JSON.stringify({ name: clean }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success && data.tag) {
+                const newTag = data.tag;
+                tagMap.set(newTag.id, newTag);
+                addTag(newTag.id);
+                if (searchInput) searchInput.value = '';
+                showFeedback('');
+            } else {
+                const err = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Tạo thẻ thất bại.');
+                showFeedback(err);
+            }
+        } catch {
+            showFeedback('Lỗi kết nối khi tạo thẻ mới.');
+        } finally {
+            if (addBtn) {
+                addBtn.disabled = false;
+                addBtn.innerHTML = originalText;
+            }
+        }
+    }
+
+    if (searchInput) {
+        registerListener(searchInput, 'input', filterCloud);
+        registerListener(searchInput, 'keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                handleAddNewTag();
+            }
+        });
+    }
+
+    if (addBtn) {
+        registerListener(addBtn, 'click', (e) => {
+            e.preventDefault();
+            handleAddNewTag();
+        });
+    }
+
+    render();
+}
+
+// ============================================================================
+// TOAST NOTIFICATIONS
+// ============================================================================
+
 function showEditorToast(message, type = 'info') {
     const toastContainer = document.getElementById('global-toast-container');
     if (!toastContainer) {
-        alert(message);
         return;
     }
 

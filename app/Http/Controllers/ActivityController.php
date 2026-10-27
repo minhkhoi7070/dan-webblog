@@ -25,6 +25,7 @@ class ActivityController extends Controller
         $likedPosts = $user->likedPosts()
             ->published()
             ->with(['user', 'category'])
+            ->withViewerState($user)
             ->latest('likes.created_at')
             ->take(10)
             ->get();
@@ -33,6 +34,7 @@ class ActivityController extends Controller
         $favoritedPosts = $user->favoritePosts()
             ->published()
             ->with(['user', 'category'])
+            ->withViewerState($user)
             ->latest('favorites.created_at')
             ->take(10)
             ->get();

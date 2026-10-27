@@ -27,7 +27,7 @@
                   data-confirm-message="Bạn có chắc chắn muốn duyệt và xuất bản ngay bài viết này?"
                   data-confirm-target-name="{{ $post->title }}"
                   data-confirm-target-meta="Tác giả: {{ $post->user->name }}"
-                  data-confirm-description="Bài viết sẽ được chuyển sang trạng thái đã xuất bản và hiển thị công khai trên BlogMNM."
+                  data-confirm-description="Bài viết sẽ được chuyển sang trạng thái đã xuất bản và hiển thị công khai trên CloudBlog."
                   data-confirm-btn-text="Duyệt bài viết"
                   data-confirm-btn-class="btn-success"
                   data-confirm-type="success">
@@ -99,7 +99,7 @@
     <div class="col-12 col-lg-8">
         <article class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl">
             <!-- Title -->
-            <h1 class="h3 fw-bold text-theme mb-3 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif); line-height: 1.35;">
+            <h1 class="h3 fw-bold text-theme mb-3 tracking-tight" style="line-height: 1.35;">
                 {{ $post->title }}
             </h1>
 

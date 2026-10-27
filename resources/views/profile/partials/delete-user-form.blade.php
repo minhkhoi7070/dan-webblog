@@ -6,7 +6,7 @@
                 <span class="d-inline-flex align-items-center justify-content-center rounded-2 bg-surface-2 border border-theme text-theme-secondary p-1.5" style="width: 28px; height: 28px;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 </span>
-                <h2 class="h5 fw-bold text-theme m-0" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+                <h2 class="h5 fw-bold text-theme m-0">
                     Phiên đăng nhập
                 </h2>
             </div>
@@ -31,7 +31,7 @@
                 <span class="d-inline-flex align-items-center justify-content-center rounded-2 bg-danger-subtle border border-danger border-opacity-25 text-danger p-1.5" style="width: 28px; height: 28px;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </span>
-                <h2 class="h5 fw-bold text-danger m-0" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+                <h2 class="h5 fw-bold text-danger m-0">
                     Vùng nguy hiểm: Xóa tài khoản
                 </h2>
             </div>
@@ -55,7 +55,7 @@
                 @csrf
                 @method('delete')
 
-                <h3 class="h5 fw-bold text-theme m-0" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+                <h3 class="h5 fw-bold text-theme m-0">
                     Bạn có chắc chắn muốn xóa tài khoản?
                 </h3>
 

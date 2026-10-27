@@ -2,7 +2,10 @@
 
 @section('content')
 <div class="w-100 d-flex justify-content-center px-0 px-sm-3 py-0 py-sm-4">
-    <div class="w-100 feed-container card border-0 border-sm border-theme overflow-hidden bg-theme-surface shadow-xs" style="border-radius: var(--radius-xl, 16px);">
+    <div class="w-100 feed-container card border-0 border-sm border-theme overflow-hidden bg-theme-surface shadow-xs"
+         style="border-radius: var(--radius-xl, 16px);"
+         data-feed-shell
+         data-feed-base-url="{{ route('favorites.index') }}">
         
         <!-- Top Context Bar -->
         <div class="p-3 px-sm-4 border-theme-bottom d-flex align-items-center justify-content-between sticky-top bg-theme-surface" style="z-index: 1020;">
@@ -12,8 +15,8 @@
                 </svg>
                 Quay lại bảng tin
             </a>
-            <span class="label-uppercase m-0 text-theme-muted">
-                {{ $posts->total() }} bài viết
+            <span class="label-uppercase m-0 text-theme-muted" data-favorites-total="{{ $posts->total() }}">
+                <span data-favorites-count class="interaction-count">{{ $posts->total() }}</span> bài viết
             </span>
         </div>
 
@@ -26,7 +29,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="h3 fw-bold text-theme mb-1 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+                    <h1 class="h3 fw-bold text-theme mb-1 tracking-tight">
                         Bài viết đã lưu
                     </h1>
                     <p class="small text-theme-secondary mb-0">
@@ -42,40 +45,52 @@
                 <svg style="width: 15px; height: 15px;" class="text-warning flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                 </svg>
-                Tất cả bài viết bên dưới đang ở trạng thái <strong>Đã lưu</strong>
+                Nhấn dấu trang để lưu hoặc bỏ lưu bài viết
             </span>
             <span class="small text-theme-muted d-none d-sm-inline" style="font-size: 11.5px;">
                 Nhấn dấu trang để gỡ bỏ
             </span>
         </div>
 
-        <!-- Feed of Saved Posts -->
-        <div class="d-flex flex-column">
-            @forelse($posts as $post)
-                <x-post-card :post="$post" />
-            @empty
-                <x-empty-state
-                    title="Bạn chưa lưu bài viết nào"
-                    description="Khi bạn tìm thấy bài viết hữu ích hoặc muốn đọc lại sau, hãy nhấn vào biểu tượng dấu trang để lưu vào đây."
-                    :action-url="route('posts.index')"
-                    action-label="Khám phá bài viết ngay"
-                >
-                    <x-slot:icon>
-                        <svg style="width: 28px; height: 28px;" class="text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                        </svg>
-                    </x-slot:icon>
-                </x-empty-state>
-            @endforelse
+        <p id="feed-status" role="status" aria-live="polite" class="visually-hidden"></p>
+        <div id="feed-error" role="alert" class="alert alert-danger mx-3 mx-sm-4 my-2 small" hidden>
+            <span data-feed-error-message></span>
+            <button type="button" data-feed-retry class="btn btn-sm btn-outline-theme ms-2">Thử lại</button>
         </div>
 
-        <!-- Pagination -->
-        @if($posts->hasPages())
-            <div class="p-3 p-sm-4 border-theme-top bg-theme-surface d-flex justify-content-center">
-                {{ $posts->links() }}
-            </div>
-        @endif
+        <!-- Feed Results Container -->
+        @include('favorites.partials.feed-results')
     </div>
 </div>
-@endsection
 
+<!-- Skeleton Loading Template -->
+<template id="feed-skeleton-template">
+    <div class="feed-skeleton-list" aria-hidden="true">
+        @for ($i = 0; $i < 4; $i++)
+            <div class="feed-skeleton-card">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="skeleton-shimmer rounded-circle" style="width: 32px; height: 32px; flex-shrink: 0;"></div>
+                    <div class="d-flex flex-column gap-1 flex-grow-1">
+                        <div class="skeleton-shimmer" style="width: 120px; height: 13px;"></div>
+                        <div class="skeleton-shimmer" style="width: 60px; height: 10px;"></div>
+                    </div>
+                </div>
+                <div class="mt-2 mb-3">
+                    <div class="skeleton-shimmer mb-2" style="width: 75%; height: 18px;"></div>
+                    <div class="skeleton-shimmer mb-2" style="width: 50%; height: 18px;"></div>
+                    <div class="skeleton-shimmer mb-1.5" style="width: 90%; height: 13px;"></div>
+                    <div class="skeleton-shimmer" style="width: 65%; height: 13px;"></div>
+                </div>
+                <div class="mb-3">
+                    <div class="skeleton-shimmer rounded-pill" style="width: 80px; height: 22px;"></div>
+                </div>
+                <div class="d-flex align-items-center gap-4 pt-2 border-theme-top">
+                    <div class="skeleton-shimmer rounded" style="width: 45px; height: 16px;"></div>
+                    <div class="skeleton-shimmer rounded" style="width: 45px; height: 16px;"></div>
+                    <div class="skeleton-shimmer rounded ms-auto" style="width: 30px; height: 16px;"></div>
+                </div>
+            </div>
+        @endfor
+    </div>
+</template>
+@endsection

@@ -7,7 +7,7 @@
             </svg>
             <span class="label-uppercase text-danger m-0" style="font-size: 10px; letter-spacing: 0.08em;">Quản trị viên</span>
         </div>
-        <h1 class="h4 fw-bold text-theme mb-1 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+        <h1 class="h4 fw-bold text-theme mb-1 tracking-tight">
              Admin
         </h1>
     </div>

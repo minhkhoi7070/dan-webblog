@@ -12,8 +12,11 @@
     <!-- Mobile Top Navigation Header -->
     <x-mobile-header />
 
+    <!-- Top Seamless Navigation Progress Bar (Threads/YouTube Style) -->
+    <div id="app-nav-progress" class="app-nav-progress" aria-hidden="true"></div>
+
     <!-- Main Content Area -->
-    <main id="main-content" class="main-layout flex-grow-1 w-100 min-vh-100 d-flex flex-column">
+    <main id="main-content" data-app-content class="main-layout flex-grow-1 w-100 min-vh-100 d-flex flex-column">
         @hasSection('content')
             @yield('content')
         @else

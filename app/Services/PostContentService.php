@@ -88,7 +88,7 @@ class PostContentService
             return '';
         }
 
-        $doc = new DOMDocument();
+        $doc = new DOMDocument;
         $previousErrors = libxml_use_internal_errors(true);
 
         // Prepend utf-8 encoding hint to prevent UTF-8 encoding distortion
@@ -132,6 +132,7 @@ class PostContentService
                         static::sanitizeNode($child);
                     }
                 }
+
                 return;
             }
 
@@ -154,6 +155,23 @@ class PostContentService
                     // 1. Strip all JavaScript event handlers (onclick, onerror, onload, etc.)
                     if (str_starts_with($attrName, 'on')) {
                         $node->removeAttribute($attrName);
+
+                        continue;
+                    }
+
+                    if ($attrName === 'style') {
+                        if (in_array($tagName, ['a', 'img'], true)) {
+                            $node->removeAttribute('style');
+
+                            continue;
+                        }
+
+                        $cleanStyle = static::sanitizeCssStyle($attr->value);
+                        if ($cleanStyle !== null && $cleanStyle !== '') {
+                            $node->setAttribute('style', $cleanStyle);
+                        } else {
+                            $node->removeAttribute('style');
+                        }
 
                         continue;
                     }
@@ -194,13 +212,6 @@ class PostContentService
                         }
                     } elseif ($attrName === 'data-caption') {
                         $node->setAttribute('data-caption', e(strip_tags($attr->value)));
-                    } elseif ($attrName === 'style') {
-                        $cleanStyle = static::sanitizeCssStyle($attr->value);
-                        if ($cleanStyle !== null && $cleanStyle !== '') {
-                            $node->setAttribute('style', $cleanStyle);
-                        } else {
-                            $node->removeAttribute('style');
-                        }
                     } elseif ($attrName === 'data-color') {
                         $val = trim($attr->value);
                         if (! preg_match('/^(#[0-9a-fA-F]{3,8}|rgba?\(\s*[0-9.%,\s]+\s*\)|[a-zA-Z]+)$/', $val)) {
@@ -325,7 +336,7 @@ class PostContentService
 
             // Whitelist allowed CSS properties and valid formats
             if ($prop === 'text-align' && in_array(strtolower($val), ['left', 'center', 'right', 'justify'], true)) {
-                $safeDeclarations[] = "text-align: ".strtolower($val);
+                $safeDeclarations[] = 'text-align: '.strtolower($val);
             } elseif (($prop === 'color' || $prop === 'background-color') && preg_match('/^(#[0-9a-fA-F]{3,8}|rgba?\(\s*[0-9.%,\s]+\s*\)|hsla?\(\s*[0-9.%,\s]+\s*\)|[a-zA-Z]+)$/', $val)) {
                 $safeDeclarations[] = "{$prop}: {$val}";
             } elseif (($prop === 'padding-left' || $prop === 'margin-left') && preg_match('/^[0-9]+(\.[0-9]+)?(px|rem|em)$/', $val)) {

@@ -5,11 +5,14 @@ use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\AuthorCommentController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\FollowingController;
 use App\Http\Controllers\InteractionController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TagController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +31,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/metrics/realtime', [DashboardController::class, 'realtimeMetrics'])->name('metrics.realtime');
 
     // User management
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -65,12 +69,13 @@ Route::middleware(['auth', 'role:author,admin'])->group(function () {
     Route::post('/posts/upload-image', [PostController::class, 'uploadImage'])->name('posts.upload-image');
     Route::get('/posts/stats', [PostController::class, 'stats'])->name('posts.stats');
     Route::get('/author/posts/stats', [PostController::class, 'stats'])->name('author.posts.stats');
+    Route::get('/author/comments', [AuthorCommentController::class, 'index'])->name('author.comments.index');
     Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
     Route::match(['put', 'patch'], '/posts/{post}', [PostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
     Route::post('/posts/{post}/submit', [PostController::class, 'submit'])->name('posts.submit');
-    Route::post('/tags', [App\Http\Controllers\TagController::class, 'store'])->name('tags.store');
-    Route::get('/tags/search', [App\Http\Controllers\TagController::class, 'search'])->name('tags.search');
+    Route::post('/tags', [TagController::class, 'store'])->name('tags.store');
+    Route::get('/tags/search', [TagController::class, 'search'])->name('tags.search');
 });
 
 // =============================================================================
@@ -87,9 +92,9 @@ Route::get('/posts/author/{user}', [PostController::class, 'byAuthor'])->name('p
 // =============================================================================
 Route::middleware('auth')->group(function () {
     // Interactions (Like, Favorite, Follow)
-    Route::post('/posts/{post}/like', [InteractionController::class, 'like'])->name('posts.like');
-    Route::post('/posts/{post}/favorite', [InteractionController::class, 'favorite'])->name('posts.favorite');
-    Route::post('/authors/{user}/follow', [InteractionController::class, 'follow'])->name('authors.follow');
+    Route::match(['get', 'post'], '/posts/{post}/like', [InteractionController::class, 'like'])->name('posts.like');
+    Route::match(['get', 'post'], '/posts/{post}/favorite', [InteractionController::class, 'favorite'])->name('posts.favorite');
+    Route::match(['get', 'post'], '/authors/{user}/follow', [InteractionController::class, 'follow'])->name('authors.follow');
 
     // Comments & Replies
     Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
@@ -97,6 +102,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
     // Viewer Personal Pages
+    Route::get('/following', [FollowingController::class, 'index'])->name('following.index');
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::get('/activity', [ActivityController::class, 'index'])->name('activity.index');
 

@@ -22,7 +22,7 @@
     .admin-control-title {
         margin: 0;
         color: var(--color-text-primary);
-        font-family: var(--font-serif, 'Lora', Georgia, serif);
+        font-family: var(--font-sans);
         font-size: clamp(1.1rem, 1.45vw, 1.35rem);
         font-weight: 700;
         letter-spacing: -.02em;

@@ -630,6 +630,3 @@ class PostEditorTest extends TestCase
         }
     }
 }
-
-
-

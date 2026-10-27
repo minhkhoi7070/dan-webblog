@@ -51,7 +51,7 @@
                     @elseif($status === 'rejected')
                         Vui lòng rà soát lại tiêu đề, tóm tắt và nội dung bài viết theo tiêu chuẩn cộng đồng, sau đó nhấn <strong>"Gửi bài viết để Admin duyệt"</strong> ở góc phải để gửi lại cho Ban biên tập.
                     @elseif($status === 'published')
-                        Bài viết đang hiển thị công khai trên BlogMNM. Mọi chỉnh sửa của bạn sẽ được cập nhật trực tiếp.
+                        Bài viết đang hiển thị công khai trên CloudBlog. Mọi chỉnh sửa của bạn sẽ được cập nhật trực tiếp.
                     @else
                         Bản nháp chỉ hiển thị với bạn. Hãy hoàn thiện nội dung và gửi duyệt khi sẵn sàng.
                     @endif

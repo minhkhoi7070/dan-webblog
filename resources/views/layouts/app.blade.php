@@ -1,5 +1,5 @@
 @extends('layouts.public')
-@section('title', config('app.name', 'BlogMNM') . ' - Quản lý tài khoản')
+@section('title', config('app.name', 'CloudBlog') . ' - Quản lý tài khoản')
 
 @section('content')
     <div class="container-fluid py-3 py-sm-4 content-container">

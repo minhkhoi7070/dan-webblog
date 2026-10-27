@@ -330,7 +330,7 @@ class ViewerInteractionTest extends TestCase
         $response = $this->actingAs($viewer)->get(route('activity.index'));
 
         $response->assertOk()
-            ->assertSee('Nhật ký hoạt động của bạn')
+            ->assertSee('Nhật ký hoạt động')
             ->assertSee('Recent Activity Post');
     }
 
@@ -346,5 +346,62 @@ class ViewerInteractionTest extends TestCase
         $response->assertOk()
             ->assertSee('John Viewer')
             ->assertSee('Web development enthusiast');
+    }
+
+    public function test_guest_is_redirected_to_login_when_accessing_following(): void
+    {
+        $this->get(route('following.index'))
+            ->assertRedirect(route('login'));
+    }
+
+    public function test_viewer_can_view_following_feed_with_only_followed_authors_posts(): void
+    {
+        $viewer = User::factory()->create();
+        $followedAuthor = User::factory()->create(['name' => 'Followed Author', 'role' => 'author']);
+        $otherAuthor = User::factory()->create(['name' => 'Other Author', 'role' => 'author']);
+
+        $followedAuthor->followers()->attach($viewer->id);
+
+        $followedPost = Post::factory()->published()->create([
+            'user_id' => $followedAuthor->id,
+            'title' => 'Article by Followed Author',
+        ]);
+        $otherPost = Post::factory()->published()->create([
+            'user_id' => $otherAuthor->id,
+            'title' => 'Article by Other Author',
+        ]);
+
+        $response = $this->actingAs($viewer)->get(route('following.index'));
+
+        $response->assertOk()
+            ->assertSee('Article by Followed Author')
+            ->assertDontSee('Article by Other Author')
+            ->assertSee('Dành cho bạn')
+            ->assertSee('Đang theo dõi');
+    }
+
+    public function test_viewer_can_view_followed_authors_tab(): void
+    {
+        $viewer = User::factory()->create();
+        $author = User::factory()->create(['name' => 'Special Tech Creator', 'role' => 'author']);
+        $author->followers()->attach($viewer->id);
+
+        $response = $this->actingAs($viewer)->get(route('following.index', ['tab' => 'authors']));
+
+        $response->assertOk()
+            ->assertSee('Special Tech Creator')
+            ->assertSee('Tác giả đang theo dõi');
+    }
+
+    public function test_feed_header_links_to_following_route_not_activity(): void
+    {
+        $viewer = User::factory()->create();
+
+        $response = $this->actingAs($viewer)->get(route('posts.index'));
+
+        $response->assertOk()
+            ->assertSee(route('following.index'))
+            ->assertSee('Dành cho bạn')
+            ->assertSee('Đang theo dõi');
     }
 }

@@ -257,185 +257,23 @@
 }
 </style>
 
-<!-- Posts Moderation Table (High Information Density) -->
-<div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 ap-table" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
-            <colgroup>
-                <col class="col-post">
-                <col class="col-author">
-                <col class="col-cat">
-                <col class="col-status">
-                <col class="col-interact">
-                <col class="col-actions">
-            </colgroup>
-            <thead class="border-theme-bottom bg-surface-2">
-                <tr>
-                    <th class="ap-col py-3 label-uppercase text-theme-muted col-post text-center" style="font-size: 11px;">Bài viết</th>
-                    <th class="ap-col py-3 label-uppercase text-theme-muted col-author text-start" style="font-size: 11px;">Tác giả</th>
-                    <th class="ap-col py-3 label-uppercase text-theme-muted col-cat text-center" style="font-size: 11px;">Chuyên mục</th>
-                    <th class="ap-col py-3 label-uppercase text-theme-muted col-status text-center" style="font-size: 11px;">Trạng thái</th>
-                    <th class="ap-col py-3 label-uppercase text-theme-muted col-interact text-center" style="font-size: 11px;">Tương tác</th>
-                    <th class="ap-col py-3 label-uppercase text-theme-muted col-actions text-center" style="font-size: 11px;">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-theme">
-                @forelse($posts as $post)
-                    <tr>
-                        <!-- Post Info with Thumbnail -->
-                        <td class="py-3 col-post" style="min-width: 0;">
-                            <div class="d-flex align-items-center gap-3" style="min-width: 0;">
-                                <div class="rounded-2 overflow-hidden bg-surface-2 flex-shrink-0 border border-theme" style="width: 48px; height: 38px;">
-                                    @if($post->thumbnail)
-                                        <img src="{{ str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset($post->thumbnail) }}" alt="" class="w-100 h-100 object-fit-cover">
-                                    @else
-                                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-theme-muted">
-                                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                        </div>
-                                    @endif
-                                </div>
-                                <div style="min-width: 0; flex: 1 1 0;">
-                                    <a href="{{ route('admin.posts.show', $post) }}" class="ap-post-title fw-semibold text-theme text-decoration-none hover-accent small" style="font-size: 13.5px;" title="{{ $post->title }}">
-                                        {{ $post->title }}
-                                    </a>
-                                    <span class="small text-theme-muted d-block" style="font-size: 11.5px;">{{ $post->created_at->format('d/m/Y H:i') }}</span>
-                                </div>
-                            </div>
-                        </td>
+<div data-feed-shell
+     data-feed-base-url="{{ route('admin.posts.index') }}"
+     class="position-relative">
+    <div data-feed-status class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
 
-                        <!-- Author -->
-                        <td class="py-3 col-author" style="min-width: 0;">
-                            <a href="{{ route('admin.users.show', $post->user) }}" class="ap-author-name small fw-semibold text-theme text-decoration-none hover-accent" style="font-size: 13px;" title="{{ $post->user->name }}">
-                                {{ $post->user->name }}
-                            </a>
-                        </td>
-
-                        <!-- Category -->
-                        <td class="py-3 col-cat text-center">
-                            <span class="badge ap-badge bg-surface-2 border border-theme text-theme-secondary rounded-pill" style="font-size: 11px;">
-                                {{ $post->category->name }}
-                            </span>
-                        </td>
-
-                        <!-- Status Badge -->
-                        <td class="py-3 col-status text-center">
-                            @if($post->status === 'published')
-                                <span class="badge ap-badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill" style="font-size: 11px;">
-                                    Đã xuất bản
-                                </span>
-                            @elseif($post->status === 'pending')
-                                <span class="badge ap-badge bg-warning-subtle text-warning border border-warning border-opacity-25 rounded-pill" style="font-size: 11px;">
-                                    Chờ duyệt
-                                </span>
-                            @elseif($post->status === 'rejected')
-                                <span class="badge ap-badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill" style="font-size: 11px;">
-                                    Bị từ chối
-                                </span>
-                            @else
-                                <span class="badge ap-badge bg-surface-2 text-theme-muted border border-theme rounded-pill" style="font-size: 11px;">
-                                    Bản nháp
-                                </span>
-                            @endif
-                        </td>
-
-                        <!-- Interactions -->
-                        <td class="py-3 col-interact text-center text-theme-muted">
-                            <div class="ap-interact">
-                                <span title="Lượt xem">{{ number_format($post->views) }} <span class="opacity-60">views</span></span>
-                                <span title="Lượt thích">{{ number_format($post->likers_count) }} <span class="opacity-60">likes</span></span>
-                                <span title="Bình luận">{{ number_format($post->comments_count) }} <span class="opacity-60">cmt</span></span>
-                            </div>
-                        </td>
-
-                        <!-- Actions -->
-                        <td class="py-3 col-actions text-center">
-                            <div class="ap-actions-wrap">
-                                @if($post->status === 'pending')
-                                    <!-- Approve Action -->
-                                    <form action="{{ route('admin.posts.approve', $post) }}" method="POST" class="d-inline m-0"
-                                          data-confirm="true"
-                                          data-confirm-title="Duyệt bài viết"
-                                          data-confirm-message="Bạn có chắc chắn muốn duyệt và xuất bản bài viết này?"
-                                          data-confirm-target-name="{{ $post->title }}"
-                                          data-confirm-target-meta="Tác giả: {{ $post->user->name }}"
-                                          data-confirm-description="Bài viết sẽ được chuyển sang trạng thái đã xuất bản và hiển thị công khai tới độc giả."
-                                          data-confirm-btn-text="Duyệt bài viết"
-                                          data-confirm-btn-class="btn-success"
-                                          data-confirm-type="success">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;" aria-label="Duyệt bài viết {{ $post->title }}">
-                                            Duyệt
-                                        </button>
-                                    </form>
-
-                                    <!-- Reject Action -->
-                                    <form action="{{ route('admin.posts.reject', $post) }}" method="POST" class="d-inline m-0"
-                                          data-confirm="true"
-                                          data-confirm-title="Từ chối bài viết"
-                                          data-confirm-message="Vui lòng cung cấp lý do từ chối bài viết này."
-                                          data-confirm-target-name="{{ $post->title }}"
-                                          data-confirm-target-meta="Tác giả: {{ $post->user->name }}"
-                                          data-confirm-description="Tác giả sẽ nhận được thông báo về lý do bài viết chưa được duyệt để chỉnh sửa lại."
-                                          data-confirm-prompt="true"
-                                          data-confirm-prompt-name="rejection_reason"
-                                          data-confirm-prompt-label="Lý do từ chối:"
-                                          data-confirm-prompt-placeholder="Nhập lý do từ chối bài viết..."
-                                          data-confirm-btn-text="Từ chối bài viết"
-                                          data-confirm-btn-class="btn-warning"
-                                          data-confirm-type="warning">
-                                        @csrf
-                                        <input type="hidden" name="rejection_reason" value="">
-                                        <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;" aria-label="Từ chối bài viết {{ $post->title }}">
-                                            Từ chối
-                                        </button>
-                                    </form>
-                                @endif
-
-                                <a href="{{ route('admin.posts.show', $post) }}" class="btn btn-sm btn-outline-theme rounded-pill px-2.5 py-1 text-theme-secondary" style="font-size: 11px;" aria-label="Xem chi tiết bài viết {{ $post->title }}">
-                                    Chi tiết
-                                </a>
-
-                                <!-- Delete Action -->
-                                <form action="{{ route('admin.posts.destroy', $post) }}" method="POST" class="d-inline m-0"
-                                      data-confirm="true"
-                                      data-confirm-title="Xóa bài viết"
-                                      data-confirm-message="Bạn có chắc chắn muốn xóa vĩnh viễn bài viết này?"
-                                      data-confirm-target-name="{{ $post->title }}"
-                                      data-confirm-target-meta="Tác giả: {{ $post->user->name }}"
-                                      data-confirm-description="Hành động này không thể hoàn tác. Toàn bộ nội dung và bình luận liên quan sẽ bị xóa vĩnh viễn."
-                                      data-confirm-btn-text="Xóa bài viết"
-                                      data-confirm-btn-class="btn-danger"
-                                      data-confirm-type="danger">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1 rounded-circle" title="Xóa bài viết" aria-label="Xóa bài viết">
-                                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="p-0 border-0">
-                            <x-empty-state
-                                title="Không tìm thấy bài viết"
-                                description="Không có bài viết nào phù hợp với bộ lọc hoặc từ khóa tìm kiếm hiện tại."
-                                :action-url="route('admin.posts.index')"
-                                action-label="Đặt lại bộ lọc"
-                            />
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    @if($posts->hasPages())
-        <div class="px-3 px-sm-4 py-3 border-theme-top bg-theme-surface d-flex justify-content-center">
-            {{ $posts->links() }}
+    <template data-feed-skeleton>
+        <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4 p-4">
+            <div class="placeholder-glow">
+                <div class="placeholder col-12 mb-3 py-2 rounded"></div>
+                <div class="placeholder col-12 mb-3 py-2 rounded"></div>
+                <div class="placeholder col-12 mb-3 py-2 rounded"></div>
+                <div class="placeholder col-12 mb-3 py-2 rounded"></div>
+            </div>
         </div>
-    @endif
+    </template>
+
+    @include('admin.posts.partials.table-results')
 </div>
 @endsection
 

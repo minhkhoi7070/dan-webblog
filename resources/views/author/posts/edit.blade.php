@@ -5,19 +5,19 @@
     <!-- Top Publishing Bar (Ghost + Notion style) -->
     <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 pb-3 mb-4 border-theme-bottom">
         <div class="d-flex align-items-center gap-3">
-            <a href="{{ route('posts.stats') }}" class="btn btn-sm btn-outline-theme rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 38px; height: 38px;" title="Quay lại bảng điều khiển" aria-label="Quay lại bảng điều khiển">
+            <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 38px; height: 38px;" title="Quay lại bảng điều khiển" aria-label="Quay lại bảng điều khiển">
                 <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
             </a>
             <div>
                 <div class="d-flex align-items-center gap-2 small text-theme-muted label-uppercase mb-0.5" style="font-size: 11px;">
-                    <a href="{{ route('posts.stats') }}" class="text-decoration-none text-theme-muted hover-accent">Tác giả</a>
+                    <a href="{{ route('posts.stats') }}" data-app-nav class="text-decoration-none text-theme-muted hover-accent">Tác giả</a>
                     <span>&rsaquo;</span>
                     <span class="text-accent">Chỉnh sửa bài viết</span>
                 </div>
                 <div class="d-flex align-items-center flex-wrap gap-2">
-                    <span class="fw-bold text-theme fs-5" style="font-family: var(--font-serif, 'Lora', serif);">Chỉnh sửa bài viết</span>
+                    <span class="fw-bold text-theme fs-5">Chỉnh sửa bài viết</span>
                     
                     <!-- Status Badge -->
                     @if($post->status === 'published')
@@ -55,7 +55,7 @@
                 </a>
             @endif
 
-            <a href="{{ route('posts.stats') }}" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium btn-cancel-action">
+            <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium btn-cancel-action">
                 Quay lại
             </a>
 
@@ -453,6 +453,7 @@
 
                             <a
                                 href="{{ route('posts.stats') }}"
+                                data-app-nav
                                 class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
                             >
                                 Hủy bỏ & Quay lại
@@ -491,6 +492,7 @@
 
                             <a
                                 href="{{ route('posts.stats') }}"
+                                data-app-nav
                                 class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
                             >
                                 Hủy bỏ & Quay lại
@@ -515,6 +517,7 @@
 
                             <a
                                 href="{{ route('posts.stats') }}"
+                                data-app-nav
                                 class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
                             >
                                 Quay lại danh sách
@@ -535,6 +538,7 @@
 
                             <a
                                 href="{{ route('posts.stats') }}"
+                                data-app-nav
                                 class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
                             >
                                 Quay lại danh sách
@@ -898,96 +902,4 @@
             </div>
         </div>
     </div>
-
-<script>
-let isDirty = false;
-let isSubmitting = false;
-
-window.__postEditorSetDirty = function() {
-    isDirty = true;
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('edit-post-form');
-    if (!form) return;
-
-    // Track input dirty state
-    ['title', 'excerpt', 'category_id'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener('input', () => { isDirty = true; });
-            el.addEventListener('change', () => { isDirty = true; });
-        }
-    });
-
-    // Warn on leaving if dirty
-    window.addEventListener('beforeunload', function(e) {
-        if (isDirty && !isSubmitting) {
-            e.preventDefault();
-            e.returnValue = '';
-        }
-    });
-
-    // Cancel action buttons confirmation
-    document.querySelectorAll('.btn-cancel-action').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            if (isDirty && !isSubmitting) {
-                if (!confirm('Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này?')) {
-                    e.preventDefault();
-                }
-            }
-        });
-    });
-
-    // Remember which button/action was clicked
-    let lastClickedAction = 'draft';
-
-    document.querySelectorAll('button[name="action"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            lastClickedAction = this.value || 'draft';
-        });
-    });
-
-    // Handle form submit with double-click prevention & loading states
-    form.addEventListener('submit', function(e) {
-        if (isSubmitting) {
-            e.preventDefault();
-            return;
-        }
-
-        isSubmitting = true;
-
-        // Ensure an action input is sent with the form if not already present
-        let actionInput = form.querySelector('input[name="action"][type="hidden"]');
-        if (!actionInput) {
-            actionInput = document.createElement('input');
-            actionInput.type = 'hidden';
-            actionInput.name = 'action';
-            form.appendChild(actionInput);
-        }
-        actionInput.value = lastClickedAction;
-
-        // Apply loading indicator to buttons
-        const allSubmitBtns = document.querySelectorAll('button[type="submit"][form="edit-post-form"], #edit-post-form button[type="submit"]');
-        allSubmitBtns.forEach(btn => {
-            btn.disabled = true;
-
-            const isSubmitAction = (btn.value === 'submit' || (lastClickedAction === 'submit' && btn.classList.contains('btn-action-submit')));
-            const isDraftAction = (btn.value === 'draft' || (lastClickedAction === 'draft' && btn.classList.contains('btn-action-draft')));
-
-            if (isSubmitAction && lastClickedAction === 'submit') {
-                btn.innerHTML = `
-                    <span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true" style="width: 13px; height: 13px;"></span>
-                    <span>Đang gửi duyệt...</span>
-                `;
-            } else if (isDraftAction && lastClickedAction === 'draft') {
-                btn.innerHTML = `
-                    <span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true" style="width: 13px; height: 13px;"></span>
-                    <span>Đang lưu...</span>
-                `;
-            }
-        });
-    });
-});
-</script>
 @endsection

@@ -19,7 +19,7 @@
                   data-confirm-message="Bạn có chắc muốn mở khóa tài khoản này?"
                   data-confirm-target-name="{{ $user->name }}"
                   data-confirm-target-meta="{{ $user->email }}"
-                  data-confirm-description="Người dùng sẽ có thể đăng nhập và tiếp tục tương tác trên BlogMNM."
+                  data-confirm-description="Người dùng sẽ có thể đăng nhập và tiếp tục tương tác trên CloudBlog."
                   data-confirm-btn-text="Mở khóa tài khoản"
                   data-confirm-btn-class="btn-success"
                   data-confirm-type="success">
@@ -55,7 +55,7 @@
 
         <div class="flex-grow-1 min-w-0">
             <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                <h2 class="h5 fw-bold text-theme m-0" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+                <h2 class="h5 fw-bold text-theme m-0">
                     {{ $user->name }}
                 </h2>
                 @if($user->role === 'admin')

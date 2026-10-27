@@ -334,4 +334,3 @@ class ThumbnailAndImageAlignmentTest extends TestCase
         $editRes->assertSee('Văn bản thay thế (ALT text)');
     }
 }
-

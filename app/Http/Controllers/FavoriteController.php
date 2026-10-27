@@ -2,23 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class FavoriteController extends Controller
 {
     /**
      * Display a listing of posts favorited by the authenticated user.
      */
-    public function index(Request $request): View|RedirectResponse
+    public function index(Request $request): Response
     {
         $user = $request->user();
 
         $posts = $user->favoritePosts()
             ->published()
             ->with(['user', 'category', 'tags'])
-            ->withCount(['comments', 'likers', 'favoritedBy'])
+            ->withCount(['comments' => fn ($query) => $query->where('status', 'approved'), 'likers', 'favoritedBy'])
+            ->withViewerState($user)
             ->latest('favorites.created_at')
             ->paginate(10)
             ->withQueryString();
@@ -34,8 +34,21 @@ class FavoriteController extends Controller
             }
         }
 
-        return view('favorites.index', [
+        $viewData = [
             'posts' => $posts,
-        ]);
+        ];
+
+        if ($request->header('X-BlogMNM-Feed') === '1') {
+            return response()
+                ->view('favorites.partials.feed-results', $viewData)
+                ->header('X-BlogMNM-Feed', '1')
+                ->header('Vary', 'X-BlogMNM-Feed')
+                ->header('Cache-Control', 'private, no-store');
+        }
+
+        return response()
+            ->view('favorites.index', $viewData)
+            ->header('Vary', 'X-BlogMNM-Feed')
+            ->header('Cache-Control', 'private, no-store');
     }
 }

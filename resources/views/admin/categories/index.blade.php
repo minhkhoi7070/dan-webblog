@@ -58,74 +58,22 @@
     </a>
 </div>
 
-<!-- Categories Table (High Information Density) -->
-<div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
-            <thead class="border-theme-bottom bg-surface-2">
-                <tr>
-                    <th class="ps-3 ps-sm-4 py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Tên Chuyên mục</th>
-                    <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Đường dẫn tĩnh (Slug)</th>
-                    <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Số bài viết</th>
-                    <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Ngày tạo</th>
-                    <th class="pe-3 pe-sm-4 py-3 text-center label-uppercase text-theme-muted" style="font-size: 11px;">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-theme">
-                @forelse($categories as $category)
-                    <tr>
-                        <td class="ps-3 ps-sm-4 py-3 text-start fw-semibold text-theme" style="font-size: 13.5px;">
-                            {{ $category->name }}
-                        </td>
-                        <td class="py-3 text-start font-monospace small text-theme-muted" style="font-size: 12px;">
-                            {{ $category->slug }}
-                        </td>
-                        <td class="py-3 text-start fw-semibold text-theme small" style="font-size: 13px;">
-                            {{ number_format($category->posts_count) }} bài
-                        </td>
-                        <td class="py-3 text-start small text-theme-muted" style="font-size: 12px;">
-                            {{ $category->created_at->format('d/m/Y') }}
-                        </td>
-                        <td class="pe-3 pe-sm-4 py-3 text-center">
-                            <div class="d-inline-flex gap-1.5">
-                                <a href="{{ route('admin.categories.edit', $category) }}" class="btn btn-sm btn-outline-theme rounded-pill px-2.5 py-1 text-theme-secondary" style="font-size: 11px;" aria-label="Chỉnh sửa chuyên mục {{ $category->name }}">
-                                    Sửa
-                                </a>
+<div data-feed-shell
+     data-feed-base-url="{{ route('admin.categories.index') }}"
+     class="position-relative">
+    <div data-feed-status class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
 
-                                <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="d-inline m-0"
-                                      data-confirm="true"
-                                      data-confirm-title="Xóa chuyên mục"
-                                      data-confirm-message="Bạn có chắc chắn muốn xóa vĩnh viễn chuyên mục này?"
-                                      data-confirm-target-name="{{ $category->name }}"
-                                      data-confirm-target-meta="Slug: {{ $category->slug }} &bull; {{ $category->posts_count }} bài viết"
-                                      data-confirm-description="Hành động này không thể hoàn tác. Các bài viết thuộc chuyên mục này có thể bị mất liên kết phân loại."
-                                      data-confirm-btn-text="Xóa chuyên mục"
-                                      data-confirm-btn-class="btn-danger"
-                                      data-confirm-type="danger">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1" style="font-size: 11px;" aria-label="Xóa chuyên mục {{ $category->name }}">
-                                        Xóa
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-5 text-center text-theme-muted small">
-                            Không tìm thấy chuyên mục nào phù hợp.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    @if($categories->hasPages())
-        <div class="px-4 py-3 border-theme-top d-flex justify-content-center">
-            {{ $categories->links() }}
+    <template data-feed-skeleton>
+        <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4 p-4">
+            <div class="placeholder-glow">
+                <div class="placeholder col-12 mb-3 py-2 rounded"></div>
+                <div class="placeholder col-12 mb-3 py-2 rounded"></div>
+                <div class="placeholder col-12 mb-3 py-2 rounded"></div>
+                <div class="placeholder col-12 mb-3 py-2 rounded"></div>
+            </div>
         </div>
-    @endif
+    </template>
+
+    @include('admin.categories.partials.table-results')
 </div>
 @endsection

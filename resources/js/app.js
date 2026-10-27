@@ -2,8 +2,14 @@ import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap;
 import './interactions';
 import './theme';
-import { initPostEditor } from './editor';
+import { initFeedNavigation } from './feed-navigation';
+import { initAppNavigation } from './app-navigation';
 
-document.addEventListener('DOMContentLoaded', () => {
-    initPostEditor();
+document.addEventListener('DOMContentLoaded', async () => {
+    initAppNavigation();
+    initFeedNavigation();
+    if (document.getElementById('tiptap-editor')) {
+        const { initPostEditor } = await import('./editor');
+        initPostEditor();
+    }
 });

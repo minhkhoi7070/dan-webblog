@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\PostContentService;
 use Database\Factories\PostFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -94,7 +95,7 @@ class Post extends Model
      */
     public function getRenderedBodyAttribute(): string
     {
-        return \App\Services\PostContentService::renderHtml($this->body);
+        return PostContentService::renderHtml($this->body);
     }
 
     /**
@@ -102,7 +103,33 @@ class Post extends Model
      */
     public function getEditorContentAttribute(): string
     {
-        return \App\Services\PostContentService::toEditorHtml($this->body);
+        return PostContentService::toEditorHtml($this->body);
+    }
+
+    /**
+     * Get image URLs for Threads-style media gallery display.
+     *
+     * @return array<int, string>
+     */
+    public function getGalleryImagesAttribute(): array
+    {
+        $images = [];
+        if ($this->thumbnail) {
+            $images[] = asset($this->thumbnail);
+        }
+
+        if ($this->body && preg_match_all('/<img[^>]+src=[\'"]([^\'"]+)[\'"]/i', $this->body, $matches)) {
+            foreach ($matches[1] as $src) {
+                if (! in_array($src, $images, true)) {
+                    $images[] = $src;
+                }
+                if (count($images) >= 6) {
+                    break;
+                }
+            }
+        }
+
+        return $images;
     }
 
     /**
@@ -186,6 +213,11 @@ class Post extends Model
             return false;
         }
 
+        if ((int) $this->getAttribute('viewer_state_user_id') === $user->id
+            && array_key_exists('liked_by_viewer', $this->attributes)) {
+            return (bool) $this->getAttribute('liked_by_viewer');
+        }
+
         return $this->likers()->where('user_id', $user->id)->exists();
     }
 
@@ -198,7 +230,30 @@ class Post extends Model
             return false;
         }
 
+        if ((int) $this->getAttribute('viewer_state_user_id') === $user->id
+            && array_key_exists('saved_by_viewer', $this->attributes)) {
+            return (bool) $this->getAttribute('saved_by_viewer');
+        }
+
         return $this->favoritedBy()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Select interaction state for the current viewer without per-card queries.
+     *
+     * @param  Builder<Post>  $query
+     * @return Builder<Post>
+     */
+    public function scopeWithViewerState(Builder $query, ?User $user): Builder
+    {
+        if (! $user) {
+            return $query;
+        }
+
+        return $query->withExists([
+            'likers as liked_by_viewer' => fn (Builder $query) => $query->whereKey($user->id),
+            'favoritedBy as saved_by_viewer' => fn (Builder $query) => $query->whereKey($user->id),
+        ])->selectRaw('? as viewer_state_user_id', [$user->id]);
     }
 
     /**

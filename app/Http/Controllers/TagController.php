@@ -70,4 +70,3 @@ class TagController extends Controller
         ]);
     }
 }
-

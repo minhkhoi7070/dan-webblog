@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -15,7 +16,7 @@ class CategoryController extends Controller
     /**
      * Display a listing of categories with their post counts.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|Response
     {
         $search = $request->query('q');
 
@@ -25,6 +26,17 @@ class CategoryController extends Controller
             ->orderBy('name')
             ->paginate(15)
             ->withQueryString();
+
+        if ($request->header('X-BlogMNM-Feed')) {
+            return response()
+                ->view('admin.categories.partials.table-results', [
+                    'categories' => $categories,
+                    'search' => $search,
+                ])
+                ->header('X-BlogMNM-Feed', '1')
+                ->header('Vary', 'X-BlogMNM-Feed')
+                ->header('Cache-Control', 'private, no-store');
+        }
 
         return view('admin.categories.index', [
             'categories' => $categories,

@@ -1,10 +1,10 @@
 <x-guest-layout>
     <div class="mb-4 text-center">
-        <h1 class="h4 fw-bold text-theme mb-1 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+        <h1 class="h4 fw-bold text-theme mb-1 tracking-tight">
             Đăng ký tài khoản
         </h1>
         <p class="small text-theme-secondary mb-0">
-            Gia nhập cộng đồng người viết và độc giả BlogMNM
+            Gia nhập cộng đồng người viết và độc giả CloudBlog
         </p>
     </div>
 

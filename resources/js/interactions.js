@@ -1,13 +1,7 @@
-/**
- * BlogMNM Interactions: Like, Favorite, Follow, and Comments AJAX Engine
- * Integrated with Bootstrap 5 and BlogMNM Monochrome Theme
- */
-document.addEventListener('DOMContentLoaded', () => {
-    const getCsrfToken = () => {
-        const meta = document.querySelector('meta[name="csrf-token"]');
-        return meta ? meta.getAttribute('content') : '';
-    };
+import { InteractionState } from './interaction-state';
 
+const initializeInteractions = () => {
+    const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
     const showToast = (message, type = 'success') => {
         let container = document.getElementById('global-toast-container');
         if (!container) {
@@ -17,400 +11,391 @@ document.addEventListener('DOMContentLoaded', () => {
             container.style.zIndex = '1090';
             document.body.appendChild(container);
         }
-
-        const toastEl = document.createElement('div');
+        const toast = document.createElement('div');
         const isError = type === 'error' || type === 'danger';
-        const isWarning = type === 'warning';
-        const bgClass = isError ? 'bg-danger text-white' : (isWarning ? 'bg-warning text-dark' : 'bg-success text-white');
-        const closeClass = isWarning ? 'btn-close' : 'btn-close btn-close-white';
-
-        const iconSvg = isError
-            ? `<svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`
-            : (isWarning
-                ? `<svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`
-                : `<svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`);
-
-        toastEl.className = `toast align-items-center border-0 ${bgClass} mb-2 shadow-lg`;
-        toastEl.setAttribute('role', 'alert');
-        toastEl.setAttribute('aria-live', 'assertive');
-        toastEl.setAttribute('aria-atomic', 'true');
-
-        toastEl.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body d-flex align-items-center gap-2">
-                    ${iconSvg}
-                    <span>${message}</span>
-                </div>
-                <button type="button" class="${closeClass} me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
-            </div>
-        `;
-
-        container.appendChild(toastEl);
-
-        if (window.bootstrap && window.bootstrap.Toast) {
-            const bsToast = new window.bootstrap.Toast(toastEl, { delay: 4000 });
-            bsToast.show();
-            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        toast.className = `toast border-0 mb-2 shadow-lg ${isError ? 'bg-danger text-white' : 'bg-theme-surface text-theme border border-theme'}`;
+        toast.setAttribute('role', isError ? 'alert' : 'status');
+        toast.setAttribute('aria-atomic', 'true');
+        const row = document.createElement('div');
+        row.className = 'd-flex align-items-center';
+        const content = document.createElement('div');
+        content.className = 'toast-body';
+        content.textContent = String(message);
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = `btn-close ${isError ? 'btn-close-white ' : ''}me-2 m-auto`;
+        close.dataset.bsDismiss = 'toast';
+        close.setAttribute('aria-label', 'Đóng thông báo');
+        row.append(content, close);
+        toast.appendChild(row);
+        container.appendChild(toast);
+        if (window.bootstrap?.Toast) {
+            const instance = window.bootstrap.Toast.getOrCreateInstance(toast, { delay: 5000 });
+            instance.show();
+            toast.addEventListener('hidden.bs.toast', () => toast.remove(), { once: true });
         } else {
-            setTimeout(() => toastEl.remove(), 4000);
+            toast.classList.add('show');
+            close.addEventListener('click', () => toast.remove(), { once: true });
+            window.setTimeout(() => toast.remove(), 5000);
         }
     };
     window.showToast = showToast;
-
-    // Auto-show any server-side rendered toasts in container
-    document.querySelectorAll('#global-toast-container .toast').forEach((el) => {
-        if (window.bootstrap && window.bootstrap.Toast) {
-            const t = window.bootstrap.Toast.getOrCreateInstance(el);
-            t.show();
-            el.addEventListener('hidden.bs.toast', () => el.remove());
-        }
+    document.querySelectorAll('#global-toast-container .toast').forEach((toast) => {
+        window.bootstrap?.Toast?.getOrCreateInstance(toast).show();
+        toast.addEventListener('hidden.bs.toast', () => toast.remove(), { once: true });
     });
 
-    // 1. LIKE ACTION
-    document.addEventListener('click', async (e) => {
-        const btn = e.target.closest('[data-action="like"]');
-        if (!btn) return;
-        e.preventDefault();
+    const errorFromResponse = async (response) => {
+        const data = await response.json().catch(() => ({}));
+        const messages = {
+            401: 'Vui lòng đăng nhập lại để lưu thao tác.',
+            403: 'Bạn không có quyền thực hiện thao tác này.',
+            404: 'Nội dung này không còn khả dụng.',
+            419: 'Phiên đăng nhập đã hết hạn. Hãy tải lại trang rồi thử lại.',
+            422: 'Vui lòng kiểm tra lại nội dung.',
+            429: 'Bạn thao tác quá nhanh. Vui lòng đợi một lúc rồi thử lại.',
+        };
+        const validationMessage = Object.values(data.errors || {}).flat().find((message) => typeof message === 'string');
+        const error = new Error(validationMessage || messages[response.status] || 'Không thể lưu thao tác. Vui lòng thử lại.');
+        error.status = response.status;
+        return error;
+    };
 
-        const url = btn.getAttribute('data-url');
-        if (!url) return;
-
-        btn.disabled = true;
-        btn.classList.add('opacity-50', 'is-loading');
-        btn.style.pointerEvents = 'none';
-
+    const requestJson = async (url, options = {}) => {
+        const controller = new AbortController();
+        const timer = window.setTimeout(() => controller.abort(), 20000);
         try {
             const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': getCsrfToken(),
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
+                credentials: 'same-origin',
+                cache: 'no-store',
+                ...options,
+                signal: controller.signal,
+                headers: { 'Accept': 'application/json', ...options.headers },
             });
-
-            if (response.status === 401) {
-                window.location.href = '/login';
-                return;
-            }
-
-            if (!response.ok) {
-                const data = await response.json().catch(() => ({}));
-                throw new Error(data.message || 'Lỗi khi thích bài viết.');
-            }
-
-            const data = await response.json();
-            const postId = btn.getAttribute('data-post-id');
-            const allLikeBtns = document.querySelectorAll(`[data-action="like"][data-post-id="${postId}"]`);
-
-            allLikeBtns.forEach(el => {
-                const countSpan = el.querySelector('.like-count');
-                const icon = el.querySelector('svg');
-
-                if (countSpan) {
-                    countSpan.textContent = data.likes_count > 0 ? data.likes_count : '';
-                }
-
-                if (data.liked) {
-                    el.classList.add('text-danger');
-                    el.classList.remove('text-secondary', 'text-theme-secondary');
-                    if (icon) {
-                        icon.setAttribute('fill', 'currentColor');
-                    }
-                } else {
-                    el.classList.remove('text-danger');
-                    el.classList.add('text-theme-secondary');
-                    if (icon) {
-                        icon.setAttribute('fill', 'none');
-                    }
-                }
-            });
+            if (!response.ok) throw await errorFromResponse(response);
+            return await response.json();
         } catch (error) {
-            console.error('Like error:', error);
-            showToast(error.message, 'error');
+            if (error.status) throw error;
+            throw new Error('Không thể kết nối. Thao tác chưa được xác nhận; hãy kiểm tra mạng rồi thử lại.');
         } finally {
-            btn.disabled = false;
-            btn.classList.remove('opacity-50', 'is-loading');
-            btn.style.pointerEvents = '';
+            window.clearTimeout(timer);
         }
-    });
+    };
 
-    // 2. FAVORITE / BOOKMARK ACTION
-    document.addEventListener('click', async (e) => {
-        const btn = e.target.closest('[data-action="favorite"]');
-        if (!btn) return;
-        e.preventDefault();
+    const definitions = {
+        like: { id: 'postId', property: 'liked', count: 'likes_count' },
+        favorite: { id: 'postId', property: 'saved' },
+        follow: { id: 'authorId', property: 'following', count: 'followers_count' },
+    };
+    const states = new Map();
+    const buttonSelector = '[data-action="like"], [data-action="favorite"], [data-action="follow"]';
+    const buttonsFor = (action, id) => document.querySelectorAll(
+        `[data-action="${action}"][data-${action === 'follow' ? 'author-id' : 'post-id'}="${CSS.escape(id)}"]`
+    );
 
-        const url = btn.getAttribute('data-url');
-        if (!url) return;
-
-        btn.disabled = true;
-        btn.classList.add('opacity-50', 'is-loading');
-        btn.style.pointerEvents = 'none';
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': getCsrfToken(),
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.status === 401) {
-                window.location.href = '/login';
-                return;
-            }
-
-            if (!response.ok) {
-                const data = await response.json().catch(() => ({}));
-                throw new Error(data.message || 'Lỗi khi lưu bài viết.');
-            }
-
-            const data = await response.json();
-            const postId = btn.getAttribute('data-post-id');
-            const allFavBtns = document.querySelectorAll(`[data-action="favorite"][data-post-id="${postId}"]`);
-
-            allFavBtns.forEach(el => {
-                const icon = el.querySelector('svg');
-                const label = el.querySelector('.favorite-label');
-
-                if (data.saved) {
-                    el.classList.add('text-warning');
-                    el.classList.remove('text-secondary', 'text-theme-secondary');
-                    if (icon) {
-                        icon.setAttribute('fill', 'currentColor');
-                    }
-                    if (label) label.textContent = 'Đã lưu';
+    const renderInteraction = (action, id, snapshot) => {
+        buttonsFor(action, id).forEach((button) => {
+            button.setAttribute('aria-pressed', String(snapshot.state));
+            button.setAttribute('aria-busy', String(snapshot.pending));
+            button.dataset.syncUncertain = String(snapshot.uncertain);
+            const icon = button.querySelector('svg');
+            if (action === 'like' || action === 'favorite') {
+                const activeClass = action === 'like' ? 'text-danger' : 'text-warning';
+                button.classList.toggle(activeClass, snapshot.state);
+                button.classList.toggle('text-theme-secondary', !snapshot.state);
+                if (icon) icon.setAttribute('fill', snapshot.state ? 'currentColor' : 'none');
+                const label = action === 'like'
+                    ? snapshot.state ? 'Bỏ thích bài viết' : 'Thích bài viết'
+                    : snapshot.state ? 'Bỏ lưu bài viết' : 'Lưu bài viết';
+                button.setAttribute('aria-label', action === 'like' ? `${label}, ${snapshot.count || 0} lượt thích` : label);
+                button.title = label;
+                if (action === 'like') {
+                    const count = button.querySelector('.like-count');
+                    if (count) count.textContent = snapshot.count > 0 ? String(snapshot.count) : '';
                 } else {
-                    el.classList.remove('text-warning');
-                    el.classList.add('text-theme-secondary');
-                    if (icon) {
-                        icon.setAttribute('fill', 'none');
+                    const label = button.querySelector('.favorite-label');
+                    if (label) label.textContent = snapshot.state ? 'Đã lưu' : 'Lưu';
+                    const card = button.closest('[data-favorite-entry]');
+                    if (card) {
+                        card.dataset.saved = String(snapshot.state);
+                        const note = card.querySelector('[data-favorite-entry-status]');
+                        if (note) note.textContent = snapshot.state ? 'Đã lưu' : 'Đã bỏ lưu · Nhấn dấu trang để lưu lại';
                     }
-                    if (label) label.textContent = 'Lưu';
                 }
-            });
-        } catch (error) {
-            console.error('Favorite error:', error);
-            showToast(error.message, 'error');
-        } finally {
-            btn.disabled = false;
-            btn.classList.remove('opacity-50', 'is-loading');
-            btn.style.pointerEvents = '';
-        }
-    });
-
-    // 3. FOLLOW AUTHOR ACTION
-    document.addEventListener('click', async (e) => {
-        const btn = e.target.closest('[data-action="follow"]');
-        if (!btn) return;
-        e.preventDefault();
-
-        const url = btn.getAttribute('data-url');
-        if (!url) return;
-
-        btn.disabled = true;
-        btn.classList.add('opacity-50', 'is-loading');
-        btn.style.pointerEvents = 'none';
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': getCsrfToken(),
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.status === 401) {
-                window.location.href = '/login';
-                return;
-            }
-
-            if (response.status === 422) {
-                const data = await response.json();
-                throw new Error(data.message || 'Không thể theo dõi chính mình.');
-            }
-
-            if (!response.ok) {
-                throw new Error('Lỗi khi thực hiện thao tác.');
-            }
-
-            const data = await response.json();
-            const authorId = btn.getAttribute('data-author-id');
-            const allFollowBtns = document.querySelectorAll(`[data-action="follow"][data-author-id="${authorId}"]`);
-
-            allFollowBtns.forEach(el => {
-                if (data.following) {
-                    el.textContent = 'Đang theo dõi';
-                    el.classList.remove('btn-primary', 'btn-editorial-primary');
-                    el.classList.add('btn-outline-theme');
+            } else {
+                if (button.classList.contains('threads-avatar-follow-btn')) {
+                    button.classList.toggle('d-none', Boolean(snapshot.state));
+                    button.style.display = snapshot.state ? 'none' : 'flex';
+                    button.setAttribute('aria-label', `${snapshot.state ? 'Bỏ theo dõi' : 'Theo dõi'} ${button.dataset.authorName || ''}`.trim());
+                    button.setAttribute('title', snapshot.state ? 'Đang theo dõi' : 'Theo dõi');
                 } else {
-                    el.textContent = 'Theo dõi';
-                    el.classList.remove('btn-outline-theme');
-                    el.classList.add('btn-editorial-primary');
+                    button.textContent = snapshot.state ? 'Đang theo dõi' : 'Theo dõi';
+                    button.classList.toggle('btn-outline-theme', snapshot.state);
+                    button.classList.toggle('btn-primary', !snapshot.state);
+                    button.setAttribute('aria-label', `${snapshot.state ? 'Bỏ theo dõi' : 'Theo dõi'} ${button.dataset.authorName || ''}`.trim());
                 }
+            }
+        });
+        if (action === 'follow' && snapshot.count !== null) {
+            document.querySelectorAll(`[data-follower-count][data-author-id="${CSS.escape(id)}"]`).forEach((label) => {
+                label.textContent = String(snapshot.count);
             });
-
-            const followerCountEl = document.getElementById('follower-count');
-            if (followerCountEl) {
-                let current = parseInt(followerCountEl.textContent, 10) || 0;
-                followerCountEl.textContent = data.following ? current + 1 : Math.max(0, current - 1);
-            }
-        } catch (error) {
-            console.error('Follow error:', error);
-            showToast(error.message, 'error');
-        } finally {
-            btn.disabled = false;
-            btn.classList.remove('opacity-50', 'is-loading');
-            btn.style.pointerEvents = '';
         }
-    });
-
-    // 4. INLINE REPLY TOGGLE
-    document.addEventListener('click', (e) => {
-        const replyToggle = e.target.closest('[data-action="toggle-reply"]');
-        if (!replyToggle) return;
-        e.preventDefault();
-
-        const commentId = replyToggle.getAttribute('data-comment-id');
-        const replyBox = document.getElementById(`reply-box-${commentId}`);
-        if (replyBox) {
-            replyBox.classList.toggle('d-none');
-            const textarea = replyBox.querySelector('textarea');
-            if (!replyBox.classList.contains('d-none') && textarea) {
-                textarea.focus();
+        if (action === 'favorite') {
+            const total = document.querySelector('[data-favorites-total]');
+            if (total) {
+                const removed = document.querySelectorAll('[data-favorite-entry][data-saved="false"]').length;
+                total.querySelector('[data-favorites-count]').textContent = String(Math.max(0, Number(total.dataset.favoritesTotal) - removed));
             }
         }
+    };
+
+    const createInteraction = (button) => {
+        const action = button.dataset.action;
+        const definition = definitions[action];
+        const id = button.dataset[definition.id];
+        const url = button.dataset.url;
+        const initialCount = action === 'like' ? Number(button.dataset.count)
+            : action === 'follow' ? Number(document.querySelector(`[data-follower-count][data-author-id="${CSS.escape(id)}"]`)?.textContent) : null;
+        const mapResult = (data) => ({
+            state: data[definition.property],
+            count: definition.count && data[definition.count] !== undefined ? Number(data[definition.count]) : null,
+        });
+        const state = new InteractionState({
+            state: button.getAttribute('aria-pressed') === 'true',
+            count: initialCount,
+            mutate: async (desired) => mapResult(await requestJson(url, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken(), 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [definition.property]: desired }),
+            })),
+            reconcile: async () => mapResult(await requestJson(url)),
+            onChange: (snapshot) => renderInteraction(action, id, snapshot),
+            onError: (error, { reconciled }) => {
+                showToast(`${error.message}${reconciled ? '' : ' Hãy tải lại trang để kiểm tra trạng thái mới nhất.'}`, 'error');
+                if (error.status === 401) window.location.assign(button.dataset.loginUrl || '/login');
+            },
+        });
+        return { state, action, id };
+    };
+
+    let feedNavigation = null;
+    const hydrateInteractions = (root = document, navigation = null) => {
+        const seen = new Set();
+        root.querySelectorAll(buttonSelector).forEach((button) => {
+            const action = button.dataset.action;
+            const id = button.dataset[definitions[action].id];
+            if (!id || !button.dataset.url) return;
+            const key = `${action}:${id}`;
+            if (seen.has(key)) return;
+            seen.add(key);
+            const existing = states.get(key);
+            if (existing) {
+                const count = action === 'like' ? Number(button.dataset.count)
+                    : action === 'follow' ? Number(document.querySelector(`[data-follower-count][data-author-id="${CSS.escape(id)}"]`)?.textContent) : null;
+                const loadedState = navigation?.revisions.get(key);
+                const expectedRevision = navigation
+                    ? loadedState?.pending ? -1 : loadedState?.revision ?? 0
+                    : existing.state.revision;
+                existing.state.hydrate(button.getAttribute('aria-pressed') === 'true', count, expectedRevision);
+            } else {
+                states.set(key, createInteraction(button));
+            }
+        });
+    };
+    hydrateInteractions();
+    document.addEventListener('blogmnm:feed-loading', (event) => {
+        feedNavigation = {
+            id: event.detail?.navigationId,
+            revisions: new Map(Array.from(states, ([key, entry]) => [key, {
+                revision: entry.state.revision, pending: entry.state.pending,
+            }])),
+        };
+    });
+    document.addEventListener('blogmnm:feed-updated', (event) => {
+        const navigation = event.detail?.navigationId === feedNavigation?.id ? feedNavigation : null;
+        hydrateInteractions(event.detail?.root || document, navigation);
+    });
+    document.addEventListener('click', (event) => {
+        const button = event.target.closest(buttonSelector);
+        if (!button || !button.dataset.url) return;
+        event.preventDefault();
+        const action = button.dataset.action;
+        const id = button.dataset[definitions[action].id];
+        const key = `${action}:${id}`;
+        if (!states.has(key)) states.set(key, createInteraction(button));
+        states.get(key).state.toggle();
     });
 
-    // 5. AJAX COMMENT FORM SUBMISSION
-    document.addEventListener('submit', async (e) => {
-        const form = e.target.closest('[data-form="comment-form"]');
+    document.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-action="toggle-reply"]');
+        if (!button) return;
+        event.preventDefault();
+        const form = document.getElementById(`reply-box-${button.dataset.commentId}`);
         if (!form) return;
-        e.preventDefault();
+        const expanded = form.classList.contains('d-none');
+        form.classList.toggle('d-none', !expanded);
+        button.setAttribute('aria-expanded', String(expanded));
+        if (expanded) form.querySelector('textarea')?.focus();
+    });
 
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const textarea = form.querySelector('textarea[name="body"]');
-        const errorContainer = form.querySelector('.comment-error');
-
-        if (errorContainer) errorContainer.textContent = '';
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-50');
+    const createRequestId = () => {
+        if (window.crypto.randomUUID) return window.crypto.randomUUID();
+        const bytes = window.crypto.getRandomValues(new Uint8Array(16));
+        bytes[6] = (bytes[6] & 15) | 64;
+        bytes[8] = (bytes[8] & 63) | 128;
+        const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+        return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+    };
+    const submittingComments = new WeakSet();
+    const pendingComments = new Set();
+    const knownCommentIds = new Set(Array.from(document.querySelectorAll('#comments-list [id^="comment-"]'), (node) => node.id));
+    let confirmedCommentsCount = Number(document.querySelector('.comment-count-badge')?.textContent) || 0;
+    let latestServerCommentCount = confirmedCommentsCount;
+    const updateCommentCounts = () => {
+        const postId = document.getElementById('comments')?.dataset.postId;
+        document.querySelectorAll(`[data-comment-count][data-post-id="${CSS.escape(postId || '')}"]`).forEach((label) => {
+            const count = confirmedCommentsCount + pendingComments.size;
+            label.textContent = label.classList.contains('comment-action-count') && count === 0 ? '' : String(count);
+        });
+    };
+    const element = (tag, className, text) => {
+        const node = document.createElement(tag);
+        node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+    };
+    const addCommentActions = (card, comment) => {
+        const template = document.getElementById('comment-delete-template');
+        if (template) {
+            const form = template.content.firstElementChild.cloneNode(true);
+            form.action = form.action.replace('__COMMENT__', encodeURIComponent(comment.id));
+            form.dataset.confirmTargetName = comment.user_name;
+            form.dataset.confirmTargetMeta = comment.body.slice(0, 60);
+            card.querySelector('[data-comment-heading]').appendChild(form);
         }
+        if (comment.parent_id) return;
+        const replyTemplate = document.getElementById('comment-reply-template');
+        if (!replyTemplate) return;
+        const form = replyTemplate.content.firstElementChild.cloneNode(true);
+        form.id = `reply-box-${comment.id}`;
+        form.querySelector('[name="parent_id"]').value = comment.id;
+        const textarea = form.querySelector('textarea');
+        textarea.id = `reply-body-${comment.id}`;
+        const error = form.querySelector('.comment-error');
+        error.id = `reply-error-${comment.id}`;
+        textarea.setAttribute('aria-describedby', error.id);
+        const button = element('button', 'btn btn-sm btn-link p-0 text-theme-secondary text-decoration-none small hover-accent', 'Trả lời ↵');
+        button.type = 'button';
+        button.dataset.action = 'toggle-reply';
+        button.dataset.commentId = comment.id;
+        button.setAttribute('aria-expanded', 'false');
+        button.setAttribute('aria-controls', form.id);
+        card.append(button, form, element('div', 'replies-container'));
+    };
 
-        const formData = new FormData(form);
+    document.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-form="comment-form"]');
+        if (!form) return;
+        event.preventDefault();
+        if (submittingComments.has(form)) return;
+        const textarea = form.querySelector('textarea[name="body"]');
+        const error = form.querySelector('.comment-error');
+        const submit = form.querySelector('[type="submit"]');
+        const body = textarea.value.trim();
+        if (error) error.textContent = '';
+        textarea.removeAttribute('aria-invalid');
+        if (body.length < 2 || body.length > 1000) {
+            if (error) error.textContent = 'Bình luận phải có từ 2 đến 1000 ký tự.';
+            textarea.setAttribute('aria-invalid', 'true');
+            textarea.focus();
+            return;
+        }
+        const parentId = form.querySelector('[name="parent_id"]')?.value || '';
+        const parent = parentId ? document.getElementById(`comment-${parentId}`)?.closest('.comment-item') : null;
+        const list = document.getElementById('comments-list');
+        const destination = parent ? parent.querySelector('.replies-container') : list;
+        if (!destination) return;
 
+        let key = form.dataset.requestId;
+        if (!key || form.dataset.requestBody !== body || form.dataset.requestParent !== parentId) {
+            key = createRequestId();
+            form.dataset.requestId = key;
+            form.dataset.requestBody = body;
+            form.dataset.requestParent = parentId;
+        }
+        const pending = element('div', parent ? 'reply-item p-3' : 'comment-item p-3 p-sm-4');
+        pending.id = `pending-comment-${key}`;
+        pending.setAttribute('aria-busy', 'true');
+        const heading = element('div', 'd-flex align-items-center justify-content-between gap-2 mb-2');
+        heading.dataset.commentHeading = '';
+        const author = element('div', 'd-flex align-items-center gap-2');
+        const avatar = document.getElementById('comment-avatar-template');
+        if (avatar) author.appendChild(avatar.content.cloneNode(true));
+        const identity = element('div', '');
+        const name = element('span', 'fw-semibold small text-theme', document.getElementById('comments').dataset.userName || 'Bạn');
+        const status = element('span', 'small text-theme-muted ms-2', 'Đang gửi…');
+        status.setAttribute('role', 'status');
+        identity.append(name, status);
+        author.appendChild(identity);
+        heading.appendChild(author);
+        const content = element('p', 'small text-theme comment-body mb-2 lh-base', body);
+        pending.append(heading, content);
+        parent ? destination.appendChild(pending) : destination.prepend(pending);
+        const placeholder = list.querySelector('[data-comments-empty]');
+        if (placeholder) placeholder.hidden = true;
+        if (parent) destination.classList.add('mt-3', 'ps-3', 'ps-sm-4', 'border-theme-left', 'd-flex', 'flex-column', 'gap-2');
+        pendingComments.add(key);
+        updateCommentCounts();
+        submittingComments.add(form);
+        if (submit) submit.disabled = true;
+
+        const data = new FormData(form);
+        data.set('body', body);
+        data.set('client_request_id', key);
         try {
-            const response = await fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': getCsrfToken(),
-                    'Accept': 'application/json',
-                },
-                body: formData,
+            const result = await requestJson(form.action, {
+                method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken() }, body: data,
             });
-
-            if (response.status === 401) {
-                window.location.href = '/login';
-                return;
+            const comment = result.comment;
+            if (!comment?.id) throw new Error('Máy chủ chưa xác nhận bình luận. Vui lòng thử lại.');
+            const id = `comment-${comment.id}`;
+            if (knownCommentIds.has(id)) pending.remove();
+            else {
+                knownCommentIds.add(id);
+                confirmedCommentsCount++;
+                pending.id = id;
+                pending.removeAttribute('aria-busy');
+                name.textContent = comment.user_name;
+                status.textContent = comment.created_at;
+                status.removeAttribute('role');
+                content.textContent = comment.body;
+                addCommentActions(pending, comment);
             }
-
-            if (response.status === 422) {
-                const data = await response.json();
-                const errorMsg = data.errors?.body?.[0] || data.errors?.parent_id?.[0] || 'Vui lòng kiểm tra lại nội dung bình luận.';
-                if (errorContainer) {
-                    errorContainer.textContent = errorMsg;
-                } else {
-                    showToast(errorMsg, 'error');
+            pendingComments.delete(key);
+            if (Number.isFinite(result.comments_count)) latestServerCommentCount = Math.max(latestServerCommentCount, result.comments_count);
+            if (pendingComments.size === 0) confirmedCommentsCount = Math.max(confirmedCommentsCount, latestServerCommentCount);
+            if (textarea.value.trim() === body) {
+                textarea.value = '';
+                if (form.classList.contains('reply-form')) {
+                    form.classList.add('d-none');
+                    document.querySelector(`[aria-controls="${CSS.escape(form.id)}"]`)?.setAttribute('aria-expanded', 'false');
                 }
-                return;
             }
-
-            if (!response.ok) {
-                throw new Error('Không thể gửi bình luận. Vui lòng thử lại.');
-            }
-
-            const data = await response.json();
-
-            if (textarea) textarea.value = '';
-
-            if (form.classList.contains('reply-form')) {
-                form.classList.add('d-none');
-            }
-
-            const parentId = formData.get('parent_id');
-            const commentsContainer = document.getElementById('comments-list');
-            const initial = (data.comment.user_name || 'U').charAt(0).toUpperCase();
-
-            if (parentId) {
-                const parentCommentEl = document.getElementById(`comment-${parentId}`);
-                let repliesContainer = parentCommentEl ? parentCommentEl.querySelector('.replies-container') : null;
-                if (!repliesContainer && parentCommentEl) {
-                    repliesContainer = document.createElement('div');
-                    repliesContainer.className = 'replies-container mt-3 ps-3 ps-sm-4 border-theme-left d-flex flex-column gap-2';
-                    parentCommentEl.appendChild(repliesContainer);
-                }
-                if (repliesContainer) {
-                    const replyCard = document.createElement('div');
-                    replyCard.className = 'p-3 rounded-3 bg-theme-surface border border-theme text-sm';
-                    replyCard.innerHTML = `
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <div class="rounded-circle brand-gradient fw-bold d-flex align-items-center justify-content-center text-white" style="width: 24px; height: 24px; font-size: 11px;" data-theme-preserve>
-                                ${initial}
-                            </div>
-                            <span class="fw-semibold text-theme small">${data.comment.user_name}</span>
-                            <span class="text-theme-secondary small">&bull; Vừa xong</span>
-                        </div>
-                        <p class="small text-theme mb-0 ps-4 lh-base">${data.comment.body}</p>
-                    `;
-                    repliesContainer.appendChild(replyCard);
-                    replyCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            } else if (commentsContainer) {
-                const emptyPlaceholder = commentsContainer.querySelector('.text-center.py-4');
-                if (emptyPlaceholder) {
-                    emptyPlaceholder.remove();
-                }
-
-                const newCommentEl = document.createElement('div');
-                newCommentEl.className = 'p-3 p-sm-4 rounded-4 bg-theme-surface border border-theme mb-3';
-                newCommentEl.id = `comment-${data.comment.id}`;
-                newCommentEl.innerHTML = `
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="rounded-circle brand-gradient fw-bold d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px; font-size: 13px;" data-theme-preserve>
-                                ${initial}
-                            </div>
-                            <div>
-                                <span class="fw-semibold text-theme small">${data.comment.user_name}</span>
-                                <span class="text-theme-secondary small ms-2">Vừa xong</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-theme mb-0 ps-4 ms-2 lh-base">${data.comment.body}</p>
-                `;
-                commentsContainer.prepend(newCommentEl);
-                newCommentEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-
-            const counterEls = document.querySelectorAll('.comment-count-badge');
-            counterEls.forEach(el => {
-                const count = parseInt(el.textContent, 10) || 0;
-                el.textContent = count + 1;
-            });
-        } catch (error) {
-            console.error('Comment error:', error);
-            showToast(error.message, 'error');
+            delete form.dataset.requestId;
+            delete form.dataset.requestBody;
+            delete form.dataset.requestParent;
+            if (placeholder) placeholder.remove();
+        } catch (failure) {
+            pending.remove();
+            pendingComments.delete(key);
+            if (placeholder && !list.querySelector('.comment-item')) placeholder.hidden = false;
+            if (error) error.textContent = failure.message;
+            if (failure.status === 422) textarea.setAttribute('aria-invalid', 'true');
         } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-50');
-            }
+            updateCommentCounts();
+            submittingComments.delete(form);
+            if (submit) submit.disabled = false;
         }
     });
 
@@ -616,4 +601,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (promptErrorEl) promptErrorEl.classList.add('d-none');
         });
     }
-});
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeInteractions, { once: true });
+} else {
+    initializeInteractions();
+}

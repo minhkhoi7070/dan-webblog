@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\User;
-use App\Services\PostContentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -420,7 +419,7 @@ class StatusBannerAndImageAltTest extends TestCase
         // Title and timestamp
         $response->assertSee('dashboard-post-title', false);
         $response->assertSee('dashboard-post-timestamp', false);
-        $response->assertSee('Cập nhật: ' . $draft->updated_at->format('d/m/Y H:i'));
+        $response->assertSee('Cập nhật: '.$draft->updated_at->format('d/m/Y H:i'));
 
         // Action button modifiers
         $response->assertSee('btn-action-submit', false);

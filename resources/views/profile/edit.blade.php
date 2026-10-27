@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
             <div>
-                <h1 class="h4 fw-bold text-theme mb-0 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+                <h1 class="h4 fw-bold text-theme mb-0 tracking-tight">
                     Cài đặt tài khoản
                 </h1>
             </div>

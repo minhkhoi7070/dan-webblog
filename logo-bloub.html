@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Logo Bloub Nuage Orange - 100% Exact Match</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 32px;
+      background-color: #101010; /* Nền Dark Mode của giao diện Threads */
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* Khung hiển thị đúng kích thước 320x320 của GIF gốc */
+    .bloub-wrapper {
+      width: 320px;
+      height: 320px;
+      display: inline-block;
+    }
+
+    .bloub-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    /* Chuyển động thở cực nhẹ của các khối mây (đúng biên độ ~1.5px trong 60 frames) */
+    .cloud-body-group {
+      transform-origin: 157.5px 169.8px;
+      animation: cloud-breathe 3s linear infinite;
+    }
+
+    .lobe-1 { animation: lobe-wobble-1 3s ease-in-out infinite; transform-origin: 103.57px 185.39px; }
+    .lobe-2 { animation: lobe-wobble-2 3s ease-in-out infinite; transform-origin: 162.18px 197.77px; }
+    .lobe-3 { animation: lobe-wobble-3 3s ease-in-out infinite; transform-origin: 218.57px 185.36px; }
+    .lobe-4 { animation: lobe-wobble-4 3s ease-in-out infinite; transform-origin: 198.35px 128.98px; }
+    .lobe-5 { animation: lobe-wobble-5 3s ease-in-out infinite; transform-origin: 129.37px 122.14px; }
+
+    /* Chuyển động liếc mắt theo đúng tọa độ trích xuất từ Frame 0 -> Frame 60 */
+    .eyes-track {
+      animation: eyes-drift 3s linear infinite;
+    }
+
+    /* Chuyển động chớp mắt tại đúng Frame 28 -> 30 -> 32 (46.67% -> 50% -> 53.33%) */
+    .eye-left-blink {
+      transform-origin: 179.8px 120.6px;
+      animation: eye-blink-left 3s linear infinite;
+    }
+
+    .eye-right-blink {
+      transform-origin: 224.7px 106.4px;
+      animation: eye-blink-right 3s linear infinite;
+    }
+
+    @keyframes cloud-breathe {
+      0%, 100% { transform: translate(0px, 0px) scale(1, 1); }
+      25%      { transform: translate(0px, -0.3px) scale(1.004, 1.006); }
+      50%      { transform: translate(-0.2px, -0.2px) scale(1.002, 1.003); }
+      83.33%   { transform: translate(-0.3px, -0.4px) scale(0.997, 0.996); }
+    }
+
+    @keyframes lobe-wobble-1 {
+      0%, 100% { transform: translate(0px, 0px); }
+      33%      { transform: translate(-0.6px, 0.5px); }
+      75%      { transform: translate(0.5px, -0.4px); }
+    }
+    @keyframes lobe-wobble-2 {
+      0%, 100% { transform: translate(0px, 0px); }
+      30%      { transform: translate(0px, 0.8px); }
+      80%      { transform: translate(-0.4px, -0.6px); }
+    }
+    @keyframes lobe-wobble-3 {
+      0%, 100% { transform: translate(0px, 0px); }
+      35%      { transform: translate(0.7px, 0.3px); }
+      85%      { transform: translate(-0.5px, -0.4px); }
+    }
+    @keyframes lobe-wobble-4 {
+      0%, 100% { transform: translate(0px, 0px); }
+      25%      { transform: translate(0.4px, -0.7px); }
+      75%      { transform: translate(-0.4px, 0.5px); }
+    }
+    @keyframes lobe-wobble-5 {
+      0%, 100% { transform: translate(0px, 0px); }
+      25%      { transform: translate(-0.5px, -0.8px); }
+      80%      { transform: translate(0.4px, 0.6px); }
+    }
+
+    /* Quỹ đạo di chuyển của 2 mắt khớp từng frame */
+    @keyframes eyes-drift {
+      0%      { transform: translate(0.0px, 0.0px); }     /* Frame 0  */
+      8.33%   { transform: translate(-0.2px, 0.3px); }    /* Frame 5  */
+      16.67%  { transform: translate(-0.8px, 0.4px); }    /* Frame 10 */
+      25.00%  { transform: translate(-1.4px, 0.6px); }    /* Frame 15 */
+      33.33%  { transform: translate(-1.8px, 1.0px); }    /* Frame 20 */
+      41.67%  { transform: translate(-2.2px, 1.3px); }    /* Frame 25 */
+      46.67%  { transform: translate(-2.7px, 1.6px); }    /* Frame 28 */
+      50.00%  { transform: translate(-3.2px, 1.8px); }    /* Frame 30 */
+      53.33%  { transform: translate(-3.3px, 2.1px); }    /* Frame 32 */
+      58.33%  { transform: translate(-3.8px, 2.3px); }    /* Frame 35 */
+      66.67%  { transform: translate(-3.5px, 2.5px); }    /* Frame 40 */
+      75.00%  { transform: translate(-1.7px, 2.6px); }    /* Frame 45 */
+      83.33%  { transform: translate(0.3px, 3.0px); }     /* Frame 50 */
+      91.67%  { transform: translate(1.3px, 3.7px); }     /* Frame 55 */
+      98.33%  { transform: translate(1.1px, 3.9px); }     /* Frame 59 */
+      100%    { transform: translate(0.0px, 0.0px); }     /* Loop     */
+    }
+
+    /* Chớp mắt tại Frame 28 -> 29 -> 30 -> 31 -> 32 */
+    @keyframes eye-blink-left {
+      0%, 46.67% {
+        transform: rotate(-28.3deg) scaleY(1) scaleX(1);
+      }
+      48.33% {
+        /* Frame 29: mắt khép còn 36% chiều dọc */
+        transform: rotate(-45deg) scaleY(0.36) scaleX(0.85);
+      }
+      50.00% {
+        /* Frame 30: mắt nhắm còn khe mỏng 17% chiều dọc */
+        transform: rotate(-68deg) scaleY(0.17) scaleX(0.75);
+      }
+      51.67% {
+        /* Frame 31: mắt mở lên 68% */
+        transform: rotate(-36deg) scaleY(0.68) scaleX(0.95);
+      }
+      53.33%, 100% {
+        /* Frame 32 -> 60: mở hoàn toàn */
+        transform: rotate(-27.2deg) scaleY(1) scaleX(1);
+      }
+    }
+
+    @keyframes eye-blink-right {
+      0%, 46.67% {
+        transform: rotate(-28.3deg) scaleY(1) scaleX(1);
+      }
+      48.33% {
+        transform: rotate(-45deg) scaleY(0.36) scaleX(0.85);
+      }
+      50.00% {
+        transform: rotate(-65deg) scaleY(0.17) scaleX(0.75);
+      }
+      51.67% {
+        transform: rotate(-36deg) scaleY(0.68) scaleX(0.95);
+      }
+      53.33%, 100% {
+        transform: rotate(-27.2deg) scaleY(1) scaleX(1);
+      }
+    }
+
+    /* Demo phiên bản thu nhỏ gắn vào Header WebBlog */
+    .header-demo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: #181818;
+      border: 1px solid #333638;
+      border-radius: 16px;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+    .header-demo .bloub-wrapper {
+      width: 48px;
+      height: 48px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Kích thước gốc 320x320 để đối chiếu 1:1 với GIF -->
+  <div class="bloub-wrapper">
+    <svg class="bloub-svg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+      <!-- 5 khối tròn cấu thành thân đám mây màu #f08a24 -->
+      <g class="cloud-body-group" fill="#f08a24">
+        <circle class="lobe-1" cx="103.57" cy="185.39" r="68.64" />
+        <circle class="lobe-2" cx="162.18" cy="197.77" r="76.59" />
+        <circle class="lobe-3" cx="218.57" cy="185.36" r="63.47" />
+        <circle class="lobe-4" cx="198.35" cy="128.98" r="55.39" />
+        <circle class="lobe-5" cx="129.37" cy="122.14" r="61.44" />
+      </g>
+
+      <!-- 2 mắt màu #f9f9f9 (dạng viên thuốc bo tròn, nghiêng -28.3 độ) -->
+      <g class="eyes-track" fill="#f9f9f9">
+        <!-- Mắt trái: tâm (179.8, 120.6), rộng 20.9, cao 49.3 -->
+        <g class="eye-left-blink">
+          <rect x="169.35" y="95.95" width="20.9" height="49.3" rx="10.45" ry="10.45" />
+        </g>
+        <!-- Mắt phải: tâm (224.7, 106.4), rộng 12.7, cao 49.8 -->
+        <g class="eye-right-blink">
+          <rect x="218.35" y="81.50" width="12.7" height="49.8" rx="6.35" ry="6.35" />
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <!-- 2. Demo khi thu nhỏ làm Logo trên thanh Header/Sidebar của WebBlog -->
+  <div class="header-demo">
+    <div class="bloub-wrapper">
+      <svg class="bloub-svg" viewBox="30 55 260 225" xmlns="http://www.w3.org/2000/svg">
+        <g class="cloud-body-group" fill="#f08a24">
+          <circle class="lobe-1" cx="103.57" cy="185.39" r="68.64" />
+          <circle class="lobe-2" cx="162.18" cy="197.77" r="76.59" />
+          <circle class="lobe-3" cx="218.57" cy="185.36" r="63.47" />
+          <circle class="lobe-4" cx="198.35" cy="128.98" r="55.39" />
+          <circle class="lobe-5" cx="129.37" cy="122.14" r="61.44" />
+        </g>
+        <g class="eyes-track" fill="#f9f9f9">
+          <g class="eye-left-blink">
+            <rect x="169.35" y="95.95" width="20.9" height="49.3" rx="10.45" ry="10.45" />
+          </g>
+          <g class="eye-right-blink">
+            <rect x="218.35" y="81.50" width="12.7" height="49.8" rx="6.35" ry="6.35" />
+          </g>
+        </g>
+      </svg>
+    </div>
+    <span>WebBlog</span>
+  </div>
+
+</body>
+</html>

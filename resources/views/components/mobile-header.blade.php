@@ -1,13 +1,9 @@
 <!-- Mobile Top Navigation Header -->
 <header {{ $attributes->merge(['class' => 'd-sm-none d-flex align-items-center justify-content-between px-3 sticky-top bg-theme-surface border-theme-bottom z-3 user-select-none']) }} style="height: 56px;">
     <!-- Brand Logo -->
-    <a href="{{ route('home') }}" class="d-flex align-items-center gap-2 text-decoration-none" aria-label="BlogMNM Trang chủ">
-        <div class="brand-gradient rounded-3 d-flex align-items-center justify-content-center text-white fw-bold shadow-xs flex-shrink-0" style="width: 32px; height: 32px; font-size: 14px;" data-theme-preserve>
-            B
-        </div>
-        <span class="fs-5 fw-bold text-theme mb-0 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
-            Blog<span class="text-accent">MNM</span>
-        </span>
+    <a href="{{ route('posts.index') }}" class="brand-link flex items-center gap-2 font-bold text-lg tracking-tight text-decoration-none" aria-label="CloudBlog Trang chủ">
+        <x-logo class="w-9 h-9" />
+        <span class="brand-text">CloudBlog</span>
     </a>
 
     <!-- Right Actions -->

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -13,7 +14,7 @@ class UserController extends Controller
     /**
      * Display a paginated listing of users with search and role filters.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|Response
     {
         $search = $request->query('q');
         $role = $request->query('role');
@@ -38,6 +39,19 @@ class UserController extends Controller
             ->latest()
             ->paginate(15)
             ->withQueryString();
+
+        if ($request->header('X-BlogMNM-Feed')) {
+            return response()
+                ->view('admin.users.partials.table-results', [
+                    'users' => $users,
+                    'search' => $search,
+                    'roleFilter' => $role,
+                    'statusFilter' => $status,
+                ])
+                ->header('X-BlogMNM-Feed', '1')
+                ->header('Vary', 'X-BlogMNM-Feed')
+                ->header('Cache-Control', 'private, no-store');
+        }
 
         return view('admin.users.index', [
             'users' => $users,

@@ -118,11 +118,11 @@
         @endif
 
         <!-- Comments Thread Section -->
-        <section id="comments" class="{{ $relatedPosts->isNotEmpty() ? 'mt-4 pt-4 border-theme-top' : '' }}">
+        <section id="comments" data-post-id="{{ $post->id }}" data-user-name="{{ auth()->user()?->name }}" class="{{ $relatedPosts->isNotEmpty() ? 'mt-4 pt-4 border-theme-top' : '' }}" aria-labelledby="comments-heading">
             <div class="d-flex align-items-center justify-content-between pb-3 mb-4 border-theme-bottom">
                 <div class="d-flex align-items-center gap-2">
-                    <h2 class="h5 fw-bold text-theme mb-0">Bình luận</h2>
-                    <span class="comment-count-badge badge bg-theme-surface-hover text-theme border border-theme rounded-pill">
+                    <h2 id="comments-heading" class="h5 fw-bold text-theme mb-0">Bình luận</h2>
+                    <span data-comment-count data-post-id="{{ $post->id }}" class="comment-count-badge badge bg-theme-surface-hover text-theme border border-theme rounded-pill interaction-count">
                         {{ $post->comments_count }}
                     </span>
                 </div>
@@ -130,15 +130,38 @@
 
             <!-- Comment Input Box (Authenticated) -->
             @auth
+                <template id="comment-avatar-template"><x-avatar :user="auth()->user()" size="sm" /></template>
+                <template id="comment-delete-template">
+                    <form action="{{ route('comments.destroy', '__COMMENT__') }}" method="POST" class="d-inline m-0" data-confirm="true" data-confirm-title="Xóa bình luận" data-confirm-message="Bạn có chắc chắn muốn xóa bình luận này không?" data-confirm-btn-text="Xóa bình luận" data-confirm-type="danger">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-link text-danger p-0 text-decoration-none" aria-label="Xóa bình luận của bạn">Xóa</button>
+                    </form>
+                </template>
+                <template id="comment-reply-template">
+                    <form action="{{ route('comments.store', $post->id) }}" method="POST" data-form="comment-form" class="reply-form d-none mt-3">
+                        @csrf
+                        <input type="hidden" name="parent_id">
+                        <div class="comment-error text-danger small mb-1 fw-medium" role="alert"></div>
+                        <div class="d-flex flex-column flex-sm-row gap-2">
+                            <textarea name="body" rows="2" required minlength="2" maxlength="1000" aria-label="Nội dung trả lời" placeholder="Viết câu trả lời..." class="form-control form-control-sm"></textarea>
+                            <button type="submit" class="btn btn-sm btn-editorial-primary rounded-pill px-3 align-self-sm-end align-self-stretch flex-shrink-0">Gửi</button>
+                        </div>
+                    </form>
+                </template>
                 <form action="{{ route('comments.store', $post->id) }}" method="POST" data-form="comment-form" class="mb-4">
                     @csrf
-                    <div class="comment-error text-danger small mb-2 fw-medium"></div>
+                    <div id="comment-form-error" class="comment-error text-danger small mb-2 fw-medium" role="alert"></div>
                     <div class="d-flex gap-3 align-items-start">
                         <x-avatar :user="auth()->user()" size="md" />
                         <div class="flex-grow-1">
-                            <textarea name="body"
+                            <label for="comment-body" class="visually-hidden">Nội dung bình luận</label>
+                            <textarea id="comment-body" name="body"
                                       rows="3"
                                       required
+                                      minlength="2"
+                                      maxlength="1000"
+                                      aria-describedby="comment-form-error"
                                       placeholder="Trả lời hoặc chia sẻ góc nhìn của bạn..."
                                       class="form-control mb-2"></textarea>
                             <div class="d-flex justify-content-end">
@@ -212,6 +235,8 @@
                                 <button type="button"
                                         data-action="toggle-reply"
                                         data-comment-id="{{ $comment->id }}"
+                                        aria-expanded="false"
+                                        aria-controls="reply-box-{{ $comment->id }}"
                                         class="btn btn-sm btn-link p-0 text-theme-secondary text-decoration-none small hover-accent">
                                     Trả lời &crarr;
                                 </button>
@@ -225,11 +250,15 @@
                                   class="reply-form d-none mt-3 ps-4 ms-2">
                                 @csrf
                                 <input type="hidden" name="parent_id" value="{{ $comment->id }}">
-                                <div class="comment-error text-danger small mb-1 fw-medium"></div>
+                                <div id="reply-error-{{ $comment->id }}" class="comment-error text-danger small mb-1 fw-medium" role="alert"></div>
                                 <div class="d-flex flex-column flex-sm-row gap-2">
-                                    <textarea name="body"
+                                    <textarea id="reply-body-{{ $comment->id }}" name="body"
                                               rows="2"
                                               required
+                                              minlength="2"
+                                              maxlength="1000"
+                                              aria-label="Trả lời bình luận của {{ $comment->user->name }}"
+                                              aria-describedby="reply-error-{{ $comment->id }}"
                                               placeholder="Trả lời @ {{ $comment->user->name }}..."
                                               class="form-control form-control-sm"></textarea>
                                     <button type="submit" class="btn btn-sm btn-editorial-primary rounded-pill px-3 align-self-sm-end align-self-stretch flex-shrink-0">
@@ -279,7 +308,7 @@
                         </div>
                     </div>
                 @empty
-                    <div class="text-center py-4 text-theme-secondary small">
+                    <div data-comments-empty class="text-center py-4 text-theme-secondary small">
                         Chưa có bình luận nào cho bài viết này. Hãy là người đầu tiên tham gia thảo luận!
                     </div>
                 @endforelse

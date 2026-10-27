@@ -26,6 +26,27 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'avatar' => [
+                'nullable',
+                'file',
+                'image',
+                'mimes:jpeg,png,webp',
+                'max:2048',
+            ],
+        ];
+    }
+
+    /**
+     * Get custom error messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'avatar.image' => 'Ảnh đại diện phải là một tệp hình ảnh hợp lệ.',
+            'avatar.mimes' => 'Ảnh đại diện chỉ chấp nhận định dạng JPEG, PNG hoặc WebP.',
+            'avatar.max' => 'Dung lượng ảnh đại diện không được vượt quá 2MB.',
         ];
     }
 }

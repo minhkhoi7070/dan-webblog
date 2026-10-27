@@ -6,6 +6,7 @@ use Database\Factories\TagFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 class Tag extends Model
 {
@@ -31,9 +32,9 @@ class Tag extends Model
      */
     public static function generateUniqueSlug(string $name, ?int $excludeId = null): string
     {
-        $baseSlug = \Illuminate\Support\Str::slug($name);
+        $baseSlug = Str::slug($name);
         if ($baseSlug === '') {
-            $baseSlug = 'tag-'.\Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(6));
+            $baseSlug = 'tag-'.Str::lower(Str::random(6));
         }
 
         $slug = $baseSlug;
@@ -55,7 +56,7 @@ class Tag extends Model
     public static function findOrCreateByName(string $name): static
     {
         $cleanName = static::normalizeName($name);
-        $slug = \Illuminate\Support\Str::slug($cleanName);
+        $slug = Str::slug($cleanName);
 
         // Case-insensitive name match or slug match to prevent duplicates
         $existing = static::whereRaw('LOWER(name) = ?', [mb_strtolower($cleanName, 'UTF-8')])

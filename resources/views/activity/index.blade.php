@@ -18,19 +18,10 @@
         </div>
 
         <!-- Header -->
-        <div class="p-4 p-sm-5 border-theme-bottom">
-            <h1 class="h4 fw-bold text-theme tracking-tight mb-1" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
-                Nhật ký hoạt động của bạn
-            </h1>
-            <p class="small text-theme-secondary mb-0" style="font-size: 14px;">
-                Tổng hợp các tương tác và hoạt động gần đây của bạn trên BlogMNM.
-            </p>
-        </div>
-
         <div class="p-4 p-sm-5">
-            <!-- Quick Stats Grid: 3 Clean Cards (Comments, Likes, Favorites) -->
+            <!-- Quick Stats Grid: 4 Clean Cards (Comments, Likes, Favorites, Following) -->
             <div class="row g-3 mb-4 pb-1">
-                <div class="col-12 col-sm-4">
+                <div class="col-6 col-md-3">
                     <div class="card p-3 p-sm-4 border-theme bg-surface-2 rounded-xl shadow-2xs h-100">
                         <div class="d-flex align-items-center justify-content-between text-theme-secondary mb-2" style="font-size: 13.5px;">
                             <span class="fw-medium">Bình luận</span>
@@ -45,7 +36,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-4">
+                <div class="col-6 col-md-3">
                     <div class="card p-3 p-sm-4 border-theme bg-surface-2 rounded-xl shadow-2xs h-100">
                         <div class="d-flex align-items-center justify-content-between text-theme-secondary mb-2" style="font-size: 13.5px;">
                             <span class="fw-medium">Đã thích</span>
@@ -60,7 +51,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-4">
+                <div class="col-6 col-md-3">
                     <a href="{{ route('favorites.index') }}" class="card p-3 p-sm-4 border-theme bg-surface-2 rounded-xl shadow-2xs h-100 text-decoration-none transition-colors hover-accent d-block">
                         <div class="d-flex align-items-center justify-content-between text-theme-secondary mb-2" style="font-size: 13.5px;">
                             <span class="fw-medium text-theme">Đã lưu</span>
@@ -73,6 +64,23 @@
                         </div>
                         <span class="small text-theme-secondary mt-1 d-inline-flex align-items-center gap-1" style="font-size: 12px;">
                             Xem bộ sưu tập &rarr;
+                        </span>
+                    </a>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <a href="{{ route('following.index') }}" class="card p-3 p-sm-4 border-theme bg-surface-2 rounded-xl shadow-2xs h-100 text-decoration-none transition-colors hover-accent d-block">
+                        <div class="d-flex align-items-center justify-content-between text-theme-secondary mb-2" style="font-size: 13.5px;">
+                            <span class="fw-medium text-theme">Đang theo dõi</span>
+                            <div class="text-accent">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                            </div>
+                        </div>
+                        <div class="h3 fw-bold tracking-tight mb-0 metric-number text-theme">
+                            {{ number_format($stats['following_count']) }}
+                        </div>
+                        <span class="small text-theme-secondary mt-1 d-inline-flex align-items-center gap-1" style="font-size: 12px;">
+                            Xem tác giả &rarr;
                         </span>
                     </a>
                 </div>

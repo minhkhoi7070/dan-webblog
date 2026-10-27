@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
 use App\Models\Category;
+use App\Models\Comment;
+use App\Models\Like;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
+use App\Services\PostContentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -21,11 +25,18 @@ class PostController extends Controller
     /**
      * Display a listing of published posts with search, category filter, and pagination.
      */
-    public function index(Request $request): View|RedirectResponse
+    public function index(Request $request): Response|RedirectResponse
     {
-        $search = $request->query('q');
-        $categorySlug = $request->query('category');
-        $tagSlug = $request->query('tag');
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:200'],
+            'category' => ['nullable', 'string', 'max:255'],
+            'tag' => ['nullable', 'string', 'max:255'],
+            'page' => ['sometimes', 'integer'],
+        ]);
+
+        $search = $filters['q'] ?? null;
+        $categorySlug = $filters['category'] ?? null;
+        $tagSlug = $filters['tag'] ?? null;
 
         $activeCategory = null;
         if ($categorySlug) {
@@ -36,6 +47,7 @@ class PostController extends Controller
             ->published()
             ->with(['user', 'category', 'tags'])
             ->withCount(['comments' => fn ($q) => $q->where('status', 'approved'), 'likers', 'favoritedBy'])
+            ->withViewerState($request->user())
             ->when($search, fn ($query) => $query->search($search))
             ->when($categorySlug, function ($query) use ($categorySlug) {
                 $query->whereHas('category', fn ($q) => $q->where('slug', $categorySlug));
@@ -58,22 +70,34 @@ class PostController extends Controller
             }
         }
 
-        $categories = Category::withCount(['posts' => fn ($q) => $q->published()])->get();
-
-        return view('posts.index', [
+        $viewData = [
             'posts' => $posts,
-            'categories' => $categories,
             'search' => $search,
             'activeCategory' => $activeCategory,
             'currentCategorySlug' => $categorySlug,
             'currentTagSlug' => $tagSlug,
-        ]);
+        ];
+
+        if ($request->header('X-BlogMNM-Feed') === '1') {
+            return response()
+                ->view('posts.partials.feed-results', $viewData)
+                ->header('X-BlogMNM-Feed', '1')
+                ->header('Vary', 'X-BlogMNM-Feed')
+                ->header('Cache-Control', 'private, no-store');
+        }
+
+        $viewData['categories'] = Category::withCount(['posts' => fn ($q) => $q->published()])->get();
+
+        return response()
+            ->view('posts.index', $viewData)
+            ->header('Vary', 'X-BlogMNM-Feed')
+            ->header('Cache-Control', 'private, no-store');
     }
 
     /**
      * Display the specified post and increment its view count.
      */
-    public function show(Post $post): View
+    public function show(Post $post, Request $request): View
     {
         // Enforce guest access: unpublished posts return 404 for guests and non-authorized users
         if ($post->status !== 'published' && Gate::denies('view', $post)) {
@@ -103,6 +127,14 @@ class PostController extends Controller
             'favoritedBy',
         ]);
 
+        if ($viewer = $request->user()) {
+            $post->loadExists([
+                'likers as liked_by_viewer' => fn ($query) => $query->whereKey($viewer->id),
+                'favoritedBy as saved_by_viewer' => fn ($query) => $query->whereKey($viewer->id),
+            ]);
+            $post->setAttribute('viewer_state_user_id', $viewer->id);
+        }
+
         // Related published posts from the same category
         $relatedPosts = Post::query()
             ->published()
@@ -122,7 +154,7 @@ class PostController extends Controller
     /**
      * Display published posts by a specific author.
      */
-    public function byAuthor(User $user, Request $request): View|RedirectResponse
+    public function byAuthor(User $user, Request $request): Response|View|RedirectResponse
     {
         $search = $request->query('q');
 
@@ -131,6 +163,7 @@ class PostController extends Controller
             ->where('user_id', $user->id)
             ->with(['user', 'category', 'tags'])
             ->withCount(['comments' => fn ($q) => $q->where('status', 'approved'), 'likers', 'favoritedBy'])
+            ->withViewerState($request->user())
             ->when($search, fn ($query) => $query->search($search))
             ->latest('published_at')
             ->paginate(10)
@@ -149,11 +182,24 @@ class PostController extends Controller
 
         $user->loadCount(['posts' => fn ($q) => $q->published(), 'followers']);
 
-        return view('authors.show', [
+        $viewData = [
             'author' => $user,
             'posts' => $posts,
             'search' => $search,
-        ]);
+        ];
+
+        if ($request->header('X-BlogMNM-Feed') === '1') {
+            return response()
+                ->view('authors.partials.feed-results', $viewData)
+                ->header('X-BlogMNM-Feed', '1')
+                ->header('Vary', 'X-BlogMNM-Feed')
+                ->header('Cache-Control', 'private, no-store');
+        }
+
+        return response()
+            ->view('authors.show', $viewData)
+            ->header('Vary', 'X-BlogMNM-Feed')
+            ->header('Cache-Control', 'private, no-store');
     }
 
     // =========================================================================
@@ -190,7 +236,7 @@ class PostController extends Controller
         }
 
         $body = $request->input('body') ?? $request->input('content');
-        $body = \App\Services\PostContentService::cleanHtml($body);
+        $body = PostContentService::cleanHtml($body);
         $excerpt = $request->validated('excerpt') ?: Str::limit(strip_tags($body), 150);
         $slug = Str::slug($request->validated('title')).'-'.Str::lower(Str::random(6));
 
@@ -312,7 +358,7 @@ class PostController extends Controller
         }
 
         $body = $request->input('body') ?? $request->input('content');
-        $body = \App\Services\PostContentService::cleanHtml($body);
+        $body = PostContentService::cleanHtml($body);
         $excerpt = $request->validated('excerpt') ?: Str::limit(strip_tags($body), 150);
 
         // Security: Do not allow user input to tamper with status directly!
@@ -387,24 +433,23 @@ class PostController extends Controller
     /**
      * Display author dashboard statistics and posts management list.
      */
-    public function stats(Request $request): View
+    public function stats(Request $request): Response|View
     {
         $user = $request->user();
         abort_if(! $user, 401);
 
         $query = $user->isAdmin() ? Post::query() : Post::where('user_id', $user->id);
 
-        $totalPosts = (clone $query)->count();
-        $draftCount = (clone $query)->where('status', 'draft')->count();
-        $pendingCount = (clone $query)->where('status', 'pending')->count();
-        $publishedCount = (clone $query)->where('status', 'published')->count();
-        $rejectedCount = (clone $query)->where('status', 'rejected')->count();
+        $postMetrics = (clone $query)->toBase()
+            ->selectRaw("COUNT(*) as total, SUM(views) as views,
+                COUNT(CASE WHEN status = 'draft' THEN 1 END) as draft,
+                COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
+                COUNT(CASE WHEN status = 'published' THEN 1 END) as published,
+                COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected")
+            ->first();
 
-        $totalViews = (clone $query)->sum('views');
-
-        // Total likes & comments on author's posts
-        $totalLikes = (clone $query)->withCount('likers')->get()->sum('likers_count');
-        $totalComments = (clone $query)->withCount('comments')->get()->sum('comments_count');
+        $totalLikes = Like::whereIn('post_id', (clone $query)->select('id'))->count();
+        $totalComments = Comment::whereIn('post_id', (clone $query)->select('id'))->count();
 
         $statusFilter = $request->query('status');
         $search = $request->query('q');
@@ -422,20 +467,33 @@ class PostController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('author.posts.stats', [
+        $viewData = [
             'stats' => [
-                'total' => $totalPosts,
-                'draft' => $draftCount,
-                'pending' => $pendingCount,
-                'published' => $publishedCount,
-                'rejected' => $rejectedCount,
-                'views' => $totalViews,
+                'total' => (int) $postMetrics->total,
+                'draft' => (int) $postMetrics->draft,
+                'pending' => (int) $postMetrics->pending,
+                'published' => (int) $postMetrics->published,
+                'rejected' => (int) $postMetrics->rejected,
+                'views' => (int) $postMetrics->views,
                 'likes' => $totalLikes,
                 'comments' => $totalComments,
             ],
             'posts' => $posts,
             'currentStatus' => $statusFilter,
             'search' => $search,
-        ]);
+        ];
+
+        if ($request->header('X-BlogMNM-Feed') === '1') {
+            return response()
+                ->view('author.posts.partials.stats-results', $viewData)
+                ->header('X-BlogMNM-Feed', '1')
+                ->header('Vary', 'X-BlogMNM-Feed')
+                ->header('Cache-Control', 'private, no-store');
+        }
+
+        return response()
+            ->view('author.posts.stats', $viewData)
+            ->header('Vary', 'X-BlogMNM-Feed')
+            ->header('Cache-Control', 'private, no-store');
     }
 }

@@ -2,7 +2,10 @@
 
 @section('content')
 <div class="w-100 d-flex justify-content-center px-0 px-sm-3 py-0 py-sm-4">
-    <div class="w-100 feed-container card border-0 border-sm border-theme overflow-hidden bg-theme-surface shadow-xs" style="border-radius: var(--radius-xl, 16px);">
+    <div class="w-100 feed-container card border-0 border-sm border-theme overflow-hidden bg-theme-surface shadow-xs"
+         style="border-radius: var(--radius-xl, 16px);"
+         data-feed-shell
+         data-feed-base-url="{{ route('authors.show', $author) }}">
         
         <!-- Top Back Bar -->
         <div class="p-3 px-sm-4 border-theme-bottom d-flex align-items-center justify-content-between sticky-top bg-theme-surface" style="z-index: 1020;">
@@ -19,7 +22,7 @@
         <div class="p-4 p-sm-5 border-theme-bottom">
             <div class="d-flex align-items-start justify-content-between gap-3">
                 <div class="flex-grow-1 min-w-0">
-                    <h1 class="h3 fw-bold text-theme tracking-tight text-truncate mb-1" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+                    <h1 class="h3 fw-bold text-theme tracking-tight text-truncate mb-1">
                         {{ $author->name }}
                     </h1>
                     <div class="d-flex align-items-center gap-2">
@@ -40,8 +43,8 @@
 
             <!-- Bio -->
             <div class="mt-3.5">
-                <p class="text-theme small lh-relaxed mb-0" style="max-width: 540px; font-family: var(--font-serif, 'Lora', serif); font-size: 14.5px;">
-                    {{ $author->bio ?: 'Tác giả chưa cập nhật tiểu sử cá nhân trên nền tảng BlogMNM.' }}
+                <p class="text-theme small lh-relaxed mb-0" style="max-width: 540px; font-size: 14.5px;">
+                    {{ $author->bio ?: 'Tác giả chưa cập nhật tiểu sử cá nhân trên nền tảng CloudBlog.' }}
                 </p>
             </div>
 
@@ -52,7 +55,7 @@
                     <span class="opacity-75" style="font-size: 13px;">bài viết</span>
                 </div>
                 <div class="d-flex align-items-baseline gap-1.5">
-                    <span id="follower-count" class="fw-bold text-theme fs-6">{{ $author->followers_count }}</span>
+                    <span id="follower-count" data-follower-count data-author-id="{{ $author->id }}" class="fw-bold text-theme fs-6 interaction-count">{{ $author->followers_count }}</span>
                     <span class="opacity-75" style="font-size: 13px;">người theo dõi</span>
                 </div>
             </div>
@@ -83,27 +86,45 @@
             </form>
         </div>
 
-        <!-- Posts Feed -->
-        <div class="d-flex flex-column">
-            @forelse($posts as $post)
-                <x-post-card :post="$post" />
-            @empty
-                <x-empty-state
-                    title="Chưa có bài viết phù hợp"
-                    description="Tác giả chưa đăng bài viết nào hoặc không có bài viết khớp với từ khóa tìm kiếm."
-                    :action-url="route('authors.show', $author)"
-                    action-label="Xem tất cả bài viết của tác giả"
-                />
-            @endforelse
+        <p id="feed-status" role="status" aria-live="polite" class="visually-hidden"></p>
+        <div id="feed-error" role="alert" class="alert alert-danger mx-3 mx-sm-4 my-2 small" hidden>
+            <span data-feed-error-message></span>
+            <button type="button" data-feed-retry class="btn btn-sm btn-outline-theme ms-2">Thử lại</button>
         </div>
 
-        <!-- Pagination -->
-        @if($posts->hasPages())
-            <div class="p-3 p-sm-4 border-theme-top bg-theme-surface d-flex justify-content-center">
-                {{ $posts->links() }}
-            </div>
-        @endif
+        <!-- Feed Results Container -->
+        @include('authors.partials.feed-results')
     </div>
 </div>
-@endsection
 
+<!-- Skeleton Loading Template -->
+<template id="feed-skeleton-template">
+    <div class="feed-skeleton-list" aria-hidden="true">
+        @for ($i = 0; $i < 4; $i++)
+            <div class="feed-skeleton-card">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="skeleton-shimmer rounded-circle" style="width: 32px; height: 32px; flex-shrink: 0;"></div>
+                    <div class="d-flex flex-column gap-1 flex-grow-1">
+                        <div class="skeleton-shimmer" style="width: 120px; height: 13px;"></div>
+                        <div class="skeleton-shimmer" style="width: 60px; height: 10px;"></div>
+                    </div>
+                </div>
+                <div class="mt-2 mb-3">
+                    <div class="skeleton-shimmer mb-2" style="width: 75%; height: 18px;"></div>
+                    <div class="skeleton-shimmer mb-2" style="width: 50%; height: 18px;"></div>
+                    <div class="skeleton-shimmer mb-1.5" style="width: 90%; height: 13px;"></div>
+                    <div class="skeleton-shimmer" style="width: 65%; height: 13px;"></div>
+                </div>
+                <div class="mb-3">
+                    <div class="skeleton-shimmer rounded-pill" style="width: 80px; height: 22px;"></div>
+                </div>
+                <div class="d-flex align-items-center gap-4 pt-2 border-theme-top">
+                    <div class="skeleton-shimmer rounded" style="width: 45px; height: 16px;"></div>
+                    <div class="skeleton-shimmer rounded" style="width: 45px; height: 16px;"></div>
+                    <div class="skeleton-shimmer rounded ms-auto" style="width: 30px; height: 16px;"></div>
+                </div>
+            </div>
+        @endfor
+    </div>
+</template>
+@endsection

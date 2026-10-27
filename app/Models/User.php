@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 #[Fillable(['name', 'email', 'password', 'role', 'avatar', 'bio', 'is_locked'])]
@@ -58,6 +60,33 @@ class User extends Authenticatable
         ];
 
         return $map[$this->name] ?? (Str::slug($this->name, '') ?: 'user'.$this->id);
+    }
+
+    /**
+     * Get the accessible public URL for the user's avatar.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (! $this->avatar) {
+            return null;
+        }
+
+        if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+            return $this->avatar;
+        }
+
+        if (str_starts_with($this->avatar, 'avatars/')) {
+            /** @var FilesystemAdapter $disk */
+            $disk = Storage::disk('public');
+
+            return $disk->url($this->avatar);
+        }
+
+        if (str_starts_with($this->avatar, 'storage/')) {
+            return asset($this->avatar);
+        }
+
+        return asset($this->avatar);
     }
 
     /**
@@ -145,6 +174,14 @@ class User extends Authenticatable
      */
     public function isFollowing(User $user): bool
     {
+        if ($this->id === $user->id) {
+            return false;
+        }
+
+        if ($this->relationLoaded('following')) {
+            return $this->following->contains('id', $user->id);
+        }
+
         return $this->following()->where('following_id', $user->id)->exists();
     }
 

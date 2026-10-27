@@ -16,11 +16,11 @@ class AuthenticationTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Chào mừng trở lại');
-        $response->assertSee('Đăng nhập để tiếp tục với BlogMNM');
+        $response->assertSee('Đăng nhập để tiếp tục với CloudBlog');
         $response->assertSee('login-glass-card');
         $response->assertSee('form-control-glass');
         $response->assertSee('btn-glass-primary');
-        $response->assertSee('Quay lại BlogMNM');
+        $response->assertSee('Quay lại CloudBlog');
         $response->assertSee('Ghi nhớ đăng nhập');
         $response->assertSee('Đăng ký ngay');
     }

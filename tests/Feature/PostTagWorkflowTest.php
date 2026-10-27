@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
+use Database\Seeders\TagSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -536,13 +537,13 @@ class PostTagWorkflowTest extends TestCase
 
     public function test_tag_seeder_creates_all_sample_tags_and_is_idempotent(): void
     {
-        $this->seed(\Database\Seeders\TagSeeder::class);
+        $this->seed(TagSeeder::class);
 
         $initialCount = Tag::count();
         $this->assertGreaterThanOrEqual(21, $initialCount);
 
         // Run again to ensure idempotency and no duplicates
-        $this->seed(\Database\Seeders\TagSeeder::class);
+        $this->seed(TagSeeder::class);
         $this->assertSame($initialCount, Tag::count());
     }
 }
