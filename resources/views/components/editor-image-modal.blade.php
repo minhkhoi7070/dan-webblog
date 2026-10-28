@@ -42,7 +42,7 @@
                                 <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10M5 18h14" />
                                 </svg>
-                                <span>Căn giữa (Chuẩn)</span>
+                                <span>Căn giữa</span>
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-theme d-flex align-items-center justify-content-center gap-1.5 py-1.5" data-editor-image-align="right">
                                 <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,7 +57,7 @@
                     <!-- Caption Input -->
                     <div class="mb-3">
                         <label for="editor-image-caption" class="form-label small fw-semibold text-theme mb-1 d-flex align-items-center justify-content-between">
-                            <span>Chú thích hình ảnh (Caption)</span>
+                            <span>Chú thích hình ảnh</span>
                             <span class="text-theme-muted fw-normal" style="font-size: 11px;">Hiển thị dưới ảnh</span>
                         </label>
                         <input
@@ -75,7 +75,7 @@
                     <!-- ALT Input -->
                     <div class="mb-3">
                         <label for="editor-image-alt" class="form-label small fw-semibold text-theme mb-1 d-flex align-items-center justify-content-between">
-                            <span>Văn bản thay thế (ALT text)</span>
+                            <span>Văn bản thay thế</span>
                             <span class="text-theme-muted fw-normal" style="font-size: 11px;">Tiếp cận & SEO</span>
                         </label>
                         <input

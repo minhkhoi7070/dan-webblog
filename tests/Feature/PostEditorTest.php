@@ -614,7 +614,7 @@ class PostEditorTest extends TestCase
             $response->assertSee('Căn lề và trích dẫn', false);
             $response->assertSee('Liên kết', false);
             $response->assertSee('Lịch sử thao tác', false);
-            $response->assertSee('Quy tắc gõ tắt tự động (Markdown)', false);
+            $response->assertSee('Quy tắc gõ tắt tự động', false);
 
             // 4. Platform distinction (macOS vs Windows/Linux)
             $response->assertSee('macOS', false);
@@ -628,5 +628,306 @@ class PostEditorTest extends TestCase
             $response->assertSee('Tab', false);
             $response->assertSee('Shift + Tab', false);
         }
+    }
+
+    public function test_post_content_service_allows_youtube_iframes_and_wraps_in_responsive_container(): void
+    {
+        $rawHtml = '<p>Nội dung giới thiệu trước video</p>'
+            .'<iframe src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" width="560" height="315"></iframe>'
+            .'<p>Nội dung kết luận sau video</p>';
+
+        $clean = PostContentService::cleanHtml($rawHtml);
+
+        $this->assertStringContainsString('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', $clean);
+        $this->assertStringContainsString('video-embed-wrapper', $clean);
+        $this->assertStringContainsString('ratio-16x9', $clean);
+        $this->assertStringContainsString('allowfullscreen="true"', $clean);
+        $this->assertStringContainsString('loading="lazy"', $clean);
+
+        // Test helper methods
+        $this->assertEquals('dQw4w9WgXcQ', PostContentService::parseYoutubeId('https://www.youtube.com/watch?v=dQw4w9WgXcQ'));
+        $this->assertEquals('dQw4w9WgXcQ', PostContentService::parseYoutubeId('https://youtu.be/dQw4w9WgXcQ?si=abc'));
+        $this->assertEquals('dQw4w9WgXcQ', PostContentService::parseYoutubeId('https://www.youtube.com/shorts/dQw4w9WgXcQ'));
+        $this->assertEquals('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', PostContentService::buildYoutubeEmbedUrl('https://youtu.be/dQw4w9WgXcQ'));
+    }
+
+    public function test_post_content_service_strips_malicious_and_non_youtube_iframes(): void
+    {
+        $maliciousHtml = '<p>Thử nghiệm chèn iframe độc hại</p>'
+            .'<iframe src="javascript:alert(1)"></iframe>'
+            .'<iframe src="https://evil-site.com/malware.html" onload="stealCookies()"></iframe>'
+            .'<iframe src="http://youtube.com.evil.com/fake"></iframe>';
+
+        $clean = PostContentService::cleanHtml($maliciousHtml);
+
+        $this->assertStringNotContainsString('evil-site.com', $clean);
+        $this->assertStringNotContainsString('javascript:alert', $clean);
+        $this->assertStringNotContainsString('stealCookies', $clean);
+        $this->assertStringNotContainsString('evil.com', $clean);
+        $this->assertStringNotContainsString('<iframe', $clean);
+    }
+
+    public function test_post_creation_and_update_preserves_youtube_video(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+
+        $videoEmbed = '<div class="video-embed-wrapper ratio ratio-16x9 my-3" data-youtube-video="" data-video-id="dQw4w9WgXcQ">'
+            .'<iframe src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" allowfullscreen="true" loading="lazy"></iframe>'
+            .'</div>';
+        $postBody = '<p>Đoạn văn mở đầu</p>'.$videoEmbed.'<p>Đoạn văn kết thúc</p>';
+
+        // 1. Create draft with video
+        $createResponse = $this->actingAs($author)->post(route('posts.store'), [
+            'title' => 'Bài viết có video nhúng',
+            'category_id' => $category->id,
+            'body' => $postBody,
+            'action' => 'draft',
+        ]);
+
+        $createResponse->assertRedirect();
+        $post = Post::where('title', 'Bài viết có video nhúng')->first();
+        $this->assertNotNull($post);
+        $this->assertTrue($post->isDraft());
+        $this->assertStringContainsString('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', $post->body);
+        $this->assertStringContainsString('video-embed-wrapper', $post->rendered_body);
+
+        // 2. Open edit form and verify video is preserved in editor content
+        $editFormResponse = $this->actingAs($author)->get(route('posts.edit', $post));
+        $editFormResponse->assertOk();
+        $editFormResponse->assertSee('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', false);
+
+        // 3. Update post and submit for review
+        $updateResponse = $this->actingAs($author)->put(route('posts.update', $post), [
+            'title' => 'Bài viết có video nhúng (Đã cập nhật)',
+            'category_id' => $category->id,
+            'body' => $postBody,
+            'action' => 'submit',
+        ]);
+
+        $updateResponse->assertRedirect();
+        $post->refresh();
+        $this->assertTrue($post->isPending());
+        $this->assertStringContainsString('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', $post->body);
+
+        // 4. Admin reviews and approves post
+        $admin = User::factory()->admin()->create();
+        $approveResponse = $this->actingAs($admin)->post(route('admin.posts.approve', $post));
+        $approveResponse->assertRedirect();
+
+        $post->refresh();
+        $this->assertTrue($post->isPublished());
+        $this->assertStringContainsString('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', $post->body);
+
+        // 5. View published post
+        $showResponse = $this->get(route('posts.show', $post->slug));
+        $showResponse->assertOk();
+        $showResponse->assertSee('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', false);
+        $showResponse->assertSee('video-embed-wrapper', false);
+    }
+
+    public function test_editor_ui_renders_video_toolbar_button_and_modal(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+        $post = Post::factory()->create([
+            'user_id' => $author->id,
+            'category_id' => $category->id,
+            'status' => 'draft',
+        ]);
+
+        foreach ([route('posts.create'), route('posts.edit', $post)] as $url) {
+            $response = $this->actingAs($author)->get($url);
+            $response->assertOk();
+
+            // Verify video toolbar button
+            $response->assertSee('data-editor-action="video"', false);
+            $response->assertSee('title="Chèn video YouTube"', false);
+
+            // Verify video modal
+            $response->assertSee('id="editor-video-modal"', false);
+            $response->assertSee('id="editor-video-url"', false);
+            $response->assertSee('id="editor-video-file-input"', false);
+            $response->assertSee('id="editor-video-dropzone"', false);
+            $response->assertSee('id="editor-video-save-btn"', false);
+            $response->assertSee('Tải video lên từ máy', false);
+            $response->assertSee('Chèn video YouTube', false);
+        }
+    }
+
+    // =========================================================================
+    // 8. PERSONAL VIDEO UPLOAD SECURITY & FUNCTIONAL TESTS
+    // =========================================================================
+
+    public function test_author_can_upload_video_successfully(): void
+    {
+        Storage::fake('public');
+
+        $author = User::factory()->author()->create();
+        $file = UploadedFile::fake()->create('sample_walkthrough.mp4', 5120, 'video/mp4');
+
+        $response = $this->actingAs($author)->postJson(route('posts.upload-video'), [
+            'video' => $file,
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonStructure([
+                'success',
+                'url',
+                'filename',
+                'original_name',
+                'size',
+                'type',
+            ]);
+
+        $data = $response->json();
+        $this->assertTrue($data['success']);
+        $this->assertStringStartsWith('/storage/posts/videos/', $data['url']);
+        $this->assertSame('sample_walkthrough.mp4', $data['original_name']);
+
+        // Check file exists on public disk
+        $storagePath = 'posts/videos/'.$data['filename'];
+        Storage::disk('public')->assertExists($storagePath);
+
+        // Security: Confirm filename was randomized
+        $this->assertNotSame('sample_walkthrough.mp4', $data['filename']);
+        $this->assertStringEndsWith('.mp4', $data['filename']);
+    }
+
+    public function test_author_can_upload_webm_video_successfully(): void
+    {
+        Storage::fake('public');
+
+        $author = User::factory()->author()->create();
+        $file = UploadedFile::fake()->create('screencast.webm', 4096, 'video/webm');
+
+        $response = $this->actingAs($author)->postJson(route('posts.upload-video'), [
+            'video' => $file,
+        ]);
+
+        $response->assertStatus(201);
+        $data = $response->json();
+        $this->assertTrue($data['success']);
+        $this->assertStringEndsWith('.webm', $data['filename']);
+        Storage::disk('public')->assertExists('posts/videos/'.$data['filename']);
+    }
+
+    public function test_unauthenticated_and_unauthorized_users_cannot_upload_video(): void
+    {
+        Storage::fake('public');
+        $file = UploadedFile::fake()->create('test.mp4', 1024, 'video/mp4');
+
+        // Guest
+        $this->postJson(route('posts.upload-video'), ['video' => $file])
+            ->assertUnauthorized();
+
+        // Viewer role
+        $viewer = User::factory()->viewer()->create();
+        $this->actingAs($viewer)->postJson(route('posts.upload-video'), ['video' => $file])
+            ->assertForbidden();
+
+        // Locked author
+        $lockedAuthor = User::factory()->author()->create(['is_locked' => true]);
+        $this->actingAs($lockedAuthor)->postJson(route('posts.upload-video'), ['video' => $file])
+            ->assertForbidden();
+    }
+
+    public function test_video_upload_rejects_non_video_and_disallowed_formats(): void
+    {
+        Storage::fake('public');
+        $author = User::factory()->author()->create();
+
+        // Malicious executable file disguised as script
+        $badScript = UploadedFile::fake()->create('exploit.php', 100, 'application/x-php');
+        $this->actingAs($author)->postJson(route('posts.upload-video'), ['video' => $badScript])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['video']);
+
+        // Unsupported format (e.g., avi or mkv)
+        $aviFile = UploadedFile::fake()->create('movie.avi', 2048, 'video/x-msvideo');
+        $this->actingAs($author)->postJson(route('posts.upload-video'), ['video' => $aviFile])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['video']);
+    }
+
+    public function test_author_can_delete_uploaded_video(): void
+    {
+        Storage::fake('public');
+        $author = User::factory()->author()->create();
+
+        $file = UploadedFile::fake()->create('temp_clip.mp4', 2048, 'video/mp4');
+        $uploadRes = $this->actingAs($author)->postJson(route('posts.upload-video'), ['video' => $file]);
+        $data = $uploadRes->json();
+        $filename = $data['filename'];
+
+        Storage::disk('public')->assertExists('posts/videos/'.$filename);
+
+        // Delete video
+        $deleteRes = $this->actingAs($author)->deleteJson(route('posts.delete-video'), [
+            'filename' => $filename,
+        ]);
+
+        $deleteRes->assertOk()->assertJson(['success' => true]);
+        Storage::disk('public')->assertMissing('posts/videos/'.$filename);
+    }
+
+    public function test_post_creation_and_lifecycle_preserves_html5_video(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+
+        $videoHtml = '<div class="video-embed-wrapper ratio ratio-16x9 my-3" data-html5-video="">'
+            .'<video controls playsinline preload="metadata" class="rounded-3 shadow-xs w-100 h-100">'
+            .'<source src="/storage/posts/videos/demo_presentation.mp4" type="video/mp4">'
+            .'</video>'
+            .'</div>';
+        $postBody = '<p>Giới thiệu video</p>'.$videoHtml.'<p>Kết thúc bài viết</p>';
+
+        // 1. Create draft with HTML5 video
+        $createRes = $this->actingAs($author)->post(route('posts.store'), [
+            'title' => 'Bài viết tích hợp video cá nhân',
+            'category_id' => $category->id,
+            'body' => $postBody,
+            'action' => 'draft',
+        ]);
+
+        $createRes->assertRedirect();
+        $post = Post::where('title', 'Bài viết tích hợp video cá nhân')->first();
+        $this->assertNotNull($post);
+        $this->assertTrue($post->isDraft());
+        $this->assertStringContainsString('/storage/posts/videos/demo_presentation.mp4', $post->body);
+        $this->assertStringContainsString('video-embed-wrapper', $post->rendered_body);
+
+        // 2. Open edit view and ensure video is preserved
+        $editRes = $this->actingAs($author)->get(route('posts.edit', $post));
+        $editRes->assertOk();
+        $editRes->assertSee('/storage/posts/videos/demo_presentation.mp4', false);
+
+        // 3. Update post and submit for review
+        $updateRes = $this->actingAs($author)->put(route('posts.update', $post), [
+            'title' => 'Bài viết tích hợp video cá nhân (Cập nhật)',
+            'category_id' => $category->id,
+            'body' => $postBody,
+            'action' => 'submit',
+        ]);
+
+        $updateRes->assertRedirect();
+        $post->refresh();
+        $this->assertTrue($post->isPending());
+        $this->assertStringContainsString('/storage/posts/videos/demo_presentation.mp4', $post->body);
+
+        // 4. Admin approves post
+        $admin = User::factory()->admin()->create();
+        $this->actingAs($admin)->post(route('admin.posts.approve', $post))->assertRedirect();
+
+        $post->refresh();
+        $this->assertTrue($post->isPublished());
+        $this->assertStringContainsString('/storage/posts/videos/demo_presentation.mp4', $post->body);
+
+        // 5. Public show view renders responsive HTML5 player
+        $showRes = $this->get(route('posts.show', $post->slug));
+        $showRes->assertOk();
+        $showRes->assertSee('/storage/posts/videos/demo_presentation.mp4', false);
+        $showRes->assertSee('video-embed-wrapper', false);
     }
 }

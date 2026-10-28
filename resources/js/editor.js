@@ -1,4 +1,4 @@
-import { Editor, Extension, Mark, mergeAttributes } from '@tiptap/core';
+import { Editor, Extension, Mark, Node, mergeAttributes } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
@@ -490,6 +490,257 @@ export const CustomImage = Image.extend({
     },
 });
 
+/**
+ * Extract YouTube 11-char Video ID from various URL formats.
+ */
+export function extractYoutubeId(url) {
+    if (!url || typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+        return trimmed;
+    }
+    const match = trimmed.match(/(?:youtu\.be\/|(?:youtube\.com|youtube-nocookie\.com)\/(?:embed\/|v\/|shorts\/|watch\?v=|watch\?.+&v=))([\w-]{11})/i);
+    return match ? match[1] : null;
+}
+
+/**
+ * Build safe YouTube embed URL.
+ */
+export function buildYoutubeEmbedUrl(urlOrId) {
+    const videoId = extractYoutubeId(urlOrId);
+    if (!videoId) return null;
+    return `https://www.youtube-nocookie.com/embed/${videoId}`;
+}
+
+/**
+ * Custom TipTap YouTube Node extension.
+ * Renders responsive 16:9 iframe embed and preserves it across save/edit.
+ */
+export const CustomYoutube = Node.create({
+    name: 'youtube',
+    group: 'block',
+    atom: true,
+    draggable: true,
+    selectable: true,
+
+    addAttributes() {
+        return {
+            src: {
+                default: null,
+            },
+            videoId: {
+                default: null,
+            },
+        };
+    },
+
+    parseHTML() {
+        return [
+            {
+                tag: 'div[data-youtube-video]',
+                getAttrs: (element) => {
+                    const iframe = element.querySelector('iframe');
+                    const src = iframe?.getAttribute('src') || element.getAttribute('data-src');
+                    if (!src) return false;
+                    const videoId = extractYoutubeId(src) || element.getAttribute('data-video-id');
+                    return { src: buildYoutubeEmbedUrl(videoId || src) || src, videoId };
+                },
+            },
+            {
+                tag: 'div.video-embed-wrapper',
+                getAttrs: (element) => {
+                    const iframe = element.querySelector('iframe');
+                    const src = iframe?.getAttribute('src') || element.getAttribute('data-src');
+                    if (!src) return false;
+                    const videoId = extractYoutubeId(src) || element.getAttribute('data-video-id');
+                    return { src: buildYoutubeEmbedUrl(videoId || src) || src, videoId };
+                },
+            },
+            {
+                tag: 'iframe[src*="youtube.com"]',
+                getAttrs: (element) => {
+                    const src = element.getAttribute('src');
+                    if (!src) return false;
+                    const videoId = extractYoutubeId(src);
+                    return { src: buildYoutubeEmbedUrl(videoId || src) || src, videoId };
+                },
+            },
+            {
+                tag: 'iframe[src*="youtube-nocookie.com"]',
+                getAttrs: (element) => {
+                    const src = element.getAttribute('src');
+                    if (!src) return false;
+                    const videoId = extractYoutubeId(src);
+                    return { src: buildYoutubeEmbedUrl(videoId || src) || src, videoId };
+                },
+            },
+            {
+                tag: 'iframe[src*="youtu.be"]',
+                getAttrs: (element) => {
+                    const src = element.getAttribute('src');
+                    if (!src) return false;
+                    const videoId = extractYoutubeId(src);
+                    return { src: buildYoutubeEmbedUrl(videoId || src) || src, videoId };
+                },
+            },
+        ];
+    },
+
+    renderHTML({ HTMLAttributes }) {
+        const videoId = HTMLAttributes.videoId || extractYoutubeId(HTMLAttributes.src);
+        const embedSrc = videoId
+            ? `https://www.youtube-nocookie.com/embed/${videoId}`
+            : HTMLAttributes.src;
+
+        return [
+            'div',
+            {
+                class: 'video-embed-wrapper ratio ratio-16x9 my-3',
+                'data-youtube-video': '',
+                'data-video-id': videoId || '',
+            },
+            [
+                'iframe',
+                {
+                    src: embedSrc,
+                    title: 'YouTube video player',
+                    frameborder: '0',
+                    allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
+                    referrerpolicy: 'strict-origin-when-cross-origin',
+                    allowfullscreen: 'true',
+                    loading: 'lazy',
+                    class: 'rounded-3 shadow-xs',
+                },
+            ],
+        ];
+    },
+
+    addCommands() {
+        return {
+            setYoutubeVideo: (options) => ({ commands }) => {
+                if (!options || !options.src) return false;
+                const videoId = options.videoId || extractYoutubeId(options.src);
+                const embedSrc = videoId
+                    ? `https://www.youtube-nocookie.com/embed/${videoId}`
+                    : options.src;
+
+                return commands.insertContent({
+                    type: this.name,
+                    attrs: {
+                        src: embedSrc,
+                        videoId: videoId,
+                    },
+                });
+            },
+        };
+    },
+});
+
+/**
+ * Custom TipTap HTML5 Video Node extension for uploaded personal videos.
+ * Supports MP4 and WebM formats with responsive 16:9 player container.
+ */
+export const CustomHtml5Video = Node.create({
+    name: 'html5Video',
+    group: 'block',
+    atom: true,
+    draggable: true,
+    selectable: true,
+
+    addAttributes() {
+        return {
+            src: {
+                default: null,
+            },
+            type: {
+                default: 'video/mp4',
+            },
+        };
+    },
+
+    parseHTML() {
+        return [
+            {
+                tag: 'div.video-embed-wrapper[data-html5-video]',
+                getAttrs: (element) => {
+                    const video = element.querySelector('video');
+                    const source = element.querySelector('source');
+                    const src = source?.getAttribute('src') || video?.getAttribute('src') || element.getAttribute('data-src');
+                    const type = source?.getAttribute('type') || (src && src.endsWith('.webm') ? 'video/webm' : 'video/mp4');
+                    return src ? { src, type } : false;
+                },
+            },
+            {
+                tag: 'div[data-html5-video]',
+                getAttrs: (element) => {
+                    const video = element.querySelector('video');
+                    const source = element.querySelector('source');
+                    const src = source?.getAttribute('src') || video?.getAttribute('src') || element.getAttribute('data-src');
+                    const type = source?.getAttribute('type') || (src && src.endsWith('.webm') ? 'video/webm' : 'video/mp4');
+                    return src ? { src, type } : false;
+                },
+            },
+            {
+                tag: 'video',
+                getAttrs: (element) => {
+                    const source = element.querySelector('source');
+                    const src = source?.getAttribute('src') || element.getAttribute('src');
+                    const type = source?.getAttribute('type') || (src && src.endsWith('.webm') ? 'video/webm' : 'video/mp4');
+                    return src ? { src, type } : false;
+                },
+            },
+        ];
+    },
+
+    renderHTML({ HTMLAttributes }) {
+        const src = HTMLAttributes.src || '';
+        const type = HTMLAttributes.type || (src.endsWith('.webm') ? 'video/webm' : 'video/mp4');
+
+        return [
+            'div',
+            {
+                class: 'video-embed-wrapper ratio ratio-16x9 my-3',
+                'data-html5-video': '',
+                'data-src': src,
+            },
+            [
+                'video',
+                {
+                    controls: 'true',
+                    playsinline: 'true',
+                    preload: 'metadata',
+                    class: 'rounded-3 shadow-xs',
+                    style: 'width: 100%; height: 100%; object-fit: contain; background: #000;',
+                },
+                [
+                    'source',
+                    {
+                        src: src,
+                        type: type,
+                    },
+                ],
+            ],
+        ];
+    },
+
+    addCommands() {
+        return {
+            setHtml5Video: (options) => ({ commands }) => {
+                if (!options || !options.src) return false;
+                const type = options.type || (options.src.endsWith('.webm') ? 'video/webm' : 'video/mp4');
+
+                return commands.insertContent({
+                    type: this.name,
+                    attrs: {
+                        src: options.src,
+                        type: type,
+                    },
+                });
+            },
+        };
+    },
+});
+
 // ============================================================================
 // COLOR CONTRAST CALCULATION (WCAG 2.0 GUIDELINE HINT)
 // ============================================================================
@@ -617,7 +868,7 @@ export function destroyPostEditor() {
 
     // Clean up portaled modals attached directly to document.body
     if (typeof document !== 'undefined') {
-        ['editor-link-modal', 'editor-image-modal', 'editor-shortcuts-modal', 'thumbnail-remove-confirm-modal'].forEach((id) => {
+        ['editor-link-modal', 'editor-video-modal', 'editor-image-modal', 'editor-shortcuts-modal', 'thumbnail-remove-confirm-modal'].forEach((id) => {
             if (typeof document.getElementById !== 'function') return;
             const modalEl = document.getElementById(id);
             if (modalEl && document.body && modalEl.parentElement === document.body) {
@@ -711,6 +962,8 @@ export function initPostEditor(root = document) {
                 inline: false,
                 allowBase64: false,
             }),
+            CustomYoutube,
+            CustomHtml5Video,
         ],
         content: initialContent,
         editorProps: {
@@ -721,7 +974,13 @@ export function initPostEditor(root = document) {
             transformPastedHTML(html) {
                 try {
                     const doc = new DOMParser().parseFromString(html, 'text/html');
-                    doc.querySelectorAll('script, iframe, object, embed, style').forEach((el) => el.remove());
+                    doc.querySelectorAll('script, object, embed, style').forEach((el) => el.remove());
+                    doc.querySelectorAll('iframe').forEach((el) => {
+                        const src = el.getAttribute('src') || '';
+                        if (!extractYoutubeId(src)) {
+                            el.remove();
+                        }
+                    });
                     doc.querySelectorAll('*').forEach((el) => {
                         for (let i = el.attributes.length - 1; i >= 0; i--) {
                             const attr = el.attributes[i];
@@ -734,6 +993,25 @@ export function initPostEditor(root = document) {
                 } catch {
                     return html;
                 }
+            },
+            handleDrop(view, event, slice, moved) {
+                if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+                    const file = event.dataTransfer.files[0];
+                    const isVideo = file.type.startsWith('video/') || /\.(mp4|webm)$/i.test(file.name || '');
+                    if (isVideo) {
+                        event.preventDefault();
+                        openVideoModal(currentEditor);
+                        const tabBtn = document.getElementById('tab-video-upload');
+                        if (tabBtn && window.bootstrap && window.bootstrap.Tab) {
+                            window.bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+                        }
+                        if (typeof window.__startVideoUpload === 'function') {
+                            window.__startVideoUpload(file);
+                        }
+                        return true;
+                    }
+                }
+                return false;
             },
         },
         onUpdate: ({ editor }) => {
@@ -753,6 +1031,7 @@ export function initPostEditor(root = document) {
 
     setupToolbar(editor, root);
     setupLinkModal(editor, root);
+    setupVideoModal(editor, root);
     setupImageAltModal(editor, root);
     setupFloatingImageToolbar(editor);
     setupShortcutsModal(root);
@@ -1030,6 +1309,9 @@ function setupToolbar(editor, root) {
                 case 'image':
                     triggerImageUpload();
                     break;
+                case 'video':
+                    openVideoModal(editor);
+                    break;
                 case 'paste-text':
                     pasteAsPlainText(editor);
                     break;
@@ -1276,6 +1558,417 @@ function setupLinkModal(editor) {
             if (linkTarget) {
                 e.preventDefault();
                 openLinkModal(editor);
+            }
+        });
+    }
+}
+
+// ============================================================================
+// VIDEO EMBED & UPLOAD MODAL (YouTube URL & Local Video Upload)
+// ============================================================================
+
+let currentVideoUploadXhr = null;
+let currentUploadedVideo = null;
+
+export function openVideoModal(editor) {
+    const modalEl = document.getElementById('editor-video-modal');
+    if (!modalEl) return;
+
+    const urlInput = document.getElementById('editor-video-url');
+    const previewContainer = document.getElementById('editor-video-preview');
+    const previewIframe = document.getElementById('editor-video-preview-iframe');
+
+    if (urlInput) {
+        urlInput.value = '';
+        urlInput.classList.remove('is-invalid', 'is-valid');
+    }
+    if (previewContainer) {
+        previewContainer.classList.add('d-none');
+    }
+    if (previewIframe) {
+        previewIframe.src = '';
+    }
+
+    if (window.bootstrap && window.bootstrap.Modal) {
+        const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    }
+}
+
+export function closeVideoModal() {
+    const modalEl = document.getElementById('editor-video-modal');
+    if (!modalEl) return;
+    if (window.bootstrap && window.bootstrap.Modal) {
+        const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.hide();
+    }
+}
+
+export function setupVideoModal(editor) {
+    const modalEl = document.getElementById('editor-video-modal');
+    if (!modalEl) return;
+
+    if (modalEl.parentElement !== document.body) {
+        document.body.appendChild(modalEl);
+    }
+
+    // Modal elements
+    const fileInput = document.getElementById('editor-video-file-input');
+    const dropzone = document.getElementById('editor-video-dropzone');
+    const progressContainer = document.getElementById('editor-video-upload-progress');
+    const progressBar = document.getElementById('editor-video-progress-bar');
+    const progressFilename = document.getElementById('editor-video-upload-filename');
+    const progressPercent = document.getElementById('editor-video-upload-percent');
+    const progressSizeInfo = document.getElementById('editor-video-upload-size-info');
+    const uploadErrorAlert = document.getElementById('editor-video-upload-error');
+    const uploadErrorText = document.getElementById('editor-video-upload-error-text');
+    const uploadPreviewContainer = document.getElementById('editor-video-upload-preview');
+    const previewPlayer = document.getElementById('editor-video-preview-player');
+    const previewPlayerSource = document.getElementById('editor-video-preview-player-source');
+    const uploadedName = document.getElementById('editor-video-uploaded-name');
+    const uploadedSize = document.getElementById('editor-video-uploaded-size');
+    const removeBtn = document.getElementById('editor-video-remove-btn');
+
+    const tabUploadBtn = document.getElementById('tab-video-upload');
+    const tabYoutubeBtn = document.getElementById('tab-video-youtube');
+    const urlInput = document.getElementById('editor-video-url');
+    const saveBtn = document.getElementById('editor-video-save-btn');
+    const previewContainer = document.getElementById('editor-video-preview');
+    const previewIframe = document.getElementById('editor-video-preview-iframe');
+
+    function resetUploadState() {
+        if (currentVideoUploadXhr) {
+            currentVideoUploadXhr.abort();
+            currentVideoUploadXhr = null;
+        }
+        currentUploadedVideo = null;
+        if (fileInput) fileInput.value = '';
+        progressContainer?.classList.add('d-none');
+        uploadPreviewContainer?.classList.add('d-none');
+        uploadErrorAlert?.classList.add('d-none');
+        dropzone?.classList.remove('d-none');
+        if (previewPlayer) {
+            previewPlayer.pause();
+            if (previewPlayerSource) previewPlayerSource.src = '';
+            previewPlayer.load();
+        }
+    }
+
+    function showUploadError(msg) {
+        if (uploadErrorText) uploadErrorText.textContent = msg;
+        uploadErrorAlert?.classList.remove('d-none');
+        progressContainer?.classList.add('d-none');
+        dropzone?.classList.remove('d-none');
+    }
+
+    function startUpload(file) {
+        if (!file) return;
+
+        // Check format
+        const name = (file.name || '').toLowerCase();
+        const validExt = name.endsWith('.mp4') || name.endsWith('.webm');
+        const validMime = file.type === 'video/mp4' || file.type === 'video/webm' || file.type === 'video/quicktime';
+
+        if (!validExt && !validMime) {
+            showUploadError('Định dạng video không được hỗ trợ. Vui lòng chọn file video có định dạng MP4 hoặc WebM.');
+            return;
+        }
+
+        // Check max size: 100MB
+        const MAX_BYTES = 100 * 1024 * 1024;
+        if (file.size > MAX_BYTES) {
+            const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+            showUploadError(`Dung lượng video (${sizeMb}MB) vượt quá giới hạn tối đa 100MB.`);
+            return;
+        }
+
+        // Prepare UI for upload
+        uploadErrorAlert?.classList.add('d-none');
+        dropzone?.classList.add('d-none');
+        uploadPreviewContainer?.classList.add('d-none');
+        progressContainer?.classList.remove('d-none');
+
+        if (progressFilename) progressFilename.textContent = file.name;
+        if (progressBar) {
+            progressBar.style.width = '0%';
+            progressBar.setAttribute('aria-valuenow', '0');
+        }
+        if (progressPercent) progressPercent.textContent = '0%';
+        if (progressSizeInfo) {
+            const totalMb = (file.size / (1024 * 1024)).toFixed(1);
+            progressSizeInfo.textContent = `0 MB / ${totalMb} MB`;
+        }
+
+        const formData = new FormData();
+        formData.append('video', file);
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            || document.querySelector('input[name="_token"]')?.value;
+
+        const xhr = new XMLHttpRequest();
+        currentVideoUploadXhr = xhr;
+
+        xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+                const percent = Math.min(100, Math.round((e.loaded / e.total) * 100));
+                if (progressBar) {
+                    progressBar.style.width = `${percent}%`;
+                    progressBar.setAttribute('aria-valuenow', String(percent));
+                }
+                if (progressPercent) progressPercent.textContent = `${percent}%`;
+                if (progressSizeInfo) {
+                    const loadedMb = (e.loaded / (1024 * 1024)).toFixed(1);
+                    const totalMb = (e.total / (1024 * 1024)).toFixed(1);
+                    progressSizeInfo.textContent = `${loadedMb} MB / ${totalMb} MB`;
+                }
+            }
+        };
+
+        xhr.onload = () => {
+            currentVideoUploadXhr = null;
+            progressContainer?.classList.add('d-none');
+
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const res = JSON.parse(xhr.responseText);
+                    if (res.success && res.url) {
+                        currentUploadedVideo = {
+                            url: res.url,
+                            filename: res.filename,
+                            originalName: res.original_name || file.name,
+                            size: res.size || file.size,
+                            type: res.type || (res.url.endsWith('.webm') ? 'video/webm' : 'video/mp4'),
+                        };
+
+                        if (previewPlayerSource) {
+                            previewPlayerSource.src = currentUploadedVideo.url;
+                            previewPlayerSource.type = currentUploadedVideo.type;
+                        }
+                        if (previewPlayer) {
+                            previewPlayer.load();
+                        }
+                        if (uploadedName) {
+                            uploadedName.textContent = currentUploadedVideo.originalName;
+                        }
+                        if (uploadedSize) {
+                            uploadedSize.textContent = `${(currentUploadedVideo.size / (1024 * 1024)).toFixed(1)} MB`;
+                        }
+
+                        uploadPreviewContainer?.classList.remove('d-none');
+                        showEditorToast('Tải video lên thành công! Nhấn "Chèn video" để thêm vào nội dung.', 'success');
+                    } else {
+                        showUploadError(res.message || 'Tải video thất bại.');
+                    }
+                } catch {
+                    showUploadError('Máy chủ phản hồi định dạng không hợp lệ.');
+                }
+            } else {
+                let errMessage = 'Tải video lên thất bại.';
+                try {
+                    const res = JSON.parse(xhr.responseText);
+                    if (res.message) errMessage = res.message;
+                    else if (res.errors && res.errors.video) errMessage = res.errors.video[0];
+                } catch {
+                    if (xhr.status === 413) {
+                        errMessage = 'Dung lượng file video vượt quá giới hạn của máy chủ web (HTTP 413).';
+                    }
+                }
+                showUploadError(errMessage);
+            }
+        };
+
+        xhr.onerror = () => {
+            currentVideoUploadXhr = null;
+            showUploadError('Lỗi kết nối khi tải video lên máy chủ.');
+        };
+
+        xhr.onabort = () => {
+            currentVideoUploadXhr = null;
+            resetUploadState();
+        };
+
+        xhr.open('POST', '/posts/upload-video', true);
+        xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken || '');
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.send(formData);
+    }
+
+    // Expose for handleDrop
+    window.__startVideoUpload = startUpload;
+
+    // Dropzone event listeners
+    if (dropzone) {
+        registerListener(dropzone, 'click', () => {
+            fileInput?.click();
+        });
+
+        registerListener(dropzone, 'keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                fileInput?.click();
+            }
+        });
+
+        ['dragenter', 'dragover'].forEach((evt) => {
+            registerListener(dropzone, evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.add('border-primary', 'bg-surface-3');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach((evt) => {
+            registerListener(dropzone, evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove('border-primary', 'bg-surface-3');
+            });
+        });
+
+        registerListener(dropzone, 'drop', (e) => {
+            const files = e.dataTransfer?.files;
+            if (files && files.length > 0) {
+                startUpload(files[0]);
+            }
+        });
+    }
+
+    if (fileInput) {
+        registerListener(fileInput, 'change', () => {
+            if (fileInput.files && fileInput.files.length > 0) {
+                startUpload(fileInput.files[0]);
+            }
+        });
+    }
+
+    if (removeBtn) {
+        registerListener(removeBtn, 'click', () => {
+            if (currentUploadedVideo && currentUploadedVideo.filename) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    || document.querySelector('input[name="_token"]')?.value;
+
+                fetch('/posts/delete-video', {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken || '',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ filename: currentUploadedVideo.filename }),
+                }).catch((err) => console.warn('Delete video error:', err));
+            }
+
+            resetUploadState();
+            showEditorToast('Đã xóa video. Bạn có thể chọn file khác.', 'info');
+        });
+    }
+
+    // Modal hidden cleanup
+    registerListener(modalEl, 'hidden.bs.modal', () => {
+        document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+
+        if (previewIframe) {
+            previewIframe.src = '';
+        }
+        if (previewPlayer) {
+            previewPlayer.pause();
+        }
+        if (currentVideoUploadXhr) {
+            currentVideoUploadXhr.abort();
+            currentVideoUploadXhr = null;
+        }
+    });
+
+    // YouTube preview handler
+    const updatePreview = () => {
+        const val = (urlInput?.value || '').trim();
+        const videoId = extractYoutubeId(val);
+        if (videoId) {
+            urlInput?.classList.remove('is-invalid');
+            urlInput?.classList.add('is-valid');
+            const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+            if (previewContainer && previewIframe) {
+                if (previewIframe.src !== embedUrl) {
+                    previewIframe.src = embedUrl;
+                }
+                previewContainer.classList.remove('d-none');
+            }
+        } else {
+            urlInput?.classList.remove('is-valid');
+            if (val.length > 5) {
+                urlInput?.classList.add('is-invalid');
+            } else {
+                urlInput?.classList.remove('is-invalid');
+            }
+            if (previewContainer) {
+                previewContainer.classList.add('d-none');
+            }
+            if (previewIframe) {
+                previewIframe.src = '';
+            }
+        }
+    };
+
+    if (urlInput) {
+        registerListener(urlInput, 'input', updatePreview);
+        registerListener(urlInput, 'paste', () => setTimeout(updatePreview, 50));
+        registerListener(urlInput, 'keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveBtn?.click();
+            }
+        });
+    }
+
+    // Save button handler: supports both uploaded local video and YouTube URL
+    if (saveBtn) {
+        registerListener(saveBtn, 'click', () => {
+            const isUploadTab = tabUploadBtn?.classList.contains('active')
+                || document.getElementById('tab-video-upload-pane')?.classList.contains('show');
+
+            if (isUploadTab) {
+                if (!currentUploadedVideo || !currentUploadedVideo.url) {
+                    showUploadError('Vui lòng chọn hoặc tải file video lên máy chủ trước khi chèn.');
+                    showEditorToast('Vui lòng chọn hoặc tải file video lên trước.', 'warning');
+                    return;
+                }
+
+                editor.commands.setHtml5Video({
+                    src: currentUploadedVideo.url,
+                    type: currentUploadedVideo.type,
+                });
+
+                setPostEditorDirty(true);
+                closeVideoModal();
+                showEditorToast('Đã chèn video vào bài viết thành công!', 'success');
+            } else {
+                const val = (urlInput?.value || '').trim();
+                if (!val) {
+                    urlInput?.classList.add('is-invalid');
+                    showEditorToast('Vui lòng nhập đường dẫn video YouTube.', 'danger');
+                    return;
+                }
+
+                const videoId = extractYoutubeId(val);
+                if (!videoId) {
+                    urlInput?.classList.add('is-invalid');
+                    showEditorToast('Đường dẫn YouTube không hợp lệ. Vui lòng nhập link dạng: https://www.youtube.com/watch?v=... hoặc https://youtu.be/...', 'danger');
+                    return;
+                }
+
+                const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+
+                editor.commands.setYoutubeVideo({
+                    src: embedUrl,
+                    videoId: videoId,
+                });
+
+                setPostEditorDirty(true);
+                closeVideoModal();
+                showEditorToast('Đã chèn video YouTube vào bài viết thành công.', 'success');
             }
         });
     }
@@ -1839,6 +2532,7 @@ export function setupThumbnailUploader(root = document) {
     function clearError() {
         if (errorFeedback) {
             errorFeedback.textContent = '';
+            errorFeedback.classList.remove('d-block');
             errorFeedback.classList.add('d-none');
         }
     }
@@ -1847,6 +2541,7 @@ export function setupThumbnailUploader(root = document) {
         if (errorFeedback) {
             errorFeedback.textContent = msg;
             errorFeedback.classList.remove('d-none');
+            errorFeedback.classList.add('d-block');
         }
     }
 

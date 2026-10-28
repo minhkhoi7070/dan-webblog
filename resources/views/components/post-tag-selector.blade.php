@@ -14,15 +14,18 @@
     ]));
 @endphp
 
-<div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl"
+<div class="card border-theme bg-theme-surface shadow-xs rounded-xl" style="padding: 22px;"
      id="tag-manager-component"
      data-form-id="{{ $formId }}"
      data-initial-tags="{{ $initialTagsJson }}"
      data-all-tags="{{ $allTagsJson }}">
     <!-- Header with title & counter -->
     <div class="d-flex align-items-center justify-content-between mb-1">
-        <label class="label-uppercase text-theme mb-0 d-block fw-bold">
-            Thẻ bài viết (Tags)
+        <label class="label-uppercase text-theme mb-0 d-flex align-items-center gap-1.5 fw-bold">
+            <svg style="width: 14px; height: 14px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+            </svg>
+            Thẻ bài viết
         </label>
         <span id="tag-counter" class="small text-theme-muted font-monospace" style="font-size: 11px;">
             (<span id="tag-selected-count">{{ count($selectedTagIds) }}</span>/10 thẻ)

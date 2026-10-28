@@ -67,6 +67,8 @@ Route::middleware(['auth', 'role:author,admin'])->group(function () {
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
     Route::post('/posts/upload-image', [PostController::class, 'uploadImage'])->name('posts.upload-image');
+    Route::post('/posts/upload-video', [PostController::class, 'uploadVideo'])->name('posts.upload-video');
+    Route::delete('/posts/delete-video', [PostController::class, 'deleteVideo'])->name('posts.delete-video');
     Route::get('/posts/stats', [PostController::class, 'stats'])->name('posts.stats');
     Route::get('/author/posts/stats', [PostController::class, 'stats'])->name('author.posts.stats');
     Route::get('/author/comments', [AuthorCommentController::class, 'index'])->name('author.comments.index');

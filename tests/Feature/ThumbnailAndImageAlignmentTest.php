@@ -330,7 +330,7 @@ class ThumbnailAndImageAlignmentTest extends TestCase
         $editRes->assertSee('id="thumbnail-remove-confirm-modal"', false);
         $editRes->assertSee('id="editor-image-modal"', false);
         $editRes->assertSee('Căn chỉnh vị trí hình ảnh');
-        $editRes->assertSee('Chú thích hình ảnh (Caption)');
-        $editRes->assertSee('Văn bản thay thế (ALT text)');
+        $editRes->assertSee('Chú thích hình ảnh');
+        $editRes->assertSee('Văn bản thay thế');
     }
 }

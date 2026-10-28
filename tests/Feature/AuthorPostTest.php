@@ -500,4 +500,59 @@ class AuthorPostTest extends TestCase
         $this->actingAs($viewer)->get(route('posts.show', $pendingPost->slug))->assertNotFound();
         $this->actingAs($viewer)->get(route('posts.show', $rejectedPost->slug))->assertNotFound();
     }
+
+    public function test_post_create_and_edit_sidebar_cards_render_correctly(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+
+        // 1. Create page renders right sidebar cards without verbose workflow card
+        $createResponse = $this->actingAs($author)->get(route('posts.create'));
+        $createResponse->assertOk();
+        $createResponse->assertDontSee('Quy trình xuất bản');
+        $createResponse->assertSee('Chuyên mục');
+        $createResponse->assertSee('Ảnh bìa');
+        $createResponse->assertSee('Thẻ bài viết');
+        $createResponse->assertSee('Gửi bài viết để Admin duyệt');
+        $createResponse->assertSee('Lưu bản nháp');
+
+        // 2. Edit page renders sidebar cards and current status
+        $draftPost = Post::factory()->create([
+            'user_id' => $author->id,
+            'category_id' => $category->id,
+            'status' => 'draft',
+        ]);
+
+        $editResponse = $this->actingAs($author)->get(route('posts.edit', $draftPost));
+        $editResponse->assertOk();
+        $editResponse->assertSee('Chuyên mục');
+        $editResponse->assertSee('Ảnh bìa');
+        $editResponse->assertSee('Thẻ bài viết');
+        $editResponse->assertSee('Bản nháp');
+    }
+
+    public function test_post_status_labels_and_helpers_work_consistently(): void
+    {
+        $author = User::factory()->author()->create();
+
+        $draft = Post::factory()->create(['user_id' => $author->id, 'status' => 'draft']);
+        $this->assertSame('Bản nháp', $draft->status_label);
+        $this->assertTrue($draft->isDraft());
+        $this->assertFalse($draft->isPending());
+        $this->assertFalse($draft->isPublished());
+        $this->assertFalse($draft->isRejected());
+
+        $pending = Post::factory()->pending()->create(['user_id' => $author->id]);
+        $this->assertSame('Chờ duyệt', $pending->status_label);
+        $this->assertTrue($pending->isPending());
+        $this->assertFalse($pending->isDraft());
+
+        $published = Post::factory()->published()->create(['user_id' => $author->id]);
+        $this->assertSame('Đã xuất bản', $published->status_label);
+        $this->assertTrue($published->isPublished());
+
+        $rejected = Post::factory()->rejected()->create(['user_id' => $author->id]);
+        $this->assertSame('Bị từ chối', $rejected->status_label);
+        $this->assertTrue($rejected->isRejected());
+    }
 }

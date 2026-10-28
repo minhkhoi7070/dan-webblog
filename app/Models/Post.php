@@ -45,6 +45,52 @@ class Post extends Model
     ];
 
     /**
+     * Get human-readable status label in Vietnamese.
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'draft' => 'Bản nháp',
+            'pending' => 'Chờ duyệt',
+            'published' => 'Đã xuất bản',
+            'rejected' => 'Bị từ chối',
+            default => ucfirst((string) $this->status),
+        };
+    }
+
+    /**
+     * Check if post is currently draft.
+     */
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    /**
+     * Check if post is pending review.
+     */
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    /**
+     * Check if post is published.
+     */
+    public function isPublished(): bool
+    {
+        return $this->status === 'published';
+    }
+
+    /**
+     * Check if post is rejected.
+     */
+    public function isRejected(): bool
+    {
+        return $this->status === 'rejected';
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

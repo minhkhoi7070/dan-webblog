@@ -78,6 +78,7 @@ class StorePostRequest extends FormRequest
             'tags.*.integer' => 'Mã thẻ bài viết không hợp lệ.',
             'tags.*.exists' => 'Thẻ bài viết không tồn tại trong hệ thống.',
             'thumbnail.image' => 'File tải lên phải là hình ảnh hợp lệ.',
+            'thumbnail.mimes' => 'Ảnh bìa phải có định dạng: JPG, JPEG, PNG hoặc WEBP.',
             'thumbnail.max' => 'Dung lượng ảnh bìa không được vượt quá 2MB.',
             'action.in' => 'Thao tác thực hiện không hợp lệ.',
         ];
