@@ -356,6 +356,12 @@
                             </svg>
                             Ảnh
                         </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="video" title="Chèn video YouTube" aria-label="Chèn video (Video)">
+                            <svg style="width: 14px; height: 14px; margin-right: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            Video
+                        </button>
 
                         <div class="editor-toolbar-divider"></div>
 
@@ -411,18 +417,35 @@
             <div class="d-flex flex-column gap-3.5">
                 <!-- Publishing & Workflow Box -->
                 <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                    <h2 class="label-uppercase text-theme mb-3 d-flex align-items-center gap-1.5">
-                        <svg style="width: 14px; height: 14px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                        </svg>
-                        Thao tác & Xét duyệt
-                    </h2>
+                    <div class="d-flex align-items-center justify-content-between mb-2.5">
+                        <h2 class="label-uppercase text-theme mb-0 d-flex align-items-center gap-1.5 fw-bold">
+                            <svg style="width: 14px; height: 14px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Quy trình xuất bản
+                        </h2>
+                        <span class="badge rounded-pill font-monospace small px-2.5 py-0.5" style="font-size: 11px;
+                            @if($post->status === 'published') background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3);
+                            @elseif($post->status === 'pending') background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3);
+                            @elseif($post->status === 'rejected') background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);
+                            @else background: var(--color-bg-subtle, #27272a); color: var(--color-text-secondary, #a1a1aa); border: 1px solid var(--color-border-subtle, #3f3f46);
+                            @endif">
+                            {{ $post->status_label }}
+                        </span>
+                    </div>
 
                     <div class="d-flex flex-column gap-2">
                         @if($post->status === 'draft')
                             <div class="p-2.5 rounded-3 bg-surface-2 border border-theme mb-1 small text-theme-secondary">
-                                <p class="fw-semibold text-theme mb-0.5">Luồng kiểm duyệt bài viết:</p>
-                                Bài viết sẽ được gửi đến Admin để kiểm duyệt. Bài chỉ hiển thị công khai sau khi được phê duyệt.
+                                <div class="d-flex align-items-center gap-1.5 mb-1 text-theme fw-semibold" style="font-size: 12px;">
+                                    <svg style="width: 13px; height: 13px; color: var(--color-accent); flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Kiểm duyệt nội dung</span>
+                                </div>
+                                <p class="mb-0 text-theme-muted" style="font-size: 11.5px; line-height: 1.45;">
+                                    Bài viết sẽ được chuyển đến Admin để phê duyệt trước khi hiển thị công khai.
+                                </p>
                             </div>
 
                             <button
@@ -431,6 +454,7 @@
                                 name="action"
                                 value="submit"
                                 class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit"
+                                title="Gửi bài viết để Admin kiểm duyệt và xuất bản"
                             >
                                 <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -444,6 +468,7 @@
                                 name="action"
                                 value="draft"
                                 class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium d-flex align-items-center justify-content-center gap-2 btn-action-draft"
+                                title="Lưu lại bản nháp để tiếp tục chỉnh sửa sau"
                             >
                                 <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
@@ -459,8 +484,15 @@
                             </a>
                         @elseif($post->status === 'rejected')
                             <div class="p-2.5 rounded-3 bg-surface-2 border border-danger border-opacity-25 mb-1 small text-theme-secondary">
-                                <p class="fw-semibold text-danger mb-0.5">Bài viết bị từ chối:</p>
-                                Vui lòng chỉnh sửa nội dung theo góp ý và gửi lại để Ban biên tập xét duyệt.
+                                <div class="d-flex align-items-center gap-1.5 mb-1 text-danger fw-semibold" style="font-size: 12px;">
+                                    <svg style="width: 13px; height: 13px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <span>Bài viết bị từ chối</span>
+                                </div>
+                                <p class="mb-0 text-theme-muted" style="font-size: 11.5px; line-height: 1.45;">
+                                    Vui lòng chỉnh sửa nội dung theo góp ý và gửi lại để Ban biên tập xét duyệt.
+                                </p>
                             </div>
 
                             <button
@@ -469,6 +501,7 @@
                                 name="action"
                                 value="submit"
                                 class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit"
+                                title="Gửi lại bài viết cho Admin kiểm duyệt"
                             >
                                 <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -482,6 +515,7 @@
                                 name="action"
                                 value="draft"
                                 class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium d-flex align-items-center justify-content-center gap-2 btn-action-draft"
+                                title="Lưu tiến trình sửa đổi bản nháp"
                             >
                                 <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
@@ -497,7 +531,7 @@
                             </a>
                         @elseif($post->status === 'pending')
                             <div class="p-2.5 rounded-3 bg-surface-2 border border-warning border-opacity-50 text-warning small text-center mb-1">
-                                Bài viết đang trong hàng đợi kiểm duyệt của Ban biên tập.
+                                <span style="font-size: 11.5px;">Bài viết đang trong hàng đợi kiểm duyệt của Admin.</span>
                             </div>
 
                             <button
@@ -506,6 +540,7 @@
                                 name="action"
                                 value="draft"
                                 class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-draft"
+                                title="Cập nhật nội dung bài viết đang chờ duyệt"
                             >
                                 <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -520,12 +555,17 @@
                                 Quay lại danh sách
                             </a>
                         @else
+                            <div class="p-2.5 rounded-3 bg-surface-2 border border-success border-opacity-30 text-success small text-center mb-1">
+                                <span style="font-size: 11.5px;">Bài viết đang hiển thị công khai.</span>
+                            </div>
+
                             <button
                                 type="submit"
                                 form="edit-post-form"
                                 name="action"
                                 value="draft"
                                 class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-draft"
+                                title="Cập nhật trực tiếp bài viết đã xuất bản"
                             >
                                 <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -571,9 +611,17 @@
 
                 <!-- Category Selection -->
                 <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                    <label for="category_id" class="label-uppercase text-theme mb-2 d-block">
-                        Chuyên mục <span class="text-danger">*</span>
-                    </label>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <label for="category_id" class="label-uppercase text-theme mb-0 d-flex align-items-center gap-1.5 fw-bold">
+                            <svg style="width: 14px; height: 14px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                            </svg>
+                            Chuyên mục <span class="text-danger">*</span>
+                        </label>
+                        <span class="badge bg-surface-2 text-theme-muted border border-theme font-monospace small" style="font-size: 11px;">
+                            Bắt buộc
+                        </span>
+                    </div>
                     <select
                         name="category_id"
                         id="category_id"
@@ -635,6 +683,9 @@
 
     <!-- Modal Chỉnh Sửa Thuộc Tính Hình Ảnh & ALT -->
     <x-editor-image-modal />
+
+    <!-- Modal Chèn Video YouTube -->
+    <x-editor-video-modal />
 
     <!-- Modal Hướng Dẫn Phím Tắt -->
     <div class="modal fade" id="editor-shortcuts-modal" tabindex="-1" aria-labelledby="editorShortcutsModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">

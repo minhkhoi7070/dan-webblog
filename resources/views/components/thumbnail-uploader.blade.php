@@ -12,15 +12,18 @@
     }
 @endphp
 
-<div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl thumbnail-uploader-widget"
+<div class="card border-theme bg-theme-surface shadow-xs rounded-xl thumbnail-uploader-widget" style="padding: 22px;"
      id="thumbnail-uploader-widget"
      data-initial-thumbnail="{{ $initialUrl ?? '' }}"
      data-form-id="{{ $formId }}">
 
     <!-- Widget Header -->
     <div class="d-flex align-items-center justify-content-between mb-2">
-        <label class="label-uppercase text-theme mb-0 d-block fw-bold">
-            Ảnh bìa đại diện (Thumbnail)
+        <label class="label-uppercase text-theme mb-0 d-flex align-items-center gap-1.5 fw-bold">
+            <svg style="width: 14px; height: 14px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Ảnh bìa
         </label>
         <span class="badge bg-surface-2 text-theme-muted border border-theme font-monospace small" id="thumbnail-indicator" style="font-size: 11px;">
             {{ $initialUrl ? 'Đã có ảnh' : 'Chưa có ảnh' }}
@@ -57,7 +60,7 @@
                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
             <p class="small text-theme fw-medium mb-1">Kéo & thả hoặc nhấp để tải ảnh bìa</p>
-            <p class="small text-theme-muted mb-0" style="font-size: 11.5px;">Hỗ trợ JPG, PNG, WEBP (Tối đa 2MB)</p>
+            <p class="small text-theme-muted mb-0" style="font-size: 11.5px;">Hỗ trợ JPG, PNG, WEBP, tối đa 2MB</p>
         </div>
     </div>
 
@@ -67,7 +70,7 @@
             <img
                 id="thumbnail-preview-img"
                 src="{{ $initialUrl ?? '#' }}"
-                alt="Thumbnail preview"
+                alt="Xem trước ảnh bìa"
                 class="img-fluid w-100 d-block"
                 style="max-height: 170px; object-fit: cover;"
             >
@@ -159,9 +162,9 @@
     </div>
 
     <!-- Error validation feedback -->
-    <div id="thumbnail-error-feedback" class="invalid-feedback d-none mt-2 small"></div>
+    <div id="thumbnail-error-feedback" class="invalid-feedback d-none text-danger mt-2 small fw-medium"></div>
     @error($fieldName)
-        <div class="invalid-feedback d-block mt-2 small">{{ $message }}</div>
+        <div class="invalid-feedback d-block text-danger mt-2 small fw-medium">{{ $message }}</div>
     @enderror
 </div>
 

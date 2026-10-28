@@ -17,7 +17,7 @@ class PostContentService
     protected static array $allowedTags = [
         'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'del', 'mark',
         'blockquote', 'ul', 'ol', 'li', 'a', 'img', 'pre', 'code', 'hr', 'br',
-        'span', 'div', 'figure', 'figcaption',
+        'span', 'div', 'figure', 'figcaption', 'iframe', 'video', 'source',
     ];
 
     /**
@@ -29,7 +29,7 @@ class PostContentService
             return false;
         }
 
-        return (bool) preg_match('/<\s*(p|h[1-6]|ul|ol|li|blockquote|div|table|img|a|strong|em|u|s|del|strike|mark|span|hr|pre|code|figure|figcaption)\b/i', $content);
+        return (bool) preg_match('/<\s*(p|h[1-6]|ul|ol|li|blockquote|div|table|img|a|strong|em|u|s|del|strike|mark|span|hr|pre|code|figure|figcaption|iframe|video|source)\b/i', $content);
     }
 
     /**
@@ -75,6 +75,41 @@ class PostContentService
         ]);
 
         return static::cleanHtml($html);
+    }
+
+    /**
+     * Extract YouTube video ID from various YouTube URL formats.
+     */
+    public static function parseYoutubeId(?string $url): ?string
+    {
+        if (empty($url)) {
+            return null;
+        }
+
+        if (preg_match('/(?:youtu\.be\/|(?:youtube\.com|youtube-nocookie\.com)\/(?:embed\/|v\/|shorts\/|watch\?v=|watch\?.+&v=))([\w-]{11})/i', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * Build safe YouTube embed URL from video ID or standard URL.
+     */
+    public static function buildYoutubeEmbedUrl(string $urlOrId): ?string
+    {
+        $trimmed = trim($urlOrId);
+        if (preg_match('/^[\w-]{11}$/', $trimmed)) {
+            $videoId = $trimmed;
+        } else {
+            $videoId = static::parseYoutubeId($trimmed);
+        }
+
+        if (! $videoId) {
+            return null;
+        }
+
+        return 'https://www.youtube-nocookie.com/embed/'.$videoId;
     }
 
     /**
@@ -187,6 +222,40 @@ class PostContentService
                         if (! in_array($attrName, ['class', 'style'], true)) {
                             $node->removeAttribute($attrName);
                         }
+                    } elseif ($tagName === 'iframe') {
+                        if ($attrName === 'src') {
+                            $src = trim($attr->value);
+                            // Only allow YouTube embed URLs
+                            if (! preg_match('/^https:\/\/(www\.)?(youtube\.com|youtube-nocookie\.com)\/embed\/[a-zA-Z0-9_-]{11}(\?.*)?$/i', $src)) {
+                                $node->removeAttribute('src');
+                            }
+                        } elseif (! in_array($attrName, ['title', 'class', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'loading', 'referrerpolicy', 'data-video-id'], true)) {
+                            $node->removeAttribute($attrName);
+                        }
+                    } elseif ($tagName === 'video') {
+                        if ($attrName === 'src') {
+                            $src = trim($attr->value);
+                            // Only allow safe local storage or http(s) URLs
+                            if (! preg_match('/^(https?:\/\/|\/storage\/|\/uploads\/)/i', $src)) {
+                                $node->removeAttribute('src');
+                            }
+                        } elseif (! in_array($attrName, ['controls', 'playsinline', 'preload', 'poster', 'class', 'width', 'height', 'data-video-type', 'data-html5-video'], true)) {
+                            $node->removeAttribute($attrName);
+                        }
+                    } elseif ($tagName === 'source') {
+                        if ($attrName === 'src') {
+                            $src = trim($attr->value);
+                            if (! preg_match('/^(https?:\/\/|\/storage\/|\/uploads\/)/i', $src)) {
+                                $node->removeAttribute('src');
+                            }
+                        } elseif ($attrName === 'type') {
+                            $val = strtolower(trim($attr->value));
+                            if (! in_array($val, ['video/mp4', 'video/webm', 'video/ogg'], true)) {
+                                $node->removeAttribute('type');
+                            }
+                        } else {
+                            $node->removeAttribute($attrName);
+                        }
                     } elseif ($attrName === 'data-align') {
                         $val = strtolower(trim($attr->value));
                         if (! in_array($val, ['left', 'center', 'right'], true)) {
@@ -210,6 +279,18 @@ class PostContentService
                         $val = trim($attr->value);
                         if (! ctype_digit($val) || (int) $val < 0 || (int) $val > 10) {
                             $node->removeAttribute('data-indent');
+                        }
+                    } elseif (in_array($attrName, ['data-youtube-video', 'data-video-id', 'data-html5-video', 'data-src'], true)) {
+                        if ($attrName === 'data-video-id') {
+                            $val = trim($attr->value);
+                            if (! preg_match('/^[a-zA-Z0-9_-]{11}$/', $val)) {
+                                $node->removeAttribute('data-video-id');
+                            }
+                        } elseif ($attrName === 'data-src') {
+                            $src = trim($attr->value);
+                            if (! preg_match('/^(https?:\/\/|\/storage\/|\/uploads\/)/i', $src)) {
+                                $node->removeAttribute('data-src');
+                            }
                         }
                     } elseif (! in_array($attrName, ['class', 'title', 'id'], true)) {
                         $node->removeAttribute($attrName);
@@ -279,6 +360,61 @@ class PostContentService
                 }
                 $node->setAttribute('class', $existingClass);
                 $node->setAttribute('loading', 'lazy');
+            } elseif ($tagName === 'iframe') {
+                $src = $node->getAttribute('src');
+                if (empty($src)) {
+                    $parent = $node->parentNode;
+                    if ($parent) {
+                        $parent->removeChild($node);
+                    }
+
+                    return;
+                }
+
+                $node->setAttribute('frameborder', '0');
+                $node->setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+                $node->setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+                $node->setAttribute('allowfullscreen', 'true');
+                $node->setAttribute('loading', 'lazy');
+
+                $existingClass = $node->getAttribute('class');
+                if (! str_contains($existingClass, 'rounded-3')) {
+                    $node->setAttribute('class', trim($existingClass.' rounded-3 shadow-xs'));
+                }
+
+                // Ensure iframe is wrapped in responsive 16:9 container
+                $parent = $node->parentNode;
+                $parentClass = ($parent instanceof DOMElement) ? $parent->getAttribute('class') : '';
+                if (! str_contains($parentClass, 'video-embed-wrapper')) {
+                    $wrapper = $node->ownerDocument->createElement('div');
+                    $wrapper->setAttribute('class', 'video-embed-wrapper ratio ratio-16x9 my-3');
+                    $wrapper->setAttribute('data-youtube-video', '');
+                    $parent->replaceChild($wrapper, $node);
+                    $wrapper->appendChild($node);
+                }
+            } elseif ($tagName === 'video') {
+                $node->setAttribute('controls', 'true');
+                $node->setAttribute('playsinline', 'true');
+                if (! $node->hasAttribute('preload')) {
+                    $node->setAttribute('preload', 'metadata');
+                }
+
+                $existingClass = $node->getAttribute('class');
+                if (! str_contains($existingClass, 'rounded-3')) {
+                    $existingClass = trim($existingClass.' rounded-3 shadow-xs');
+                }
+                $node->setAttribute('class', $existingClass);
+
+                // Ensure HTML5 video is wrapped in responsive 16:9 container
+                $parent = $node->parentNode;
+                $parentClass = ($parent instanceof DOMElement) ? $parent->getAttribute('class') : '';
+                if (! str_contains($parentClass, 'video-embed-wrapper')) {
+                    $wrapper = $node->ownerDocument->createElement('div');
+                    $wrapper->setAttribute('class', 'video-embed-wrapper ratio ratio-16x9 my-3');
+                    $wrapper->setAttribute('data-html5-video', '');
+                    $parent->replaceChild($wrapper, $node);
+                    $wrapper->appendChild($node);
+                }
             }
         }
 

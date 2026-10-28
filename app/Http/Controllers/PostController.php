@@ -262,6 +262,116 @@ class PostController extends Controller
     }
 
     /**
+     * Upload an embedded personal video for post content.
+     */
+    public function uploadVideo(Request $request): JsonResponse
+    {
+        Gate::authorize('create', Post::class);
+
+        // Check if server post_max_size or upload limit dropped the request payload
+        if ($request->header('Content-Length') && empty($request->allFiles())) {
+            $postMaxSize = ini_get('post_max_size') ?: 'N/A';
+            $uploadMax = ini_get('upload_max_filesize') ?: 'N/A';
+
+            return response()->json([
+                'success' => false,
+                'message' => "Dung lượng video vượt quá giới hạn cấu hình của máy chủ web (upload_max_filesize: {$uploadMax}, post_max_size: {$postMaxSize}). Vui lòng giảm dung lượng video hoặc liên hệ quản trị viên.",
+            ], 422);
+        }
+
+        if (! $request->hasFile('video')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy file video trong yêu cầu tải lên.',
+            ], 422);
+        }
+
+        $file = $request->file('video');
+
+        if (! $file->isValid()) {
+            $errorCode = $file->getError();
+            $errorMessage = match ($errorCode) {
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Dung lượng file video vượt quá giới hạn cho phép của máy chủ web.',
+                UPLOAD_ERR_PARTIAL => 'File video chỉ mới được tải lên một phần. Vui lòng thử lại.',
+                UPLOAD_ERR_NO_FILE => 'Không có file video nào được tải lên.',
+                UPLOAD_ERR_NO_TMP_DIR => 'Lỗi máy chủ: Thiếu thư mục tạm thời để lưu trữ video.',
+                UPLOAD_ERR_CANT_WRITE => 'Lỗi máy chủ: Không thể ghi file video lên ổ đĩa.',
+                default => 'Tải lên video thất bại với mã lỗi hệ thống: '.$errorCode,
+            };
+
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage,
+            ], 422);
+        }
+
+        $maxSizeKb = (int) config('blog.max_video_size_kb', 102400);
+
+        $request->validate([
+            'video' => [
+                'required',
+                'file',
+                'mimetypes:video/mp4,video/webm',
+                'mimes:mp4,webm',
+                'max:'.$maxSizeKb,
+            ],
+        ], [
+            'video.required' => 'Vui lòng chọn file video để tải lên.',
+            'video.file' => 'File tải lên không hợp lệ.',
+            'video.mimetypes' => 'Định dạng MIME không hợp lệ. Hệ thống chỉ hỗ trợ video MP4 (video/mp4) và WebM (video/webm).',
+            'video.mimes' => 'Định dạng file không hợp lệ. Chỉ chấp nhận phần mở rộng .mp4 và .webm.',
+            'video.max' => 'Dung lượng video vượt quá giới hạn cho phép (tối đa '.round($maxSizeKb / 1024).'MB).',
+        ]);
+
+        $clientExtension = strtolower((string) $file->getClientOriginalExtension());
+        $mimeType = (string) $file->getMimeType();
+
+        $extension = in_array($clientExtension, ['mp4', 'webm'], true)
+            ? $clientExtension
+            : ($mimeType === 'video/webm' ? 'webm' : 'mp4');
+
+        $safeName = Str::random(40).'.'.$extension;
+        $path = $file->storeAs('posts/videos', $safeName, 'public');
+
+        return response()->json([
+            'success' => true,
+            'url' => '/storage/'.$path,
+            'filename' => $safeName,
+            'original_name' => $file->getClientOriginalName(),
+            'size' => $file->getSize(),
+            'type' => $mimeType,
+        ], 201);
+    }
+
+    /**
+     * Delete a previously uploaded video file (before saving the post).
+     */
+    public function deleteVideo(Request $request): JsonResponse
+    {
+        Gate::authorize('create', Post::class);
+
+        $filename = $request->input('filename');
+        if (! $filename || ! is_string($filename) || preg_match('/[^a-zA-Z0-9._-]/', $filename)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tên file video không hợp lệ.',
+            ], 422);
+        }
+
+        $safeBasename = basename($filename);
+        $path = 'posts/videos/'.$safeBasename;
+
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã xóa file video thành công.',
+        ]);
+    }
+
+    /**
      * Show the form for editing the specified post.
      */
     public function edit(Post $post): View
