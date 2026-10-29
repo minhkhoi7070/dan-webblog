@@ -1,10 +1,12 @@
 <div id="feed-results" tabindex="-1" aria-label="Danh sách bài viết của tác giả"
      data-feed-url="{{ request()->fullUrl() }}"
-     data-feed-total="{{ $posts->total() }}">
+     data-feed-total="{{ $posts->total() }}"
+     data-feed-current-status="{{ $currentStatus ?? '' }}">
 
-    <!-- Posts Table -->
+    <!-- Posts Table & Mobile Card View Container -->
     <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4">
-        <div class="table-responsive">
+        <!-- Desktop Table View (>= 768px Tablet & Desktop) -->
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-hover align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
                 <thead class="border-theme-bottom bg-surface-2">
                     <tr>
@@ -89,16 +91,25 @@
                             <!-- Actions -->
                             <td class="pe-3 pe-sm-4 py-3 text-end">
                                 <div class="d-flex align-items-center justify-content-end gap-2 flex-wrap flex-sm-nowrap">
-                                    <!-- Submit for review button (Available if draft or rejected) -->
+                                    <!-- Submit for review / publish button (Available if draft or rejected) -->
                                     @if(in_array($post->status, ['draft', 'rejected'], true))
                                         <form action="{{ route('posts.submit', $post) }}" method="POST" class="d-inline m-0">
                                             @csrf
-                                            <button type="submit" class="btn btn-action-table btn-action-submit" title="Gửi bài viết để Admin duyệt" aria-label="Gửi xét duyệt bài viết {{ $post->title }}">
-                                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                                </svg>
-                                                <span>Gửi duyệt</span>
-                                            </button>
+                                            @if(auth()->user()?->isAdmin() && $post->user_id === auth()->id())
+                                                <button type="submit" class="btn btn-action-table btn-action-submit btn-action-publish" title="Đăng bài ngay" aria-label="Đăng bài ngay {{ $post->title }}">
+                                                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                    <span>Đăng ngay</span>
+                                                </button>
+                                            @else
+                                                <button type="submit" class="btn btn-action-table btn-action-submit" title="Gửi bài viết để Admin duyệt" aria-label="Gửi xét duyệt bài viết {{ $post->title }}">
+                                                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                                    </svg>
+                                                    <span>Gửi duyệt</span>
+                                                </button>
+                                            @endif
                                         </form>
                                     @endif
 
@@ -173,6 +184,113 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile Card View (< 768px: Mobile-First Responsive Cards) -->
+        <div class="d-block d-md-none divide-y divide-theme">
+            @forelse($posts as $post)
+                <div class="p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                        <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                            @if($post->status === 'published')
+                                <x-badge variant="status-published" size="xs">Đã xuất bản</x-badge>
+                            @elseif($post->status === 'pending')
+                                <x-badge variant="status-pending" size="xs">Chờ duyệt</x-badge>
+                            @elseif($post->status === 'rejected')
+                                <x-badge variant="status-rejected" size="xs">Bị từ chối</x-badge>
+                            @else
+                                <x-badge variant="status-draft" size="xs">Bản nháp</x-badge>
+                            @endif
+                            <span class="badge bg-surface-2 text-theme-secondary border border-theme rounded-pill" style="font-size: 11px;">
+                                {{ $post->category->name }}
+                            </span>
+                        </div>
+                        <span class="small text-theme-muted" style="font-size: 11px;">
+                            {{ $post->updated_at->format('d/m/Y') }}
+                        </span>
+                    </div>
+
+                    <div class="d-flex align-items-start gap-2.5 mb-2.5">
+                        @if($post->thumbnail)
+                            <img src="{{ asset($post->thumbnail) }}" alt="" class="rounded-3 flex-shrink-0 border border-theme shadow-xs" style="width: 44px; height: 44px; object-fit: cover;">
+                        @else
+                            <div class="rounded-3 bg-surface-2 text-theme-muted d-flex align-items-center justify-content-center flex-shrink-0 border border-theme fw-bold" style="width: 44px; height: 44px; font-size: 11px;">
+                                B
+                            </div>
+                        @endif
+                        <div class="min-w-0 flex-grow-1">
+                            <a href="{{ route('posts.edit', $post) }}" data-app-nav class="fw-bold text-theme text-decoration-none hover-accent d-block line-clamp-2" style="font-size: 14.5px; line-height: 1.35;">
+                                {{ $post->title }}
+                            </a>
+                            @if($post->status === 'rejected' && $post->rejection_reason)
+                                <div class="text-danger small mt-1 d-flex align-items-center gap-1" style="font-size: 11.5px;">
+                                    <svg style="width: 13px; height: 13px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <span class="line-clamp-2"><strong>Lý do từ chối:</strong> {{ $post->rejection_reason }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Stats and Actions -->
+                    <div class="d-flex align-items-center justify-content-between gap-2 pt-2 border-theme-top flex-wrap">
+                        <div class="d-flex align-items-center gap-2 small text-theme-muted" style="font-size: 11.5px;">
+                            <span>{{ number_format($post->views) }} views</span>
+                            <span>&bull;</span>
+                            <span>{{ $post->likers_count }} likes</span>
+                            <span>&bull;</span>
+                            <span>{{ $post->comments_count }} cmt</span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-1.5 flex-shrink-0 ms-auto">
+                            @if(in_array($post->status, ['draft', 'rejected'], true))
+                                <form action="{{ route('posts.submit', $post) }}" method="POST" class="d-inline m-0">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-theme rounded-pill px-2.5 py-1" style="font-size: 11px;" title="Gửi duyệt">
+                                        Gửi duyệt
+                                    </button>
+                                </form>
+                            @endif
+                            @if($post->status === 'published')
+                                <a href="{{ route('posts.show', $post->slug) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-theme rounded-pill px-2.5 py-1 text-decoration-none" style="font-size: 11px;">
+                                    Xem
+                                </a>
+                            @endif
+                            <a href="{{ route('posts.edit', $post) }}" data-app-nav class="btn btn-sm btn-editorial-primary rounded-pill px-2.5 py-1 text-decoration-none" style="font-size: 11px;">
+                                Sửa
+                            </a>
+                            <form action="{{ route('posts.destroy', $post) }}" method="POST" class="d-inline m-0"
+                                  data-confirm="true"
+                                  data-confirm-title="Xóa bài viết"
+                                  data-confirm-message="Bạn có chắc chắn muốn xóa bài viết này không?"
+                                  data-confirm-target-name="{{ $post->title }}"
+                                  data-confirm-target-meta="Trạng thái: {{ $post->status_label }}"
+                                  data-confirm-description="Hành động này không thể hoàn tác."
+                                  data-confirm-btn-text="Xóa bài viết"
+                                  data-confirm-btn-class="btn-danger"
+                                  data-confirm-type="danger">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1.5 rounded-circle" title="Xóa bài viết" aria-label="Xóa bài viết">
+                                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="py-5 text-center text-theme-secondary small p-3">
+                    @if($search)
+                        <p class="text-theme fw-semibold mb-1" style="font-size: 15px;">Không tìm thấy bài viết phù hợp</p>
+                        <p class="small text-theme-muted mb-3">Không có bài viết nào khớp với từ khóa "{{ $search }}".</p>
+                        <a href="{{ route('posts.stats', $currentStatus ? ['status' => $currentStatus] : []) }}" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1">Xóa từ khóa</a>
+                    @else
+                        <p class="text-theme fw-medium mb-1">Không tìm thấy bài viết nào</p>
+                        <a href="{{ route('posts.create') }}" data-app-nav class="btn btn-editorial-primary btn-sm rounded-pill px-4 mt-2">Soạn bài viết mới</a>
+                    @endif
+                </div>
+            @endforelse
         </div>
     </div>
 

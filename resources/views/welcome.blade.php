@@ -10,7 +10,6 @@
                     <span class="brand-text">CloudBlog</span>
                 </a>
             </div>
-            <p class="small text-theme-secondary mb-4 leading-relaxed">Nền tảng xuất bản nội dung xã hội hiện đại. Đọc sâu, viết thật, kết nối ý nghĩa.</p>
             <div class="d-flex justify-content-center gap-2">
                 <a href="{{ route('home') }}" class="btn btn-editorial-primary rounded-pill px-4 fw-semibold small">
                     Trang chủ

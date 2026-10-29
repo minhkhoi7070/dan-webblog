@@ -28,7 +28,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 // =============================================================================
 // Admin Routes (Sprint 4: Admin Only)
 // =============================================================================
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/metrics/realtime', [DashboardController::class, 'realtimeMetrics'])->name('metrics.realtime');
@@ -63,7 +63,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 // Author CMS Routes (Sprint 3: Author & Admin)
 // Note: Declared before wildcard /posts/{post:slug} to prevent route conflicts
 // =============================================================================
-Route::middleware(['auth', 'role:author,admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:author,admin'])->group(function () {
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
     Route::post('/posts/upload-image', [PostController::class, 'uploadImage'])->name('posts.upload-image');
@@ -93,29 +93,32 @@ Route::get('/posts/author/{user}', [PostController::class, 'byAuthor'])->name('p
 // Authenticated Viewer Routes (Sprint 2)
 // =============================================================================
 Route::middleware('auth')->group(function () {
-    // Interactions (Like, Favorite, Follow)
-    Route::match(['get', 'post'], '/posts/{post}/like', [InteractionController::class, 'like'])->name('posts.like');
-    Route::match(['get', 'post'], '/posts/{post}/favorite', [InteractionController::class, 'favorite'])->name('posts.favorite');
-    Route::match(['get', 'post'], '/authors/{user}/follow', [InteractionController::class, 'follow'])->name('authors.follow');
+    // Protected Interactions (Require Verified Email)
+    Route::middleware('verified')->group(function () {
+        // Interactions (Like, Favorite, Follow)
+        Route::match(['get', 'post'], '/posts/{post}/like', [InteractionController::class, 'like'])->name('posts.like');
+        Route::match(['get', 'post'], '/posts/{post}/favorite', [InteractionController::class, 'favorite'])->name('posts.favorite');
+        Route::match(['get', 'post'], '/authors/{user}/follow', [InteractionController::class, 'follow'])->name('authors.follow');
 
-    // Comments & Replies
-    Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
-    Route::post('/comments', [CommentController::class, 'store'])->name('comments.store.direct');
-    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+        // Comments & Replies
+        Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
+        Route::post('/comments', [CommentController::class, 'store'])->name('comments.store.direct');
+        Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
-    // Viewer Personal Pages
+        // Viewer to Author Upgrade
+        Route::post('/become-author', [ProfileController::class, 'becomeAuthor'])->name('author.become');
+    });
+
+    // Viewer Personal Pages (Accessible for browsing)
     Route::get('/following', [FollowingController::class, 'index'])->name('following.index');
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::get('/activity', [ActivityController::class, 'index'])->name('activity.index');
 
-    // Profile Management
+    // Profile Management (Accessible for unverified users to update email)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::get('/profile/overview', [ProfileController::class, 'show'])->name('profile.show');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Viewer to Author Upgrade
-    Route::post('/become-author', [ProfileController::class, 'becomeAuthor'])->name('author.become');
 });
 
 Route::get('/dashboard', function () {

@@ -241,11 +241,23 @@ class PostController extends Controller
         $slug = Str::slug($request->validated('title')).'-'.Str::lower(Str::random(6));
 
         $action = $request->input('action');
-        $status = ($action === 'submit') ? 'pending' : 'draft';
+        $user = $request->user();
+        $isPublishAction = in_array($action, ['submit', 'publish'], true);
 
-        $post = DB::transaction(function () use ($request, $status, $body, $excerpt, $slug, $thumbnail) {
+        if ($isPublishAction && $user->isAdmin()) {
+            $status = 'published';
+            $publishedAt = now();
+        } elseif ($isPublishAction) {
+            $status = 'pending';
+            $publishedAt = null;
+        } else {
+            $status = 'draft';
+            $publishedAt = null;
+        }
+
+        $post = DB::transaction(function () use ($user, $request, $status, $publishedAt, $body, $excerpt, $slug, $thumbnail) {
             $post = Post::create([
-                'user_id' => $request->user()->id,
+                'user_id' => $user->id,
                 'category_id' => $request->validated('category_id'),
                 'title' => $request->validated('title'),
                 'slug' => $slug,
@@ -253,6 +265,7 @@ class PostController extends Controller
                 'body' => $body,
                 'thumbnail' => $thumbnail,
                 'status' => $status,
+                'published_at' => $publishedAt,
                 'views' => 0,
             ]);
 
@@ -261,6 +274,11 @@ class PostController extends Controller
 
             return $post;
         });
+
+        if ($status === 'published') {
+            return redirect()->route('posts.edit', $post)
+                ->with('success', 'Bài viết đã được xuất bản thành công.');
+        }
 
         if ($status === 'pending') {
             return redirect()->route('posts.edit', $post)
@@ -478,10 +496,18 @@ class PostController extends Controller
         $post->body = $body;
 
         $action = $request->input('action');
-        if ($action === 'submit' && in_array($post->status, ['draft', 'rejected'], true)) {
+        $user = $request->user();
+        $isPublishAction = in_array($action, ['submit', 'publish'], true);
+
+        if ($user->isAdmin() && $isPublishAction && in_array($post->status, ['draft', 'rejected', 'pending'], true)) {
+            $post->status = 'published';
+            $post->published_at = $post->published_at ?? now();
+            $post->rejection_reason = null;
+            $successMessage = 'Bài viết đã được xuất bản thành công.';
+        } elseif ($isPublishAction && in_array($post->status, ['draft', 'rejected'], true)) {
             $post->status = 'pending';
             $successMessage = 'Bài viết đã được lưu và gửi đến Admin để kiểm duyệt thành công (Đang chờ Admin duyệt).';
-        } elseif ($action === 'submit' && $post->status === 'pending') {
+        } elseif ($isPublishAction && $post->status === 'pending') {
             $successMessage = 'Bài viết đã được cập nhật và đang chờ Admin duyệt.';
         } else {
             $successMessage = 'Bài viết đã được cập nhật thành công.';
@@ -525,6 +551,28 @@ class PostController extends Controller
     public function submit(Request $request, Post $post): JsonResponse|RedirectResponse
     {
         Gate::authorize('submit', $post);
+
+        $user = $request->user();
+
+        // If creator is Admin and submitting their own draft or rejected post, publish immediately
+        if ($user->isAdmin() && $post->user_id === $user->id) {
+            $post->update([
+                'status' => 'published',
+                'published_at' => $post->published_at ?? now(),
+                'rejection_reason' => null,
+            ]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'status' => 'published',
+                    'message' => "Bài viết '{$post->title}' đã được xuất bản thành công.",
+                ]);
+            }
+
+            return redirect()->back()
+                ->with('success', "Bài viết '{$post->title}' đã được xuất bản thành công.");
+        }
 
         $post->update(['status' => 'pending']);
 

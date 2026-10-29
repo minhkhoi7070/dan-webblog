@@ -8,9 +8,6 @@
                 Bảo mật & Mật khẩu
             </h2>
         </div>
-        <p class="small text-theme-muted mb-0" style="font-size: 13px;">
-            Đổi mật khẩu định kỳ và sử dụng chuỗi ký tự phức tạp để giữ an toàn cho tài khoản.
-        </p>
     </header>
 
     <form method="post" action="{{ route('password.update') }}" class="d-flex flex-column gap-4">
@@ -27,8 +24,8 @@
                 type="password"
                 autocomplete="current-password"
                 placeholder="••••••••"
-                class="form-control form-control-editorial rounded-3 @error('current_password', 'updatePassword') is-invalid @enderror"
-                style="font-size: 14px;"
+                class="form-control form-control-editorial rounded-3 w-100 @error('current_password', 'updatePassword') is-invalid @enderror"
+                style="height: 48px; min-height: 48px; font-size: 14px;"
             >
             @error('current_password', 'updatePassword')
                 <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
@@ -45,8 +42,8 @@
                 type="password"
                 autocomplete="new-password"
                 placeholder="Tối thiểu 8 ký tự..."
-                class="form-control form-control-editorial rounded-3 @error('password', 'updatePassword') is-invalid @enderror"
-                style="font-size: 14px;"
+                class="form-control form-control-editorial rounded-3 w-100 @error('password', 'updatePassword') is-invalid @enderror"
+                style="height: 48px; min-height: 48px; font-size: 14px;"
             >
             @error('password', 'updatePassword')
                 <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
@@ -63,15 +60,15 @@
                 type="password"
                 autocomplete="new-password"
                 placeholder="Nhập lại mật khẩu mới..."
-                class="form-control form-control-editorial rounded-3 @error('password_confirmation', 'updatePassword') is-invalid @enderror"
-                style="font-size: 14px;"
+                class="form-control form-control-editorial rounded-3 w-100 @error('password_confirmation', 'updatePassword') is-invalid @enderror"
+                style="height: 48px; min-height: 48px; font-size: 14px;"
             >
             @error('password_confirmation', 'updatePassword')
                 <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
             @enderror
         </div>
 
-        <div class="d-flex align-items-center justify-content-end flex-wrap gap-3">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-2">
             @if (session('status') === 'password-updated')
                 <span id="password-saved-msg" class="small text-success fw-medium d-inline-flex align-items-center gap-1" style="font-size: 12.5px;">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
@@ -85,7 +82,9 @@
                 </script>
             @endif
 
-            <button type="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-2 fw-semibold" style="font-size: 13px;">
+            <button type="submit"
+                    class="btn btn-editorial-primary rounded-pill px-4 py-2 fw-semibold w-100 w-sm-auto ms-sm-auto d-inline-flex align-items-center justify-content-center"
+                    style="min-height: 44px; font-size: 13.5px;">
                 Cập nhật mật khẩu
             </button>
         </div>

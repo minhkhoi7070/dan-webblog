@@ -30,7 +30,7 @@ class ProfileUpdateRequest extends FormRequest
                 'nullable',
                 'file',
                 'image',
-                'mimes:jpeg,png,webp',
+                'mimes:jpg,jpeg,png,webp',
                 'max:2048',
             ],
         ];
@@ -45,7 +45,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'avatar.image' => 'Ảnh đại diện phải là một tệp hình ảnh hợp lệ.',
-            'avatar.mimes' => 'Ảnh đại diện chỉ chấp nhận định dạng JPEG, PNG hoặc WebP.',
+            'avatar.mimes' => 'Ảnh đại diện chỉ chấp nhận định dạng JPG, JPEG, PNG hoặc WebP.',
             'avatar.max' => 'Dung lượng ảnh đại diện không được vượt quá 2MB.',
         ];
     }

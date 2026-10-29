@@ -1,5 +1,5 @@
 {{-- resources/views/components/logo.blade.php --}}
-<svg {{ $attributes->merge(['class' => 'inline-block select-none flex-shrink-0 bloub-svg']) }} viewBox="30 55 260 225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CloudBlog Logo">
+<svg {{ $attributes->merge(['class' => 'inline-block select-none flex-shrink-0 bloub-svg']) }} width="36" height="31" viewBox="30 55 260 225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CloudBlog Logo">
     <style>
         .cloud-body-group {
             transform-origin: 157.5px 169.8px;

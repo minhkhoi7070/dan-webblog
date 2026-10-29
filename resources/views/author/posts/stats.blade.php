@@ -118,36 +118,51 @@
     <div class="card p-3 border-theme bg-theme-surface shadow-xs rounded-xl mb-4">
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
             <!-- Filter Tabs -->
-            <div class="d-flex align-items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <div class="d-flex align-items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" data-feed-status-tabs>
                 <a href="{{ route('posts.stats', array_filter(['q' => $search])) }}"
-                   class="btn btn-sm rounded-pill px-3 fw-medium d-inline-flex align-items-center text-nowrap {{ empty($currentStatus) ? 'btn-editorial-primary' : 'btn-outline-theme' }}"
+                   data-feed-tab=""
+                   data-active-class="btn-editorial-primary text-white"
+                   data-inactive-class="btn-outline-theme text-theme-secondary"
+                   class="btn btn-sm rounded-pill px-3 fw-medium d-inline-flex align-items-center text-nowrap {{ empty($currentStatus) ? 'btn-editorial-primary text-white' : 'btn-outline-theme text-theme-secondary' }}"
                    style="height: 34px; font-size: 12.5px;">
                     Tất cả ({{ $stats['total'] }})
                 </a>
                 <a href="{{ route('posts.stats', array_filter(['status' => 'draft', 'q' => $search])) }}"
-                   class="btn btn-sm rounded-pill px-3 fw-medium d-inline-flex align-items-center text-nowrap {{ $currentStatus === 'draft' ? 'btn-editorial-primary' : 'btn-outline-theme' }}"
+                   data-feed-tab="draft"
+                   data-active-class="btn-editorial-primary text-white"
+                   data-inactive-class="btn-outline-theme text-theme-muted"
+                   class="btn btn-sm rounded-pill px-3 fw-medium d-inline-flex align-items-center text-nowrap {{ $currentStatus === 'draft' ? 'btn-editorial-primary text-white' : 'btn-outline-theme text-theme-muted' }}"
                    style="height: 34px; font-size: 12.5px;">
                     Bản nháp ({{ $stats['draft'] }})
                 </a>
                 <a href="{{ route('posts.stats', array_filter(['status' => 'pending', 'q' => $search])) }}"
-                   class="btn btn-sm rounded-pill px-3 fw-medium d-inline-flex align-items-center text-nowrap {{ $currentStatus === 'pending' ? 'btn-warning text-dark' : 'btn-outline-theme' }}"
+                   data-feed-tab="pending"
+                   data-active-class="btn-warning text-dark fw-bold"
+                   data-inactive-class="btn-outline-theme text-warning"
+                   class="btn btn-sm rounded-pill px-3 fw-medium d-inline-flex align-items-center text-nowrap {{ $currentStatus === 'pending' ? 'btn-warning text-dark fw-bold' : 'btn-outline-theme text-warning' }}"
                    style="height: 34px; font-size: 12.5px;">
                     Chờ duyệt ({{ $stats['pending'] }})
                 </a>
                 <a href="{{ route('posts.stats', array_filter(['status' => 'published', 'q' => $search])) }}"
-                   class="btn btn-sm rounded-pill px-3 fw-medium d-inline-flex align-items-center text-nowrap {{ $currentStatus === 'published' ? 'btn-editorial-primary' : 'btn-outline-theme' }}"
+                   data-feed-tab="published"
+                   data-active-class="btn-editorial-primary text-white"
+                   data-inactive-class="btn-outline-theme text-theme-secondary"
+                   class="btn btn-sm rounded-pill px-3 fw-medium d-inline-flex align-items-center text-nowrap {{ $currentStatus === 'published' ? 'btn-editorial-primary text-white' : 'btn-outline-theme text-theme-secondary' }}"
                    style="height: 34px; font-size: 12.5px;">
                     Đã xuất bản ({{ $stats['published'] }})
                 </a>
                 <a href="{{ route('posts.stats', array_filter(['status' => 'rejected', 'q' => $search])) }}"
-                   class="btn btn-sm rounded-pill px-3 fw-medium d-inline-flex align-items-center text-nowrap {{ $currentStatus === 'rejected' ? 'btn-outline-danger' : 'btn-outline-theme' }}"
+                   data-feed-tab="rejected"
+                   data-active-class="btn-danger text-white fw-bold"
+                   data-inactive-class="btn-outline-theme text-danger"
+                   class="btn btn-sm rounded-pill px-3 fw-medium d-inline-flex align-items-center text-nowrap {{ $currentStatus === 'rejected' ? 'btn-danger text-white fw-bold' : 'btn-outline-theme text-danger' }}"
                    style="height: 34px; font-size: 12.5px;">
                     Bị từ chối ({{ $stats['rejected'] }})
                 </a>
             </div>
 
             <!-- Search Form with vertically centered icon & clear button -->
-            <form action="{{ route('posts.stats') }}" method="GET" class="position-relative m-0 w-100" style="max-width: 320px;">
+            <form action="{{ route('posts.stats') }}" method="GET" class="position-relative m-0 w-100" style="max-width: 320px;" data-feed-filter-form>
                 @if($currentStatus)
                     <input type="hidden" name="status" value="{{ $currentStatus }}">
                 @endif

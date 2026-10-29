@@ -25,23 +25,26 @@
     };
 
     $name = $user?->name ?? 'Guest';
-    $avatarUrl = $user?->avatar_url ?? ($user?->avatar ? (str_starts_with($user->avatar, 'avatars/') ? \Illuminate\Support\Facades\Storage::disk('public')->url($user->avatar) : asset($user->avatar)) : null);
+    $avatarUrl = $user?->avatar_url ?? ($user?->avatar ? (str_starts_with($user->avatar, 'avatars/') ? asset('storage/'.$user->avatar) : asset($user->avatar)) : null);
     $initials = strtoupper(mb_substr($name, 0, 1, 'UTF-8'));
 @endphp
 
 <div {{ $attributes->merge(['class' => 'position-relative d-inline-flex align-items-center justify-content-center flex-shrink-0 user-select-none avatar-wrapper']) }}
-     style="width: {{ $dimension }}px; height: {{ $dimension }}px; min-width: {{ $dimension }}px; min-height: {{ $dimension }}px; max-width: {{ $dimension }}px; max-height: {{ $dimension }}px; aspect-ratio: 1 / 1;">
-    <div class="w-100 h-100 rounded-circle overflow-hidden text-white fw-bold d-flex align-items-center justify-content-center border-theme shadow-xs flex-shrink-0"
+     style="width: {{ $dimension }}px; height: {{ $dimension }}px; min-width: {{ $dimension }}px; min-height: {{ $dimension }}px; max-width: {{ $dimension }}px; max-height: {{ $dimension }}px; aspect-ratio: 1 / 1;"
+     @if($user?->id) data-user-avatar="{{ $user->id }}" @endif>
+    <div class="w-100 h-100 rounded-circle overflow-hidden text-white fw-bold d-flex align-items-center justify-content-center border-theme shadow-xs flex-shrink-0 avatar-inner"
          style="font-size: {{ $fontSize }}px; background: linear-gradient(135deg, #374151 0%, #111827 100%); aspect-ratio: 1 / 1; border-radius: 50% !important;"
          data-theme-preserve>
         @if($avatarUrl)
             <img src="{{ $avatarUrl }}"
                  alt="{{ $name }}"
-                 class="w-100 h-100 d-block"
+                 class="w-100 h-100 d-block avatar-img"
                  style="object-fit: cover; aspect-ratio: 1 / 1; border-radius: 50%;"
-                 loading="lazy">
+                 loading="lazy"
+                 onerror="this.classList.add('d-none'); this.nextElementSibling?.classList.remove('d-none');">
+            <span class="avatar-initials d-none" style="line-height: 1;">{{ $initials }}</span>
         @else
-            <span style="line-height: 1; display: inline-block;">{{ $initials }}</span>
+            <span class="avatar-initials" style="line-height: 1; display: inline-block;">{{ $initials }}</span>
         @endif
     </div>
     @if($indicator)

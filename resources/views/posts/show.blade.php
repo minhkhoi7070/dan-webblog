@@ -4,9 +4,9 @@
 <div class="w-100 d-flex justify-content-center px-0 px-sm-3 py-0 py-sm-3 py-md-4">
     <article class="w-100 editorial-article-container bg-theme-surface border-0 border-sm-start border-sm-end border-sm-top border-sm-bottom border-theme rounded-0 rounded-sm-4 p-3 p-sm-4 p-md-5 mb-5 overflow-hidden">
         
-        <!-- Top Navigation Bar -->
-        <div class="mb-4 d-flex align-items-center justify-content-between gap-3">
-            <a href="{{ route('posts.index') }}" class="small fw-semibold text-theme-secondary text-decoration-none d-inline-flex align-items-center gap-2 hover-accent" aria-label="Quay lại bảng tin">
+        <!-- Top Navigation Bar (Back button hidden on mobile as mobile-header provides back navigation) -->
+        <div class="mb-3 mb-md-4 d-flex align-items-center justify-content-between gap-3">
+            <a href="{{ route('posts.index') }}" class="d-none d-md-inline-flex small fw-semibold text-theme-secondary text-decoration-none align-items-center gap-2 hover-accent" aria-label="Quay lại bảng tin">
                 <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
@@ -15,7 +15,7 @@
 
             <!-- Category Pill -->
             <a href="{{ route('posts.index', ['category' => $post->category->slug]) }}"
-               class="category-pill bg-theme-surface-hover text-theme-secondary border border-theme hover-accent">
+               class="category-pill ms-auto ms-md-0 bg-theme-surface-hover text-theme-secondary border border-theme hover-accent">
                 {{ $post->category->name }}
             </a>
         </div>
@@ -117,7 +117,6 @@
             </div>
         @endif
 
-        <!-- Comments Thread Section -->
         <section id="comments" data-post-id="{{ $post->id }}" data-user-name="{{ auth()->user()?->name }}" class="{{ $relatedPosts->isNotEmpty() ? 'mt-4 pt-4 border-theme-top' : '' }}" aria-labelledby="comments-heading">
             <div class="d-flex align-items-center justify-content-between pb-3 mb-4 border-theme-bottom">
                 <div class="d-flex align-items-center gap-2">

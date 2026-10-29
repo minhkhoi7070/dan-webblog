@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -97,6 +98,8 @@ class FollowingController extends Controller
                 ->header('Vary', 'X-BlogMNM-Feed')
                 ->header('Cache-Control', 'private, no-store');
         }
+
+        $viewData['categories'] = Category::withCount(['posts' => fn ($q) => $q->published()])->get();
 
         return response()
             ->view('following.index', $viewData)

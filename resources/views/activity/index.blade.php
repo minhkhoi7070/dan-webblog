@@ -4,8 +4,8 @@
 <div class="w-100 d-flex justify-content-center px-0 px-sm-3 py-0 py-sm-4">
     <div class="w-100 card border-0 border-sm border-theme overflow-hidden bg-theme-surface shadow-xs" style="max-width: 880px; border-radius: var(--radius-xl, 16px);">
         
-        <!-- Top Context Bar -->
-        <div class="p-3 px-sm-4 border-theme-bottom d-flex align-items-center justify-content-between sticky-top bg-theme-surface" style="z-index: 1020;">
+        <!-- Top Context Bar (Desktop only; Mobile has top app header) -->
+        <div class="p-3 px-sm-4 border-theme-bottom d-none d-md-flex align-items-center justify-content-between sticky-top bg-theme-surface" style="z-index: 1020;">
             <a href="{{ route('posts.index') }}" class="small text-theme-secondary hover-accent text-decoration-none d-inline-flex align-items-center gap-1.5 transition-colors">
                 <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />

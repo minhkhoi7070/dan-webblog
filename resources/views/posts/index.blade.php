@@ -7,17 +7,18 @@
         <div class="w-100 feed-container bg-theme-surface border-0 border-sm-start border-sm-end border-sm-top border-sm-bottom border-theme rounded-0 rounded-sm-4 overflow-hidden mb-4"
              data-feed-shell
              data-feed-base-url="{{ route('posts.index') }}"
-             data-feed-home-url="{{ route('home') }}">
+             data-feed-home-url="{{ route('home') }}"
+             @auth data-feed-following-url="{{ route('following.index') }}" @endauth>
 
             <!-- Feed Top Header (Editorial / Substack Style Header) -->
             <div class="sticky-top bg-theme-surface border-theme-bottom px-3 px-sm-4 feed-top-header">
-                <div class="d-flex align-items-center justify-content-between gap-3 feed-top-header-inner">
-                    <div class="d-flex align-items-center gap-3 gap-sm-4" role="tablist" aria-label="Bộ lọc bài viết">
-                        <span class="feed-tab active" role="tab" aria-selected="true" tabindex="0">
+                <div class="d-flex align-items-center justify-content-between gap-2 gap-sm-3 feed-top-header-inner">
+                    <div class="d-flex align-items-center gap-2 gap-sm-4" role="tablist" aria-label="Bộ lọc bài viết" data-feed-tabs>
+                        <a href="{{ route('home') }}" class="feed-tab active" role="tab" aria-selected="true" tabindex="0" data-feed-type="for-you">
                             Dành cho bạn
-                        </span>
+                        </a>
                         @auth
-                            <a href="{{ route('following.index') }}" class="feed-tab" role="tab" aria-selected="false">
+                            <a href="{{ route('following.index') }}" class="feed-tab" role="tab" aria-selected="false" data-feed-type="following">
                                 Đang theo dõi
                             </a>
                         @else
@@ -100,7 +101,7 @@
             @endauth
 
             <!-- Category Filter Horizontal Chips -->
-            <nav class="px-3 px-sm-4 py-2.5 border-theme-bottom bg-theme-surface" aria-label="Bộ lọc chuyên mục">
+            <nav class="px-3 px-sm-4 py-2.5 border-theme-bottom bg-theme-surface" aria-label="Bộ lọc chuyên mục" data-feed-categories-nav>
                 <div class="d-flex align-items-center gap-2 overflow-x-auto no-scrollbar py-1" role="navigation">
                     <!-- All Categories -->
                     <a href="{{ route('posts.index', array_filter(['q' => $search])) }}"

@@ -1,6 +1,8 @@
 <div id="feed-results" tabindex="-1" aria-label="Bảng kiểm duyệt bài viết"
      data-feed-url="{{ request()->fullUrl() }}"
-     data-feed-total="{{ $posts->total() }}">
+     data-feed-total="{{ $posts->total() }}"
+     data-feed-current-status="{{ $currentStatus ?? '' }}"
+     data-feed-counts='@json($statusCounts ?? [])'>
 
     <!-- Posts Moderation Table (High Information Density) -->
     <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4">

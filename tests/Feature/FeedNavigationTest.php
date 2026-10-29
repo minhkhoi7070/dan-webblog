@@ -147,4 +147,86 @@ class FeedNavigationTest extends TestCase
             ->assertSee('Chưa có bài viết nào phù hợp')
             ->assertSee('Quay lại tất cả bài viết');
     }
+
+    public function test_home_feed_has_unified_tabs_with_proper_data_attributes(): void
+    {
+        $viewer = User::factory()->viewer()->create();
+
+        $response = $this->actingAs($viewer)->get(route('posts.index'));
+
+        $response->assertOk()
+            ->assertSee('data-feed-tabs', false)
+            ->assertSee('data-feed-type="for-you"', false)
+            ->assertSee('data-feed-type="following"', false)
+            ->assertSee('data-feed-following-url="'.route('following.index').'"', false)
+            ->assertSee('data-feed-categories-nav', false);
+    }
+
+    public function test_ajax_following_tab_request_returns_only_following_partial_fragment(): void
+    {
+        $viewer = User::factory()->viewer()->create();
+        $author = User::factory()->author()->create(['name' => 'Followed Author']);
+        $viewer->following()->attach($author->id);
+
+        $post = Post::factory()->published()->create([
+            'user_id' => $author->id,
+            'title' => 'Bài viết của tác giả đang theo dõi',
+        ]);
+
+        $response = $this->actingAs($viewer)
+            ->withHeader('X-BlogMNM-Feed', '1')
+            ->get(route('following.index'));
+
+        $response->assertOk()
+            ->assertViewIs('following.partials.feed-results')
+            ->assertHeader('X-BlogMNM-Feed', '1')
+            ->assertHeader('Vary', 'X-BlogMNM-Feed')
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertSee('id="feed-results"', false)
+            ->assertSee($post->title)
+            ->assertDontSee('<!DOCTYPE html>', false)
+            ->assertDontSee('feed-top-header', false)
+            ->assertDontSee('main-layout', false);
+    }
+
+    public function test_ajax_home_tab_request_returns_only_posts_partial_fragment(): void
+    {
+        $post = Post::factory()->published()->create(['title' => 'Bài viết trang chủ']);
+
+        $response = $this->withHeader('X-BlogMNM-Feed', '1')
+            ->get(route('home'));
+
+        $response->assertOk()
+            ->assertViewIs('posts.partials.feed-results')
+            ->assertHeader('X-BlogMNM-Feed', '1')
+            ->assertHeader('Vary', 'X-BlogMNM-Feed')
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertSee('id="feed-results"', false)
+            ->assertSee($post->title)
+            ->assertDontSee('<!DOCTYPE html>', false)
+            ->assertDontSee('feed-top-header', false);
+    }
+
+    public function test_following_view_direct_access_has_matching_layout_shell_and_categories_nav(): void
+    {
+        $viewer = User::factory()->viewer()->create();
+
+        $response = $this->actingAs($viewer)->get(route('following.index'));
+
+        $response->assertOk()
+            ->assertViewIs('following.index')
+            ->assertSee('data-feed-shell', false)
+            ->assertSee('data-feed-tabs', false)
+            ->assertSee('data-feed-categories-nav', false)
+            ->assertSee('feed-search-input', false)
+            ->assertSee('data-feed-type="for-you"', false)
+            ->assertSee('data-feed-type="following"', false);
+    }
+
+    public function test_guest_cannot_access_following_fragment_via_ajax(): void
+    {
+        $this->withHeader('X-BlogMNM-Feed', '1')
+            ->get(route('following.index'))
+            ->assertRedirect(route('login'));
+    }
 }

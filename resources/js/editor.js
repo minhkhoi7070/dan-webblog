@@ -2457,10 +2457,16 @@ function setupFormHandling(editor, root) {
             allSubmitBtns.forEach((btn) => {
                 btn.disabled = true;
 
+                const isPublishAction = (btn.value === 'publish' || lastClickedAction === 'publish' || btn.classList.contains('btn-action-publish'));
                 const isSubmitAction = (btn.value === 'submit' || (lastClickedAction === 'submit' && btn.classList.contains('btn-action-submit')));
                 const isDraftAction = (btn.value === 'draft' || (lastClickedAction === 'draft' && btn.classList.contains('btn-action-draft')));
 
-                if (isSubmitAction && lastClickedAction === 'submit') {
+                if (isPublishAction && (lastClickedAction === 'publish' || (lastClickedAction === 'submit' && btn.classList.contains('btn-action-publish')))) {
+                    btn.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true" style="width: 13px; height: 13px;"></span>
+                        <span>Đang đăng bài...</span>
+                    `;
+                } else if (isSubmitAction && lastClickedAction === 'submit') {
                     btn.innerHTML = `
                         <span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true" style="width: 13px; height: 13px;"></span>
                         <span>Đang gửi duyệt...</span>

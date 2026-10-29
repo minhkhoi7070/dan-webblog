@@ -1,4 +1,4 @@
-<aside class="d-none d-sm-flex flex-column position-fixed top-0 bottom-0 start-0 border-theme-right bg-theme-surface px-2 px-lg-3 py-4 user-select-none sidebar-container" style="z-index: 1040;">
+<aside class="d-none d-md-flex flex-column position-fixed top-0 bottom-0 start-0 border-theme-right bg-theme-surface px-2 px-lg-3 py-4 user-select-none sidebar-container" style="z-index: 1040;">
     <!-- Brand Logo -->
     <a href="{{ route('posts.index') }}" class="brand-link flex items-center gap-2.5 font-bold text-xl tracking-tight text-decoration-none px-2 mb-4" aria-label="CloudBlog Trang chủ">
         <x-logo class="w-11 h-11" />

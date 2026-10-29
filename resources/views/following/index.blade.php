@@ -6,25 +6,40 @@
 <div class="w-100 d-flex justify-content-center px-0 px-sm-3 py-0 py-sm-3 py-md-4">
     <div class="w-100 feed-container bg-theme-surface border-0 border-sm-start border-sm-end border-sm-top border-sm-bottom border-theme rounded-0 rounded-sm-4 overflow-hidden mb-4 shadow-xs"
          data-feed-shell
-         data-feed-base-url="{{ route('following.index') }}">
-        
-        <!-- Feed Top Header (Threads Style: Dành cho bạn vs Đang theo dõi) -->
-        <div class="sticky-top bg-theme-surface border-theme-bottom px-3 px-sm-4 feed-top-header" style="z-index: 1020;">
-            <div class="d-flex align-items-center justify-content-between gap-3 feed-top-header-inner">
-                <div class="d-flex align-items-center gap-3 gap-sm-4" role="tablist" aria-label="Bộ lọc bảng tin">
-                    <a href="{{ route('home') }}" class="feed-tab" role="tab" aria-selected="false">
+         data-feed-base-url="{{ route('following.index') }}"
+         data-feed-home-url="{{ route('home') }}"
+         data-feed-following-url="{{ route('following.index') }}">
+        <!-- Feed Top Header (Editorial / Threads Style Header) -->
+        <div class="sticky-top bg-theme-surface border-theme-bottom px-3 px-sm-4 feed-top-header">
+            <div class="d-flex align-items-center justify-content-between gap-2 gap-sm-3 feed-top-header-inner">
+                <div class="d-flex align-items-center gap-2 gap-sm-4" role="tablist" aria-label="Bộ lọc bài viết" data-feed-tabs>
+                    <a href="{{ route('home') }}" class="feed-tab" role="tab" aria-selected="false" data-feed-type="for-you">
                         Dành cho bạn
                     </a>
-                    <span class="feed-tab active" role="tab" aria-selected="true" tabindex="0">
+                    <a href="{{ route('following.index') }}" class="feed-tab active" role="tab" aria-selected="true" tabindex="0" data-feed-type="following">
                         Đang theo dõi
-                    </span>
+                    </a>
                 </div>
 
-                <!-- Authors Count Pill -->
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-surface-2 border border-theme text-theme-secondary rounded-pill px-3 py-1.5 text-2xs fw-medium">
-                        {{ $followingCount }} tác giả
-                    </span>
+                <!-- Search Input -->
+                <div class="position-relative d-flex align-items-center flex-grow-1 flex-sm-grow-0 justify-content-end">
+                    <form action="{{ route('posts.index') }}" method="GET"
+                        class="d-flex align-items-center m-0 w-100 justify-content-end" role="search">
+                        <div class="position-relative d-flex align-items-center w-100 feed-search-wrapper">
+                            <input type="search" id="feed-search-input" name="q" value=""
+                                placeholder="Tìm kiếm bài viết..." autocomplete="off"
+                                class="form-control form-control-sm rounded-pill ps-4 pe-3 py-1.5 text-xs"
+                                aria-label="Tìm kiếm bài viết">
+                            <button type="submit"
+                                class="btn btn-link p-0 position-absolute border-0 text-theme-secondary d-flex align-items-center justify-content-center cursor-pointer feed-search-btn"
+                                aria-label="Tìm kiếm" title="Tìm kiếm">
+                                <svg class="icon-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -56,6 +71,29 @@
                 Cập nhật bài viết mới nhất từ những người bạn quan tâm
             </span>
         </div>
+
+        <!-- Category Filter Horizontal Chips (Hidden on Following feed) -->
+        <nav class="px-3 px-sm-4 py-2.5 border-theme-bottom bg-theme-surface d-none" aria-label="Bộ lọc chuyên mục" data-feed-categories-nav>
+            <div class="d-flex align-items-center gap-2 overflow-x-auto no-scrollbar py-1" role="navigation">
+                <a href="{{ route('posts.index') }}"
+                    data-feed-category=""
+                    data-feed-category-chip
+                    class="btn btn-sm rounded-pill flex-shrink-0 py-1 px-3 small btn-editorial-primary"
+                    aria-current="page">
+                    Tất cả
+                </a>
+                @if(isset($categories))
+                    @foreach ($categories as $category)
+                        <a href="{{ route('posts.index', ['category' => $category->slug]) }}"
+                            data-feed-category="{{ $category->slug }}"
+                            data-feed-category-chip
+                            class="btn btn-sm rounded-pill flex-shrink-0 py-1 px-3 small btn-outline-theme">
+                            {{ $category->name }}
+                        </a>
+                    @endforeach
+                @endif
+            </div>
+        </nav>
 
         <p id="feed-status" role="status" aria-live="polite" class="visually-hidden"></p>
         <div id="feed-error" role="alert" class="alert alert-danger mx-3 mx-sm-4 my-2 small" hidden>

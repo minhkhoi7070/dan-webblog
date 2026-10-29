@@ -36,6 +36,9 @@ class StorePostRequest extends FormRequest
             $this->request->remove('publish_now');
             $this->request->remove('reviewed_by');
             $this->request->remove('reviewed_at');
+            if ($this->input('action') === 'publish') {
+                $this->merge(['action' => 'submit']);
+            }
         }
     }
 
@@ -56,7 +59,7 @@ class StorePostRequest extends FormRequest
             'remove_thumbnail' => ['nullable', 'boolean'],
             'tags' => ['nullable', 'array', 'max:10'],
             'tags.*' => ['integer', 'exists:tags,id'],
-            'action' => ['nullable', 'string', 'in:draft,submit'],
+            'action' => ['nullable', 'string', 'in:draft,submit,publish'],
         ];
     }
 

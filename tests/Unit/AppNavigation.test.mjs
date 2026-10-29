@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isEligibleLink, createAppNavigator } from '../../resources/js/app-navigation.js';
+import { isEligibleLink, createAppNavigator, updateMobileHeader } from '../../resources/js/app-navigation.js';
 
 function createMockElement(tagName = 'a', classes = [], attributes = {}) {
     return {
@@ -89,6 +89,12 @@ test('isEligibleLink excludes feed-pagination links (delegated to feed-navigatio
         'data-feed-category': 'cong-nghe',
     });
     assert.equal(isEligibleLink(categoryChip, { button: 0 }), false);
+
+    const feedTabLink = createMockElement('a', ['feed-tab'], {
+        href: 'http://localhost/following',
+        'data-feed-type': 'following',
+    });
+    assert.equal(isEligibleLink(feedTabLink, { button: 0 }), false);
 });
 
 test('isEligibleLink excludes external domains and auth routes', () => {
@@ -161,4 +167,57 @@ test('createAppNavigator aborts earlier in-flight navigation when new link is cl
     // Second request must succeed with activity URL
     assert.notEqual(r2, null);
     assert.equal(r2.url, 'http://localhost/activity');
+});
+
+test('isEligibleLink allows mobile bottom navigation links', () => {
+    const link = createMockElement('a', ['mobile-bottom-nav-link'], {
+        href: 'http://localhost/favorites',
+        'data-in-mobile': 'true',
+    });
+
+    assert.equal(isEligibleLink(link, { button: 0 }), true);
+});
+
+test('isEligibleLink allows mobile drawer links with data-app-nav', () => {
+    const link = createMockElement('a', ['sidebar-link'], {
+        href: 'http://localhost/activity',
+        'data-app-nav': 'true',
+    });
+
+    assert.equal(isEligibleLink(link, { button: 0 }), true);
+});
+
+test('updateMobileHeader updates header left container for subpages and home', () => {
+    const mockLeftEl = {
+        innerHTML: '',
+    };
+
+    globalThis.document = {
+        getElementById: (id) => id === 'mobile-header-left' ? mockLeftEl : null,
+    };
+    globalThis.window = {
+        location: { href: 'http://localhost/' },
+    };
+
+    // Subpage: /favorites
+    updateMobileHeader('http://localhost/favorites');
+    assert.match(mockLeftEl.innerHTML, /Bài viết đã lưu/);
+    assert.match(mockLeftEl.innerHTML, /mobile-header-back-btn/);
+
+    // Subpage: /admin/posts
+    updateMobileHeader('http://localhost/admin/posts');
+    assert.match(mockLeftEl.innerHTML, /Kiểm duyệt bài viết/);
+
+    // Subpage: /posts/create
+    updateMobileHeader('http://localhost/posts/create');
+    assert.match(mockLeftEl.innerHTML, /Viết bài mới/);
+
+    // Home feed
+    updateMobileHeader('http://localhost/');
+    assert.match(mockLeftEl.innerHTML, /mobile-header-brand/);
+    assert.match(mockLeftEl.innerHTML, /CloudBlog/);
+
+    // Cleanup globals
+    delete globalThis.document;
+    delete globalThis.window;
 });

@@ -29,11 +29,12 @@ class QASuiteTest extends TestCase
             'password_confirmation' => 'Password123!',
         ]);
 
-        $response->assertRedirect(route('home', absolute: false));
+        $response->assertRedirect(route('verification.notice', absolute: false));
         $this->assertAuthenticated();
         $this->assertDatabaseHas('users', [
             'email' => 'newuser@example.com',
             'role' => 'viewer',
+            'email_verified_at' => null,
         ]);
     }
 

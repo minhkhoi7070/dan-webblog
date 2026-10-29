@@ -46,7 +46,7 @@
 
     @stack('head')
 </head>
-<body class="@yield('body_class', 'd-flex flex-column flex-sm-row min-vh-100 bg-theme text-theme transition-colors')">
+<body class="@yield('body_class', 'd-flex flex-column flex-md-row min-vh-100 bg-theme text-theme transition-colors')">
     @yield('body')
 </body>
 </html>

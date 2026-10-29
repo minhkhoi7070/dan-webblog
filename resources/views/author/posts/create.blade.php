@@ -12,7 +12,7 @@
             </a>
             <div>
                 <div class="d-flex align-items-center gap-2 small text-theme-muted label-uppercase mb-0.5" style="font-size: 11px;">
-                    <a href="{{ route('posts.stats') }}" data-app-nav class="text-decoration-none text-theme-muted hover-accent">Tác giả</a>
+                    <a href="{{ route('posts.stats') }}" data-app-nav class="text-decoration-none text-theme-muted hover-accent">{{ auth()->user()?->isAdmin() ? 'Quản trị' : 'Tác giả' }}</a>
                     <span>&rsaquo;</span>
                     <span class="text-accent">Soạn thảo mới</span>
                 </div>
@@ -25,22 +25,31 @@
             </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center flex-wrap gap-2 justify-content-end">
             <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium btn-cancel-action">
                 Hủy bỏ
             </a>
-            <button type="submit" form="create-post-form" name="action" value="draft" class="btn btn-sm btn-outline-theme rounded-pill px-3.5 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5 btn-action-draft">
+            <button type="submit" form="create-post-form" name="action" value="draft" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5 btn-action-draft">
                 <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                 </svg>
-                <span>Lưu bản nháp</span>
+                <span><span class="d-none d-sm-inline">Lưu bản nháp</span><span class="d-inline d-sm-none">Lưu nháp</span></span>
             </button>
-            <button type="submit" form="create-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit" title="Gửi bài viết để Admin duyệt">
-                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-                <span>Gửi bài viết để Admin duyệt</span>
-            </button>
+            @if(auth()->user()?->isAdmin())
+                <button type="submit" form="create-post-form" name="action" value="publish" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit btn-action-publish" title="Đăng bài ngay">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span><span class="d-none d-sm-inline">Đăng bài ngay</span><span class="d-inline d-sm-none">Đăng ngay</span></span>
+                </button>
+            @else
+                <button type="submit" form="create-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit" title="Gửi bài viết để Admin duyệt">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    <span><span class="d-none d-sm-inline">Gửi bài viết để Admin duyệt</span><span class="d-inline d-sm-none">Gửi duyệt</span></span>
+                </button>
+            @endif
         </div>
     </div>
 

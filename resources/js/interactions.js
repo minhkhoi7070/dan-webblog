@@ -56,7 +56,7 @@ const initializeInteractions = () => {
             429: 'Bạn thao tác quá nhanh. Vui lòng đợi một lúc rồi thử lại.',
         };
         const validationMessage = Object.values(data.errors || {}).flat().find((message) => typeof message === 'string');
-        const error = new Error(validationMessage || messages[response.status] || 'Không thể lưu thao tác. Vui lòng thử lại.');
+        const error = new Error(data.message || validationMessage || messages[response.status] || 'Không thể lưu thao tác. Vui lòng thử lại.');
         error.status = response.status;
         return error;
     };

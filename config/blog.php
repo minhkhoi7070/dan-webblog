@@ -12,4 +12,3 @@ return [
     */
     'max_video_size_kb' => (int) env('MAX_VIDEO_SIZE_KB', 102400),
 ];
-

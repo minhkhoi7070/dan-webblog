@@ -19,9 +19,20 @@ class PostController extends Controller
      */
     public function index(Request $request): Response|View
     {
-        $search = $request->query('q');
+        $search = $request->query('q') ?? $request->query('search');
+        $search = is_string($search) ? trim($search) : null;
+        if ($search === '') {
+            $search = null;
+        }
+
         $status = $request->query('status');
+        $status = is_string($status) ? trim($status) : null;
+        if ($status === '') {
+            $status = null;
+        }
+
         $categoryId = $request->query('category_id');
+        $categoryId = is_numeric($categoryId) ? (int) $categoryId : null;
 
         $posts = Post::query()
             ->with(['user', 'category', 'reviewer'])

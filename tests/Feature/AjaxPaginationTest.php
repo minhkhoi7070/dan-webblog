@@ -134,7 +134,7 @@ class AjaxPaginationTest extends TestCase
         }
 
         // Stats pagination
-        $statsUrl = route('author.posts.stats', ['page' => 2]);
+        $statsUrl = route('author.posts.stats', ['page' => 2, 'status' => 'draft']);
         $ajaxStats = $this->actingAs($author)
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($statsUrl);
@@ -143,10 +143,11 @@ class AjaxPaginationTest extends TestCase
             ->assertViewIs('author.posts.partials.stats-results')
             ->assertHeader('X-BlogMNM-Feed', '1')
             ->assertSee('id="feed-results"', false)
-            ->assertSee('data-feed-pagination', false);
+            ->assertSee('data-feed-pagination', false)
+            ->assertSee('status=draft');
 
         // Author comments pagination
-        $commentsUrl = route('author.comments.index', ['page' => 2]);
+        $commentsUrl = route('author.comments.index', ['page' => 2, 'status' => 'pending']);
         $ajaxComments = $this->actingAs($author)
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($commentsUrl);
@@ -155,7 +156,8 @@ class AjaxPaginationTest extends TestCase
             ->assertViewIs('author.comments.partials.comment-results')
             ->assertHeader('X-BlogMNM-Feed', '1')
             ->assertSee('id="feed-results"', false)
-            ->assertSee('data-feed-pagination', false);
+            ->assertSee('data-feed-pagination', false)
+            ->assertSee('status=pending');
     }
 
     public function test_admin_cms_ajax_pagination_for_posts_users_comments_categories_tags(): void
@@ -163,7 +165,7 @@ class AjaxPaginationTest extends TestCase
         $admin = User::factory()->admin()->create();
 
         // 1. Admin Posts
-        Post::factory()->count(25)->create();
+        Post::factory()->count(25)->create(['status' => 'published']);
         $adminPostsUrl = route('admin.posts.index', ['page' => 2, 'status' => 'published']);
         $ajaxPosts = $this->actingAs($admin)
             ->withHeader('X-BlogMNM-Feed', '1')
@@ -171,51 +173,61 @@ class AjaxPaginationTest extends TestCase
         $ajaxPosts->assertOk()
             ->assertViewIs('admin.posts.partials.table-results')
             ->assertHeader('X-BlogMNM-Feed', '1')
-            ->assertSee('id="feed-results"', false);
+            ->assertSee('id="feed-results"', false)
+            ->assertSee('data-feed-pagination', false)
+            ->assertSee('status=published');
 
         // 2. Admin Users
         User::factory()->count(25)->viewer()->create();
-        $adminUsersUrl = route('admin.users.index', ['page' => 2]);
+        $adminUsersUrl = route('admin.users.index', ['page' => 2, 'role' => 'viewer']);
         $ajaxUsers = $this->actingAs($admin)
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($adminUsersUrl);
         $ajaxUsers->assertOk()
             ->assertViewIs('admin.users.partials.table-results')
             ->assertHeader('X-BlogMNM-Feed', '1')
-            ->assertSee('id="feed-results"', false);
+            ->assertSee('id="feed-results"', false)
+            ->assertSee('data-feed-pagination', false)
+            ->assertSee('role=viewer');
 
         // 3. Admin Comments
-        Comment::factory()->count(25)->create();
-        $adminCommentsUrl = route('admin.comments.index', ['page' => 2]);
+        Comment::factory()->count(25)->create(['status' => 'pending']);
+        $adminCommentsUrl = route('admin.comments.index', ['page' => 2, 'status' => 'pending']);
         $ajaxComments = $this->actingAs($admin)
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($adminCommentsUrl);
         $ajaxComments->assertOk()
             ->assertViewIs('admin.comments.partials.table-results')
             ->assertHeader('X-BlogMNM-Feed', '1')
-            ->assertSee('id="feed-results"', false);
+            ->assertSee('id="feed-results"', false)
+            ->assertSee('data-feed-pagination', false)
+            ->assertSee('status=pending');
 
         // 4. Admin Categories
         Category::factory()->count(25)->create();
-        $adminCatsUrl = route('admin.categories.index', ['page' => 2]);
+        $adminCatsUrl = route('admin.categories.index', ['page' => 2, 'q' => 'cat']);
         $ajaxCats = $this->actingAs($admin)
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($adminCatsUrl);
         $ajaxCats->assertOk()
             ->assertViewIs('admin.categories.partials.table-results')
             ->assertHeader('X-BlogMNM-Feed', '1')
-            ->assertSee('id="feed-results"', false);
+            ->assertSee('id="feed-results"', false)
+            ->assertSee('data-feed-pagination', false)
+            ->assertSee('q=cat');
 
         // 5. Admin Tags
         Tag::factory()->count(25)->create();
-        $adminTagsUrl = route('admin.tags.index', ['page' => 2]);
+        $adminTagsUrl = route('admin.tags.index', ['page' => 2, 'q' => 'tag']);
         $ajaxTags = $this->actingAs($admin)
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($adminTagsUrl);
         $ajaxTags->assertOk()
             ->assertViewIs('admin.tags.partials.table-results')
             ->assertHeader('X-BlogMNM-Feed', '1')
-            ->assertSee('id="feed-results"', false);
+            ->assertSee('id="feed-results"', false)
+            ->assertSee('data-feed-pagination', false)
+            ->assertSee('q=tag');
     }
 
     public function test_pagination_boundary_and_empty_state(): void
@@ -259,5 +271,107 @@ class AjaxPaginationTest extends TestCase
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get(route('author.posts.stats', ['page' => 2]))
             ->assertForbidden();
+    }
+
+    public function test_admin_posts_ajax_status_tabs_filtering(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $pendingPost = Post::factory()->create(['status' => 'pending', 'title' => 'Bài viết chờ duyệt']);
+        $publishedPost = Post::factory()->published()->create(['title' => 'Bài viết đã xuất bản']);
+        $draftPost = Post::factory()->create(['status' => 'draft', 'title' => 'Bài viết bản nháp']);
+
+        // 1. Filter by Pending
+        $pendingResponse = $this->actingAs($admin)
+            ->withHeader('X-BlogMNM-Feed', '1')
+            ->get(route('admin.posts.index', ['status' => 'pending']));
+
+        $pendingResponse->assertOk()
+            ->assertViewIs('admin.posts.partials.table-results')
+            ->assertHeader('X-BlogMNM-Feed', '1')
+            ->assertSee('data-feed-current-status="pending"', false)
+            ->assertSee($pendingPost->title)
+            ->assertDontSee($publishedPost->title)
+            ->assertDontSee($draftPost->title)
+            ->assertDontSee('<!DOCTYPE html>', false);
+
+        // 2. Filter by Published
+        $publishedResponse = $this->actingAs($admin)
+            ->withHeader('X-BlogMNM-Feed', '1')
+            ->get(route('admin.posts.index', ['status' => 'published']));
+
+        $publishedResponse->assertOk()
+            ->assertSee('data-feed-current-status="published"', false)
+            ->assertSee($publishedPost->title)
+            ->assertDontSee($pendingPost->title);
+
+        // 3. Status Counts JSON present in partial
+        $pendingResponse->assertSee('data-feed-counts=', false);
+    }
+
+    public function test_admin_posts_ajax_search_and_category_filtering(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $catTech = Category::factory()->create(['name' => 'Công nghệ']);
+        $catBiz = Category::factory()->create(['name' => 'Kinh doanh']);
+
+        $matchPost = Post::factory()->create([
+            'category_id' => $catTech->id,
+            'title' => 'Tìm kiếm bài viết công nghệ AI',
+            'status' => 'published',
+        ]);
+        $diffCatPost = Post::factory()->create([
+            'category_id' => $catBiz->id,
+            'title' => 'Tìm kiếm bài viết kinh doanh AI',
+            'status' => 'published',
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->withHeader('X-BlogMNM-Feed', '1')
+            ->get(route('admin.posts.index', [
+                'q' => 'công nghệ AI',
+                'category_id' => $catTech->id,
+            ]));
+
+        $response->assertOk()
+            ->assertViewIs('admin.posts.partials.table-results')
+            ->assertHeader('X-BlogMNM-Feed', '1')
+            ->assertSee($matchPost->title)
+            ->assertDontSee($diffCatPost->title)
+            ->assertDontSee('<!DOCTYPE html>', false);
+    }
+
+    public function test_admin_posts_combined_status_search_category_pagination(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $cat = Category::factory()->create(['name' => 'Lập trình']);
+
+        // Create 25 matching posts
+        Post::factory()->count(25)->create([
+            'category_id' => $cat->id,
+            'status' => 'published',
+            'title' => fn () => 'Chuyên đề Laravel '.fake()->unique()->word(),
+        ]);
+
+        $url = route('admin.posts.index', [
+            'status' => 'published',
+            'q' => 'Chuyên đề Laravel',
+            'category_id' => $cat->id,
+            'page' => 2,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->withHeader('X-BlogMNM-Feed', '1')
+            ->get($url);
+
+        $response->assertOk()
+            ->assertViewIs('admin.posts.partials.table-results')
+            ->assertHeader('X-BlogMNM-Feed', '1')
+            ->assertSee('id="feed-results"', false)
+            ->assertSee('data-feed-pagination', false)
+            ->assertSee('status=published')
+            ->assertSee('q=Chuy%C3%AAn%20%C4%91%E1%BB%81%20Laravel')
+            ->assertSee('category_id='.$cat->id)
+            ->assertDontSee('<!DOCTYPE html>', false);
     }
 }

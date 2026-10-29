@@ -49,11 +49,19 @@
                     @if($status === 'pending')
                         Bài viết đã được gửi đến Admin. Nội dung sẽ hiển thị công khai sau khi được phê duyệt.
                     @elseif($status === 'rejected')
-                        Vui lòng rà soát lại tiêu đề, tóm tắt và nội dung bài viết theo tiêu chuẩn cộng đồng, sau đó nhấn <strong>"Gửi bài viết để Admin duyệt"</strong> ở góc phải để gửi lại cho Ban biên tập.
+                        @if(auth()->user()?->isAdmin())
+                            Vui lòng rà soát lại tiêu đề, tóm tắt và nội dung bài viết theo tiêu chuẩn cộng đồng, sau đó nhấn <strong>"Đăng bài ngay"</strong> ở góc phải để xuất bản bài viết.
+                        @else
+                            Vui lòng rà soát lại tiêu đề, tóm tắt và nội dung bài viết theo tiêu chuẩn cộng đồng, sau đó nhấn <strong>"Gửi bài viết để Admin duyệt"</strong> ở góc phải để gửi lại cho Ban biên tập.
+                        @endif
                     @elseif($status === 'published')
                         Bài viết đang hiển thị công khai trên CloudBlog. Mọi chỉnh sửa của bạn sẽ được cập nhật trực tiếp.
                     @else
-                        Bản nháp chỉ hiển thị với bạn. Hãy hoàn thiện nội dung và gửi duyệt khi sẵn sàng.
+                        @if(auth()->user()?->isAdmin())
+                            Bản nháp chỉ hiển thị với bạn. Nhấn <strong>"Đăng bài ngay"</strong> khi sẵn sàng xuất bản trực tiếp lên CloudBlog.
+                        @else
+                            Bản nháp chỉ hiển thị với bạn. Hãy hoàn thiện nội dung và gửi duyệt khi sẵn sàng.
+                        @endif
                     @endif
                 </p>
 

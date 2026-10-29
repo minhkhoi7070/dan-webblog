@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -60,7 +62,7 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request): RedirectResponse|JsonResponse
     {
         $user = $request->user();
         $validated = $request->validated();
@@ -78,12 +80,41 @@ class ProfileController extends Controller
             'email' => $validated['email'],
         ]);
 
-        if ($user->isDirty('email')) {
+        $emailChanged = $user->isDirty('email');
+        if ($emailChanged) {
             $user->email_verified_at = null;
         }
 
         try {
             $user->save();
+
+            if ($emailChanged) {
+                try {
+                    $user->sendEmailVerificationNotification();
+                } catch (Throwable $mailException) {
+                    Log::error('Lỗi gửi email xác minh khi đổi email: '.$mailException->getMessage(), [
+                        'user_id' => $user->id,
+                        'new_email' => $user->email,
+                    ]);
+
+                    if ($request->wantsJson()) {
+                        return response()->json([
+                            'status' => 'profile-updated',
+                            'message' => 'Hồ sơ đã cập nhật nhưng chưa thể gửi email xác minh đến địa chỉ mới lúc này.',
+                            'email_changed' => true,
+                            'redirect' => route('profile.edit'),
+                            'user' => [
+                                'id' => $user->id,
+                                'name' => $user->name,
+                                'email' => $user->email,
+                                'avatar_url' => $user->avatar_url,
+                            ],
+                        ]);
+                    }
+
+                    return Redirect::route('profile.edit')->with('warning', 'Hồ sơ đã cập nhật nhưng chưa thể gửi email xác minh đến địa chỉ mới lúc này. Vui lòng thử lại sau.');
+                }
+            }
 
             // After DB save succeeds, remove previous custom avatar from managed storage
             if ($uploadedPath && $oldAvatar && str_starts_with($oldAvatar, 'avatars/') && $oldAvatar !== $uploadedPath && Storage::disk('public')->exists($oldAvatar)) {
@@ -96,6 +127,21 @@ class ProfileController extends Controller
             }
 
             throw $e;
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'profile-updated',
+                'message' => 'Cập nhật thông tin hồ sơ thành công!',
+                'email_changed' => $emailChanged,
+                'redirect' => $emailChanged ? route('verification.notice') : null,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'avatar_url' => $user->avatar_url,
+                ],
+            ]);
         }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');

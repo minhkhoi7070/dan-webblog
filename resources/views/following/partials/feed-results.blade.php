@@ -1,7 +1,6 @@
 <div id="feed-results" tabindex="-1" aria-label="Bảng tin đang theo dõi"
      data-feed-url="{{ request()->fullUrl() }}"
      data-feed-total="{{ $tab === 'feed' ? ($posts ? $posts->total() : 0) : ($authors ? $authors->total() : 0) }}">
-
     @if($tab === 'feed')
         <!-- Feed of Followed Authors' Posts -->
         <div class="d-flex flex-column">
@@ -41,7 +40,7 @@
                         <p class="text-theme-secondary small mx-auto mb-4" style="max-width: 440px; font-size: 14px;">
                             Các tác giả bạn đang theo dõi hiện chưa có bài viết mới. Hãy quay lại sau hoặc khám phá thêm các tác giả khác bên dưới.
                         </p>
-                        <a href="{{ route('home') }}" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-2">
+                        <a href="{{ route('home') }}" data-feed-type="for-you" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-2">
                             Khám phá bảng tin Dành cho bạn
                         </a>
                     </div>
@@ -57,7 +56,7 @@
                                 </svg>
                                 Gợi ý tác giả nổi bật dành cho bạn
                             </h3>
-                            <a href="{{ route('home') }}" class="small text-theme-secondary hover-accent text-decoration-none" style="font-size: 12.5px;">
+                            <a href="{{ route('home') }}" data-feed-type="for-you" class="small text-theme-secondary hover-accent text-decoration-none" style="font-size: 12.5px;">
                                 Xem thêm bài viết &rarr;
                             </a>
                         </div>

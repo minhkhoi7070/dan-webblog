@@ -66,12 +66,14 @@ export function initFeedShell(shell) {
 
     const baseUrl = new URL(shell.dataset.feedBaseUrl || window.location.href, window.location.href);
     const homeUrl = new URL(shell.dataset.feedHomeUrl || '/', window.location.href);
+    const followingUrl = new URL(shell.dataset.feedFollowingUrl || '/following', window.location.href);
     const targetSelector = shell.dataset.feedTarget || '#feed-results';
     const preserveScroll = shell.dataset.feedPreserveScroll === 'true';
 
     const status = shell.querySelector('[data-feed-status]') || document.getElementById('feed-status');
     const errorBox = shell.querySelector('[data-feed-error]') || document.getElementById('feed-error');
     const skeletonTemplate = shell.querySelector('template[data-feed-skeleton]') || document.getElementById('feed-skeleton-template');
+    const categoriesNav = shell.querySelector('[data-feed-categories-nav], nav[aria-label="Bộ lọc chuyên mục"]');
     const load = createFeedLoader();
 
     let currentUrl = new URL(window.location.href);
@@ -81,18 +83,62 @@ export function initFeedShell(shell) {
 
     const cleanPath = (path) => path.replace(/\/+$/, '') || '/';
 
+    const isFeedPath = (path) => {
+        const p = cleanPath(path);
+        return p === '/' || p === '/posts' || p === '/following';
+    };
+
+    const isFollowingUrl = (url) => {
+        const p = cleanPath(url.pathname);
+        return p === '/following' || p === cleanPath(followingUrl.pathname);
+    };
+
+    const isHomeOrFollowingShell = isFeedPath(cleanPath(baseUrl.pathname));
+
     const supportsUrl = (url) => {
         if (url.origin !== window.location.origin) {
             return false;
         }
         const targetPath = cleanPath(url.pathname);
         const basePath = cleanPath(baseUrl.pathname);
-        const homePath = cleanPath(homeUrl.pathname);
-        const currentPath = cleanPath(window.location.pathname);
 
-        return targetPath === basePath
-            || targetPath === homePath
-            || targetPath === currentPath;
+        if (isHomeOrFollowingShell) {
+            const homePath = cleanPath(homeUrl.pathname);
+            const followingPath = cleanPath(followingUrl.pathname);
+            return targetPath === basePath
+                || targetPath === homePath
+                || targetPath === followingPath
+                || isFeedPath(targetPath);
+        }
+
+        return targetPath === basePath;
+    };
+
+    /**
+     * Optimistically sync top feed tabs ("Dành cho bạn" vs "Đang theo dõi")
+     */
+    const syncTopTabs = (targetUrl) => {
+        const isFollowing = isFollowingUrl(targetUrl);
+        shell.querySelectorAll('.feed-tab, [data-feed-type]').forEach((tab) => {
+            const type = tab.dataset.feedType || (tab.getAttribute('href')?.includes('/following') ? 'following' : 'for-you');
+            const isActive = isFollowing ? (type === 'following') : (type === 'for-you');
+            tab.classList.toggle('active', isActive);
+            tab.setAttribute('aria-selected', String(isActive));
+            if (isActive) {
+                tab.setAttribute('tabindex', '0');
+            } else {
+                tab.removeAttribute('tabindex');
+            }
+        });
+    };
+
+    /**
+     * Show / hide category filter navigation depending on active tab
+     */
+    const syncCategoryNav = (targetUrl) => {
+        if (!categoriesNav) return;
+        const isFollowing = isFollowingUrl(targetUrl);
+        categoriesNav.classList.toggle('d-none', isFollowing);
     };
 
     /**
@@ -129,21 +175,138 @@ export function initFeedShell(shell) {
     };
 
     /**
-     * Optimistically sync tab switcher styling
+     * Optimistically sync view switcher sub-tabs and status tabs
      */
     const syncTabs = (targetUrl) => {
+        const targetStatus = targetUrl.searchParams.get('status') || '';
         const targetTab = targetUrl.searchParams.get('tab') || '';
+
         shell.querySelectorAll('a[data-feed-tab]').forEach((link) => {
-            const linkTab = link.dataset.feedTab || '';
-            const isActive = linkTab === targetTab;
-            link.classList.toggle('btn-editorial-primary', isActive);
-            link.classList.toggle('btn-outline-theme', !isActive);
-            if (isActive) {
-                link.setAttribute('aria-current', 'page');
+            const linkTab = link.dataset.feedTab ?? '';
+            const isStatusTab = link.hasAttribute('data-feed-status-tab')
+                || Boolean(link.closest('[data-feed-status-tabs]'))
+                || ['pending', 'published', 'draft', 'rejected', 'approved', 'spam'].includes(linkTab)
+                || (linkTab === '' && Boolean(targetUrl.searchParams.has('status') || link.closest('[data-feed-status-tabs]')));
+
+            let isActive = false;
+            if (isStatusTab) {
+                isActive = linkTab === targetStatus;
             } else {
+                isActive = linkTab === (targetTab || 'feed');
+            }
+
+            const activeClass = link.dataset.activeClass || 'btn-editorial-primary text-white';
+            const inactiveClass = link.dataset.inactiveClass || 'btn-outline-theme text-theme-secondary';
+
+            const activeList = activeClass.split(/\s+/).filter(Boolean);
+            const inactiveList = inactiveClass.split(/\s+/).filter(Boolean);
+
+            if (isActive) {
+                link.classList.remove(...inactiveList);
+                link.classList.add(...activeList);
+                link.setAttribute('aria-current', 'page');
+                link.setAttribute('aria-selected', 'true');
+            } else {
+                link.classList.remove(...activeList);
+                link.classList.add(...inactiveList);
                 link.removeAttribute('aria-current');
+                link.setAttribute('aria-selected', 'false');
             }
         });
+
+        // Sync hidden status input in filter forms if present
+        const filterForm = shell.querySelector('form[data-feed-filter-form], form[role="search"]');
+        if (filterForm) {
+            let statusInput = filterForm.querySelector('input[name="status"]');
+            if (targetStatus) {
+                if (!statusInput) {
+                    statusInput = document.createElement('input');
+                    statusInput.type = 'hidden';
+                    statusInput.name = 'status';
+                    filterForm.prepend(statusInput);
+                }
+                statusInput.value = targetStatus;
+            } else if (statusInput) {
+                statusInput.value = '';
+            }
+        }
+    };
+
+    /**
+     * Synchronize search and select form inputs with target URL parameters
+     */
+    const syncFilterFormInputs = (targetUrl) => {
+        const filterForm = shell.querySelector('form[data-feed-filter-form], form[role="search"]');
+        if (!filterForm) return;
+
+        const q = targetUrl.searchParams.get('q') || targetUrl.searchParams.get('search') || '';
+        const qInput = filterForm.querySelector('input[name="q"], input[name="search"]');
+        if (qInput && qInput.value !== q) {
+            qInput.value = q;
+        }
+
+        filterForm.querySelectorAll('select').forEach((select) => {
+            const val = targetUrl.searchParams.get(select.name) || '';
+            if (select.value !== val) {
+                select.value = val;
+            }
+        });
+
+        const status = targetUrl.searchParams.get('status') || '';
+        const statusInput = filterForm.querySelector('input[name="status"]');
+        if (statusInput && statusInput.value !== status) {
+            statusInput.value = status;
+        }
+    };
+
+    /**
+     * Synchronize sidebar and mobile bottom nav active state without full reload
+     */
+    const syncSidebarAndMobileNav = (targetUrl) => {
+        if (typeof window !== 'undefined' && typeof window.syncActiveMenu === 'function') {
+            window.syncActiveMenu(null, targetUrl);
+            return;
+        }
+        if (typeof document === 'undefined') return;
+        const targetPath = cleanPath(targetUrl.pathname);
+        const isFollowing = isFollowingUrl(targetUrl);
+        document.querySelectorAll('.sidebar-container .sidebar-link, .mobile-bottom-nav .mobile-bottom-nav-link').forEach((link) => {
+            const href = link.getAttribute('href');
+            if (!href) return;
+            try {
+                const linkUrl = new URL(href, window.location.href);
+                const linkPath = cleanPath(linkUrl.pathname);
+                if (isFollowing) {
+                    link.classList.toggle('active', linkPath === '/following');
+                } else if (targetPath === '/' || targetPath === '/posts') {
+                    if (!targetUrl.searchParams.has('q') && !targetUrl.searchParams.has('category') && !targetUrl.searchParams.has('tag')) {
+                        link.classList.toggle('active', (linkPath === '/' || linkPath === '/posts') && !linkUrl.hash.includes('search'));
+                    }
+                }
+            } catch {
+                // Ignore invalid URLs
+            }
+        });
+    };
+
+    /**
+     * Update browser tab document title smoothly
+     */
+    const syncDocumentTitle = (targetUrl) => {
+        if (typeof document === 'undefined') return;
+        if (!isHomeOrFollowingShell) {
+            return;
+        }
+        const appName = shell.dataset.feedAppName || 'CloudBlog';
+        if (isFollowingUrl(targetUrl)) {
+            document.title = `${appName} — Bài viết từ tác giả đang theo dõi`;
+        } else {
+            const cat = targetUrl.searchParams.get('category');
+            const q = targetUrl.searchParams.get('q');
+            if (!cat && !q) {
+                document.title = `${appName} — Khám phá tin tức & góc nhìn công nghệ`;
+            }
+        }
     };
 
     /**
@@ -183,10 +346,11 @@ export function initFeedShell(shell) {
     /**
      * Navigate feed to target URL
      */
-    const navigate = async (url, { historyMode = 'push', isPagination = false } = {}) => {
+    const navigate = async (url, { historyMode = 'push', isPagination = false, isTopTab = false } = {}) => {
         const sequence = ++navigationSequence;
         const targetCategory = url.searchParams.get('category') || '';
         const prevCategoryBackup = previousCategory;
+        const isFollowingTarget = isFollowingUrl(url);
 
         retryUrl = url;
         if (errorBox) {
@@ -194,14 +358,19 @@ export function initFeedShell(shell) {
         }
 
         // 1. Optimistic UI Updates
-        syncCategoryChips(targetCategory);
+        syncTopTabs(url);
+        syncCategoryNav(url);
+        syncCategoryChips(isFollowingTarget ? '' : targetCategory);
         syncTabs(url);
+        syncSidebarAndMobileNav(url);
 
         // 2. Accessibility announcement
         if (status) {
             if (isPagination) {
                 const pageNum = url.searchParams.get('page') || '1';
                 status.textContent = `Đang chuyển đến trang ${pageNum}…`;
+            } else if (isTopTab || isFollowingTarget) {
+                status.textContent = isFollowingTarget ? 'Đang tải bài viết từ tác giả đang theo dõi…' : 'Đang tải bài viết dành cho bạn…';
             } else {
                 status.textContent = 'Đang tải nội dung…';
             }
@@ -250,18 +419,46 @@ export function initFeedShell(shell) {
             nextResults.style.pointerEvents = '';
 
             // 6. Synchronize History & URL
+            const nextState = {
+                ...window.history.state,
+                blogmnmFeed: true,
+                feedScope: isHomeOrFollowingShell ? 'home' : cleanPath(baseUrl.pathname),
+                url: resolvedUrl.href,
+                category: isFollowingTarget ? '' : targetCategory,
+            };
+
             if (historyMode === 'push' && resolvedUrl.href !== window.location.href) {
-                window.history.pushState({ blogmnmFeed: true, url: resolvedUrl.href, category: targetCategory }, '', resolvedUrl);
+                window.history.pushState(nextState, '', resolvedUrl);
             } else if (historyMode === 'replace' && resolvedUrl.href !== window.location.href) {
-                window.history.replaceState({ blogmnmFeed: true, url: resolvedUrl.href, category: targetCategory }, '', resolvedUrl);
+                window.history.replaceState(nextState, '', resolvedUrl);
             }
 
             currentUrl = resolvedUrl;
-            previousCategory = targetCategory;
-            syncCategoryChips(targetCategory);
+            previousCategory = isFollowingTarget ? '' : targetCategory;
+            syncTopTabs(resolvedUrl);
+            syncCategoryNav(resolvedUrl);
+            syncCategoryChips(isFollowingTarget ? '' : targetCategory);
             syncTabs(resolvedUrl);
+            syncFilterFormInputs(resolvedUrl);
+            syncSidebarAndMobileNav(resolvedUrl);
+            syncDocumentTitle(resolvedUrl);
 
-            // 7. Scroll adjustment on pagination
+            // Sync status counts if provided by response fragment
+            if (nextResults.dataset.feedCounts) {
+                try {
+                    const counts = JSON.parse(nextResults.dataset.feedCounts);
+                    shell.querySelectorAll('[data-feed-count]').forEach((span) => {
+                        const key = span.dataset.feedCount;
+                        if (counts[key] !== undefined) {
+                            span.textContent = `(${new Intl.NumberFormat().format(counts[key])})`;
+                        }
+                    });
+                } catch {
+                    // Ignore parse error
+                }
+            }
+
+            // 7. Scroll adjustment on pagination ONLY (keep scroll intact when switching top tabs)
             if (isPagination && historyMode !== 'none') {
                 adjustScrollPosition();
             }
@@ -292,9 +489,14 @@ export function initFeedShell(shell) {
             }
 
             // Roll back optimistic UI
+            syncTopTabs(currentUrl);
+            syncCategoryNav(currentUrl);
             syncCategoryChips(prevCategoryBackup);
             previousCategory = prevCategoryBackup;
             syncTabs(currentUrl);
+            syncFilterFormInputs(currentUrl);
+            syncSidebarAndMobileNav(currentUrl);
+            syncDocumentTitle(currentUrl);
 
             if (status) {
                 status.textContent = '';
@@ -317,7 +519,7 @@ export function initFeedShell(shell) {
         }
     };
 
-    // Event Delegation: Intercept category chips, pagination links, tabs, and clear filters
+    // Event Delegation: Intercept top feed tabs, category chips, pagination links, and clear filters
     shell.addEventListener('click', (event) => {
         if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
             return;
@@ -329,6 +531,22 @@ export function initFeedShell(shell) {
             event.preventDefault();
             navigate(retryUrl);
             return;
+        }
+
+        // Top Feed Tabs (e.g. "Dành cho bạn" vs "Đang theo dõi")
+        const topTabLink = event.target.closest('a.feed-tab, a[data-feed-type]');
+        if (topTabLink && !topTabLink.target && !topTabLink.hasAttribute('download')) {
+            const url = new URL(topTabLink.href, window.location.href);
+            if (supportsUrl(url) && !url.hash) {
+                if (url.href === currentUrl.href) {
+                    event.preventDefault();
+                    return;
+                }
+
+                event.preventDefault();
+                navigate(url, { historyMode: 'push', isPagination: false, isTopTab: true });
+                return;
+            }
         }
 
         // Pagination links
@@ -352,11 +570,27 @@ export function initFeedShell(shell) {
             }
         }
 
-        // Tab switcher links (e.g. Following tab=feed vs tab=authors)
+        // View switcher sub-tab links and status tab links
         const tabLink = event.target.closest('a[data-feed-tab]');
         if (tabLink && !tabLink.target && !tabLink.hasAttribute('download')) {
             const url = new URL(tabLink.href, window.location.href);
             if (supportsUrl(url) && !url.hash) {
+                // If filter form has search query or category, ensure it is retained on status switch
+                const filterForm = shell.querySelector('form[data-feed-filter-form]');
+                if (filterForm) {
+                    const qInput = filterForm.querySelector('input[name="q"], input[name="search"]');
+                    if (qInput && qInput.value.trim() && !url.searchParams.has('q') && !url.searchParams.has('search')) {
+                        url.searchParams.set(qInput.name || 'q', qInput.value.trim());
+                    }
+                    const catSelect = filterForm.querySelector('select[name="category_id"]');
+                    if (catSelect && catSelect.value && !url.searchParams.has('category_id')) {
+                        url.searchParams.set('category_id', catSelect.value);
+                    }
+                }
+
+                // Reset page on status tab switch
+                url.searchParams.delete('page');
+
                 if (url.href === currentUrl.href) {
                     event.preventDefault();
                     return;
@@ -398,23 +632,90 @@ export function initFeedShell(shell) {
         }
     });
 
+    // Filter form submission (Search & Dropdowns)
+    shell.addEventListener('submit', (event) => {
+        const form = event.target.closest('form[data-feed-filter-form], form[role="search"]');
+        if (!form || form.method.toUpperCase() !== 'GET') {
+            return;
+        }
+        if (event.defaultPrevented) {
+            return;
+        }
+        event.preventDefault();
+
+        const formAction = form.getAttribute('action') || window.location.href;
+        const formUrl = new URL(formAction, window.location.href);
+        const formData = new FormData(form);
+
+        for (const [key, val] of formData.entries()) {
+            if (typeof val === 'string' && val.trim() !== '') {
+                formUrl.searchParams.set(key, val.trim());
+            } else {
+                formUrl.searchParams.delete(key);
+            }
+        }
+
+        // Reset page to 1 on new search/filter submission
+        formUrl.searchParams.delete('page');
+
+        if (supportsUrl(formUrl)) {
+            navigate(formUrl, { historyMode: 'push', isPagination: false });
+        } else {
+            window.location.assign(formUrl.href);
+        }
+    });
+
+    // Auto-submit dropdowns in filter forms
+    shell.addEventListener('change', (event) => {
+        const select = event.target.closest('form[data-feed-filter-form] select[data-feed-auto-submit]');
+        if (select && select.form) {
+            if (typeof select.form.requestSubmit === 'function') {
+                select.form.requestSubmit();
+            } else {
+                select.form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+            }
+        }
+    });
+
+    // Initialize styling on shell ready
+    syncTopTabs(currentUrl);
+    syncCategoryNav(currentUrl);
+    syncTabs(currentUrl);
+    syncFilterFormInputs(currentUrl);
+
     // History API popstate (Browser Back / Forward)
     window.history.replaceState(
-        { ...window.history.state, blogmnmFeed: true, url: window.location.href, category: previousCategory },
+        {
+            ...window.history.state,
+            blogmnmFeed: true,
+            feedScope: isHomeOrFollowingShell ? 'home' : cleanPath(baseUrl.pathname),
+            url: window.location.href,
+            category: previousCategory,
+        },
         '',
         window.location.href
     );
 
-    window.addEventListener('popstate', (event) => {
+    const onPopState = () => {
+        if (typeof document !== 'undefined' && !document.contains(shell)) {
+            window.removeEventListener('popstate', onPopState);
+            return;
+        }
         const url = new URL(window.location.href);
-        if (supportsUrl(url) && event.state?.blogmnmFeed && !event.state?.appNav) {
+        if (supportsUrl(url)) {
             navigate(url, { historyMode: 'none', isPagination: url.searchParams.has('page') });
         }
-    });
+    };
+
+    window.addEventListener('popstate', onPopState);
 }
 
 export function initFeedNavigation(root = document) {
-    const shells = root.querySelectorAll('[data-feed-shell]');
+    if (!root) return;
+    if (root.hasAttribute && root.hasAttribute('data-feed-shell')) {
+        initFeedShell(root);
+    }
+    const shells = root.querySelectorAll ? root.querySelectorAll('[data-feed-shell]') : [];
     shells.forEach((shell) => initFeedShell(shell));
 }
 

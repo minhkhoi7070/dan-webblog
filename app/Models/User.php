@@ -2,21 +2,22 @@
 
 namespace App\Models;
 
+use App\Notifications\EmailVerificationOtpNotification;
+use App\Services\OtpService;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 #[Fillable(['name', 'email', 'password', 'role', 'avatar', 'bio', 'is_locked'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -76,10 +77,7 @@ class User extends Authenticatable
         }
 
         if (str_starts_with($this->avatar, 'avatars/')) {
-            /** @var FilesystemAdapter $disk */
-            $disk = Storage::disk('public');
-
-            return $disk->url($this->avatar);
+            return asset('storage/'.$this->avatar);
         }
 
         if (str_starts_with($this->avatar, 'storage/')) {
@@ -215,5 +213,35 @@ class User extends Authenticatable
     public function isViewer(): bool
     {
         return $this->role === 'viewer';
+    }
+
+    /**
+     * OTP records associated with the user.
+     *
+     * @return HasMany<EmailOtp, $this>
+     */
+    public function emailOtps(): HasMany
+    {
+        return $this->hasMany(EmailOtp::class);
+    }
+
+    /**
+     * Send the email verification notification using a 6-digit OTP.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        /** @var OtpService $otpService */
+        $otpService = app(OtpService::class);
+
+        $otp = $otpService->generate(
+            email: $this->email,
+            purpose: OtpService::PURPOSE_EMAIL_VERIFICATION,
+            user: $this,
+            ip: request()?->ip(),
+            userAgent: request()?->userAgent(),
+            force: true
+        );
+
+        $this->notify(new EmailVerificationOtpNotification($otp));
     }
 }

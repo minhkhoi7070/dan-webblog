@@ -20,7 +20,7 @@
      data-initial-tags="{{ $initialTagsJson }}"
      data-all-tags="{{ $allTagsJson }}">
     <!-- Header with title & counter -->
-    <div class="d-flex align-items-center justify-content-between mb-1">
+    <div class="d-flex align-items-center justify-content-between mb-2">
         <label class="label-uppercase text-theme mb-0 d-flex align-items-center gap-1.5 fw-bold">
             <svg style="width: 14px; height: 14px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
@@ -31,9 +31,6 @@
             (<span id="tag-selected-count">{{ count($selectedTagIds) }}</span>/10 thẻ)
         </span>
     </div>
-    <p class="small text-theme-muted mb-3" style="font-size: 12px;">
-        Gắn tối đa 10 thẻ giúp bài viết dễ dàng được tìm kiếm và phân loại chủ đề.
-    </p>
 
     <!-- Exceeded limit alert -->
     <div id="tag-limit-alert" class="alert alert-warning py-2 px-2.5 small mb-3 @if(count($selectedTagIds) < 10) d-none @endif border border-warning border-opacity-50 rounded-3" role="alert" style="font-size: 12px;">

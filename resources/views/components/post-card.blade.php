@@ -8,8 +8,8 @@
 
 <article class="threads-post px-3 px-sm-4 py-3 border-theme-bottom d-flex gap-3 text-theme position-relative" data-post-id="{{ $post->id }}">
     <!-- 1. Left Column: Avatar & Follow '+' Badge (Signature Threads Feature) -->
-    <div class="d-flex flex-column align-items-center flex-shrink-0">
-        <div class="position-relative d-inline-block flex-shrink-0" style="width: 40px; height: 40px;">
+    <div class="d-flex flex-column align-items-center flex-shrink-0 pt-0.5">
+        <div class="position-relative d-inline-block flex-shrink-0" style="width: 38px; height: 38px;">
             <a href="{{ route('authors.show', $post->user) }}" class="d-block text-decoration-none" aria-label="Xem trang cá nhân của {{ $post->user->name }}">
                 <x-avatar :user="$post->user" size="md" />
             </a>
@@ -43,30 +43,30 @@
         </div>
     </div>
 
-    <!-- 2. Right Column: Header, Body, Media, Actions -->
+    <!-- 2. Right Column: Content Column (Header, Body, Media, Actions) -->
     <div class="flex-grow-1 min-w-0">
-        <!-- Header: Author › Category  Timestamp  [Pencil] [...] -->
-        <div class="threads-post-header d-flex align-items-center justify-content-between gap-2 mb-1">
-            <div class="d-flex align-items-center gap-1.5 min-w-0 flex-wrap">
-                <a href="{{ route('authors.show', $post->user) }}" class="threads-author-name fw-bold text-theme hover-accent text-decoration-none text-truncate" style="font-size: 15px; line-height: 1.25; letter-spacing: -0.01em;">
+        <!-- Header: Author › Category • Timestamp [Pencil] [...] -->
+        <div class="threads-post-header d-flex align-items-center justify-content-between gap-2 mb-1.5">
+            <div class="d-flex align-items-center gap-1.5 min-w-0 flex-wrap" style="line-height: 1.35;">
+                <a href="{{ route('authors.show', $post->user) }}" class="threads-author-name fw-bold text-theme hover-accent text-decoration-none text-truncate" style="font-size: 15px; letter-spacing: -0.01em;">
                     {{ $post->user->name }}
                 </a>
 
                 @if($post->category)
-                    <svg width="12" height="12" class="text-theme-muted opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
-                    </svg>
+                    <span class="text-theme-muted opacity-40 mx-0.5 d-inline-flex align-items-center user-select-none" style="font-size: 11px;">›</span>
                     <a href="{{ route('posts.index', ['category' => $post->category->slug]) }}"
                        data-feed-category="{{ $post->category->slug }}"
                        class="threads-category-name fw-semibold text-theme hover-accent text-decoration-none text-truncate"
-                       style="font-size: 15px; line-height: 1.25; letter-spacing: -0.01em;"
+                       style="font-size: 14.5px;"
                        title="{{ $post->category->name }}">
                         {{ $post->category->name }}
                     </a>
                 @endif
 
+                <span class="text-theme-muted opacity-40 mx-0.5 d-inline-flex align-items-center user-select-none" style="font-size: 10px;">•</span>
+
                 <time datetime="{{ $post->published_at ? $post->published_at->toIso8601String() : $post->created_at->toIso8601String() }}"
-                      class="text-theme-muted ms-1 text-nowrap opacity-60 flex-shrink-0"
+                      class="text-theme-muted text-nowrap opacity-60 flex-shrink-0"
                       style="font-size: 13px;"
                       title="{{ $post->published_at ? $post->published_at->format('d/m/Y H:i') : $post->created_at->format('d/m/Y H:i') }}">
                     {{ $post->published_at ? $post->published_at->diffForHumans(null, true, true) : $post->created_at->diffForHumans(null, true, true) }}
@@ -79,7 +79,7 @@
                     <a href="{{ route('posts.edit', $post) }}"
                        class="btn-icon-threads text-theme-muted hover-accent text-decoration-none p-1"
                        title="Chỉnh sửa bài viết">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                         </svg>
                     </a>
@@ -117,25 +117,25 @@
             </div>
         </div>
 
-        <!-- Post Title & Content Excerpt -->
-        <a href="{{ route('posts.show', $post->slug) }}" class="text-decoration-none d-block threads-post-link">
-            <h2 class="threads-post-title text-break text-theme fw-normal mb-1" style="font-size: 15px; line-height: 1.48; letter-spacing: -0.01em;">
-                <span class="fw-bold d-block">{{ $post->title }}</span>
+        <!-- Post Title & Content Excerpt (Vertically aligned with content column) -->
+        <a href="{{ route('posts.show', $post->slug) }}" class="text-decoration-none d-block threads-post-link mt-0.5 mb-1">
+            <h2 class="threads-post-title text-break text-theme fw-normal mb-0" style="font-size: 15px; line-height: 1.48; letter-spacing: -0.01em;">
+                <span class="fw-bold d-block mb-1" style="font-size: 15.5px; line-height: 1.4;">{{ $post->title }}</span>
                 @if($post->excerpt || $post->body)
-                    <span class="text-theme opacity-90 line-clamp-3 mt-1 d-block" style="font-size: 14.5px;">
+                    <span class="text-theme opacity-90 line-clamp-3 d-block" style="font-size: 14.5px; line-height: 1.55;">
                         {{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body), 200) }}
                     </span>
                 @endif
             </h2>
         </a>
 
-        <!-- Tags (if any) -->
+        <!-- Tags: clearly separated, no glued text -->
         @if($post->tags && $post->tags->isNotEmpty())
-            <div class="d-flex align-items-center flex-wrap gap-1.5 mt-1.5 mb-1.5">
+            <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mb-2">
                 @foreach($post->tags as $tag)
                     <a href="{{ route('posts.index', ['tag' => $tag->slug]) }}"
-                       class="text-accent text-decoration-none small hover-underline"
-                       style="font-size: 13px;">
+                       class="text-accent text-decoration-none small hover-underline d-inline-block me-1"
+                       style="font-size: 13px; font-weight: 500;">
                         #{{ $tag->name }}
                     </a>
                 @endforeach
@@ -167,7 +167,7 @@
             </div>
         @endif
 
-        <!-- Bottom Action Bar (Heart, Bubble, Repost, Paper plane, Bookmark) -->
+        <!-- Bottom Action Bar (Like, Comment, Share, Save) -->
         <div class="mt-2.5 pt-1">
             <x-post-action-bar :post="$post" />
         </div>

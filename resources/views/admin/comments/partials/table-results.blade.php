@@ -1,10 +1,13 @@
 <div id="feed-results" tabindex="-1" aria-label="Bảng kiểm duyệt bình luận"
      data-feed-url="{{ request()->fullUrl() }}"
-     data-feed-total="{{ $comments->total() }}">
+     data-feed-total="{{ $comments->total() }}"
+     data-feed-current-status="{{ $currentStatus ?? '' }}"
+     data-feed-counts='@json($statusCounts ?? [])'>
 
-    <!-- Comments List Table (High Information Density) -->
+    <!-- Comments List Table & Mobile Card View Container -->
     <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4">
-        <div class="table-responsive">
+        <!-- Desktop Table View (>= 768px Tablet & Desktop) -->
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-hover align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
                 <thead class="border-theme-bottom bg-surface-2">
                     <tr>
@@ -133,6 +136,103 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Mobile Card View (< 768px: Mobile-First Responsive Cards) -->
+        <div class="d-block d-md-none divide-y divide-theme">
+            @forelse($comments as $comment)
+                <div class="p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                        @if($comment->status === 'approved')
+                            <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill" style="font-size: 10px;">
+                                Đã duyệt
+                            </span>
+                        @elseif($comment->status === 'pending')
+                            <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-25 rounded-pill" style="font-size: 10px;">
+                                Chờ duyệt
+                            </span>
+                        @elseif($comment->status === 'spam')
+                            <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill" style="font-size: 10px;">
+                                Spam
+                            </span>
+                        @endif
+                        <span class="small text-theme-muted" style="font-size: 11px;">
+                            {{ $comment->created_at->format('d/m/Y H:i') }}
+                        </span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <x-avatar :user="$comment->user" size="sm" class="border border-theme flex-shrink-0" />
+                        <div class="min-w-0 flex-grow-1">
+                            <a href="{{ route('admin.users.show', $comment->user) }}" class="fw-bold text-theme text-decoration-none hover-accent text-truncate d-block" style="font-size: 13.5px;">
+                                {{ $comment->user->name }}
+                            </a>
+                            <span class="small text-theme-muted text-truncate d-block" style="font-size: 11.5px;">{{ $comment->user->email }}</span>
+                        </div>
+                    </div>
+
+                    <div class="p-2.5 rounded-2 bg-surface-2 border border-theme text-theme small mb-2 line-clamp-3" style="font-size: 13px;">
+                        "{{ $comment->body }}"
+                    </div>
+
+                    @if($comment->post)
+                        <div class="mb-2.5 small text-theme-muted">
+                            <span class="opacity-75">Bài viết:</span>
+                            <a href="{{ route('posts.show', $comment->post->slug) }}" target="_blank" class="text-theme fw-medium text-decoration-none hover-accent ms-1">
+                                {{ $comment->post->title }}
+                            </a>
+                        </div>
+                    @endif
+
+                    <div class="d-flex align-items-center justify-content-end gap-2 pt-2 border-theme-top">
+                        @if($comment->status !== 'approved')
+                            <form action="{{ route('admin.comments.approve', $comment) }}" method="POST" class="d-inline m-0">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 11px;">
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                    Duyệt
+                                </button>
+                            </form>
+                        @endif
+
+                        @if($comment->status !== 'spam')
+                            <form action="{{ route('admin.comments.spam', $comment) }}" method="POST" class="d-inline m-0">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 11px;">
+                                    Spam
+                                </button>
+                            </form>
+                        @endif
+
+                        <form action="{{ route('admin.comments.destroy', $comment) }}" method="POST" class="d-inline m-0"
+                              data-confirm="true"
+                              data-confirm-title="Xóa bình luận"
+                              data-confirm-message="Bạn có chắc chắn muốn xóa vĩnh viễn bình luận này?"
+                              data-confirm-target-name="{{ $comment->user?->name ?? 'Người dùng' }}"
+                              data-confirm-target-meta="{{ Str::limit($comment->body ?? $comment->content, 60) }}"
+                              data-confirm-description="Hành động này không thể hoàn tác."
+                              data-confirm-btn-text="Xóa bình luận"
+                              data-confirm-btn-class="btn-danger"
+                              data-confirm-type="danger">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1.5 rounded-circle" title="Xóa bình luận" aria-label="Xóa bình luận">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @empty
+                <div class="p-3">
+                    <x-empty-state
+                        title="Không tìm thấy bình luận"
+                        description="Không có bình luận nào phù hợp với bộ lọc hoặc từ khóa tìm kiếm."
+                        :action-url="route('admin.comments.index')"
+                        action-label="Đặt lại bộ lọc"
+                    />
+                </div>
+            @endforelse
+        </div>
+    </div>
 
         @if($comments->hasPages())
             <div data-feed-pagination class="px-3 px-sm-4 py-3 border-theme-top bg-theme-surface d-flex justify-content-center">

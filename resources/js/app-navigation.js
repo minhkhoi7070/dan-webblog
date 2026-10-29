@@ -39,6 +39,8 @@ export function isEligibleLink(anchor, event = null) {
         anchor.closest('[data-feed-pagination]') ||
         anchor.hasAttribute('data-feed-category') ||
         anchor.hasAttribute('data-feed-tab') ||
+        anchor.hasAttribute('data-feed-type') ||
+        anchor.classList.contains('feed-tab') ||
         anchor.classList.contains('page-link')
     ) {
         return false;
@@ -157,6 +159,93 @@ export function syncActiveMenu(doc = null, targetUrl = null) {
     });
 }
 
+if (typeof window !== 'undefined') {
+    window.syncActiveMenu = syncActiveMenu;
+}
+
+export function updateMobileHeader(targetUrl) {
+    if (typeof document === 'undefined') return;
+    const leftEl = document.getElementById('mobile-header-left');
+    if (!leftEl) return;
+
+    let path = '/';
+    try {
+        const u = targetUrl instanceof URL ? targetUrl : new URL(targetUrl, window.location.href);
+        path = cleanPath(u.pathname);
+    } catch {
+        path = '/';
+    }
+
+    const isHome = (path === '/' || path === '/posts');
+    let subTitle = null;
+
+    if (path.startsWith('/posts/') && path !== '/posts/create' && path !== '/posts/stats') {
+        subTitle = 'Chi tiết bài viết';
+    } else if (path === '/posts/create') {
+        subTitle = 'Viết bài mới';
+    } else if (path.includes('/edit')) {
+        subTitle = 'Chỉnh sửa bài';
+    } else if (path === '/posts/stats' || path.startsWith('/author/posts')) {
+        subTitle = 'Quản lý bài viết';
+    } else if (path.startsWith('/author/comments')) {
+        subTitle = 'Bình luận tác giả';
+    } else if (path.startsWith('/following')) {
+        subTitle = 'Đang theo dõi';
+    } else if (path.startsWith('/favorites')) {
+        subTitle = 'Bài viết đã lưu';
+    } else if (path.startsWith('/activity')) {
+        subTitle = 'Nhật ký hoạt động';
+    } else if (path.startsWith('/profile')) {
+        subTitle = 'Trang cá nhân';
+    } else if (path === '/admin' || path === '/admin/dashboard') {
+        subTitle = 'Bảng điều khiển';
+    } else if (path.startsWith('/admin/posts')) {
+        subTitle = 'Kiểm duyệt bài viết';
+    } else if (path.startsWith('/admin/users')) {
+        subTitle = 'Quản lý người dùng';
+    } else if (path.startsWith('/admin/categories')) {
+        subTitle = 'Chuyên mục bài viết';
+    } else if (path.startsWith('/admin/tags')) {
+        subTitle = 'Thẻ bài viết';
+    } else if (path.startsWith('/admin/comments')) {
+        subTitle = 'Quản lý bình luận';
+    }
+
+    if (isHome || !subTitle) {
+        leftEl.innerHTML = `
+            <a href="/" class="brand-link d-flex align-items-center gap-2 font-bold text-lg tracking-tight text-decoration-none flex-shrink-0" aria-label="CloudBlog Trang chủ" data-app-nav id="mobile-header-brand">
+                <svg class="cloud-logo w-8 h-8 flex-shrink-0" style="width: 32px; height: 32px; max-width: 32px; max-height: 32px;" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="10" fill="#09090b"/>
+                    <path d="M12 24C12 20.6863 14.6863 18 18 18C18.6868 18 19.3458 18.1154 19.96 18.3283C21.0371 15.7877 23.5593 14 26.5 14C30.6421 14 34 17.3579 34 21.5C34 21.6705 33.9943 21.8396 33.9831 22.007C34.5957 22.5694 35 23.3644 35 24.25C35 25.7688 33.7688 27 32.25 27H15C13.3431 27 12 25.6569 12 24Z" fill="#3b82f6"/>
+                </svg>
+                <span class="brand-text text-theme fw-bold" style="white-space: nowrap;">CloudBlog</span>
+            </a>
+        `;
+    } else {
+        leftEl.innerHTML = `
+            <div class="d-flex align-items-center gap-2 min-w-0">
+                <a href="javascript:history.length > 1 ? history.back() : window.location.href='/'"
+                   class="btn btn-sm btn-link text-theme p-0 d-flex align-items-center justify-content-center rounded-3 text-decoration-none flex-shrink-0"
+                   style="width: 40px; height: 40px;"
+                   aria-label="Quay lại"
+                   title="Quay lại"
+                   id="mobile-header-back-btn">
+                    <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </a>
+                <span class="fw-bold text-theme text-truncate" style="font-size: 16px; letter-spacing: -0.01em;" id="mobile-header-subpage-title">
+                    ${subTitle}
+                </span>
+            </div>
+        `;
+    }
+}
+
+if (typeof window !== 'undefined') {
+    window.updateMobileHeader = updateMobileHeader;
+}
+
 export function createAppNavigator(options = {}) {
     const fetcher = options.fetcher || (typeof window !== 'undefined' ? window.fetch.bind(window) : async () => {});
     const getContentContainer = options.getContentContainer || (() => (typeof document !== 'undefined' ? document.querySelector('main[data-app-content], #main-content') : null));
@@ -240,6 +329,7 @@ export function createAppNavigator(options = {}) {
             if (doc?.title && typeof document !== 'undefined') {
                 document.title = doc.title;
             }
+            updateMobileHeader(url);
 
             // 4. Swap Main Content Area
             if (container) {
@@ -443,6 +533,15 @@ export function initAppNavigation(root = document) {
         if (isEligibleLink(anchor, event)) {
             event.preventDefault();
 
+            // Automatically close mobile drawer if open
+            if (typeof document !== 'undefined') {
+                const drawerEl = document.getElementById('mobileAppDrawer');
+                if (drawerEl && typeof window !== 'undefined' && window.bootstrap?.Offcanvas) {
+                    const inst = window.bootstrap.Offcanvas.getInstance(drawerEl);
+                    if (inst) inst.hide();
+                }
+            }
+
             // Unsaved changes protection
             if (typeof window.isPostEditorDirty === 'function' && window.isPostEditorDirty()) {
                 const leaveConfirmed = await confirmNavigationLeave();
@@ -468,6 +567,24 @@ export function initAppNavigation(root = document) {
 
     // Global popstate handler for Back / Forward
     window.addEventListener('popstate', async (event) => {
+        const url = new URL(window.location.href);
+
+        // If currently inside a feed shell that handles this URL, delegate to feed navigation
+        const currentFeedShell = document.querySelector('[data-feed-shell]');
+        if (currentFeedShell) {
+            const baseUrlAttr = currentFeedShell.getAttribute('data-feed-base-url');
+            const baseUrl = baseUrlAttr ? new URL(baseUrlAttr, window.location.href) : null;
+            const isHomeFeed = currentFeedShell.hasAttribute('data-feed-home-url') || currentFeedShell.hasAttribute('data-feed-following-url');
+            const targetPath = cleanPath(url.pathname);
+
+            const isHandledByFeed = (isHomeFeed && (targetPath === '/' || targetPath === '/posts' || targetPath === '/following'))
+                || (baseUrl && targetPath === cleanPath(baseUrl.pathname));
+
+            if (isHandledByFeed) {
+                return;
+            }
+        }
+
         // If state belongs strictly to an internal feed fragment (e.g. pagination inside a feed), let feed-navigation handle it
         if (event.state?.blogmnmFeed && !event.state?.appNav) {
             return;
@@ -490,11 +607,44 @@ export function initAppNavigation(root = document) {
             }
         }
 
-        const url = new URL(window.location.href);
+        updateMobileHeader(url);
+
         navigator.navigate(url, {
             historyMode: 'none',
             scrollX: event.state?.scrollX || 0,
             scrollY: event.state?.scrollY || 0,
         });
     });
+
+    // Mobile Virtual Keyboard Handling: hide fixed bottom navigation when typing
+    if (typeof window !== 'undefined') {
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const currentHeight = window.visualViewport.height;
+                const isKeyboardOpen = (window.innerHeight - currentHeight > 150) || (currentHeight < window.innerHeight * 0.75);
+                document.body.classList.toggle('keyboard-open', isKeyboardOpen);
+            });
+        }
+
+        if (typeof document !== 'undefined') {
+            document.addEventListener('focusin', (e) => {
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) {
+                    if (window.innerWidth < 768) {
+                        document.body.classList.add('keyboard-open');
+                    }
+                }
+            });
+
+            document.addEventListener('focusout', (e) => {
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) {
+                    setTimeout(() => {
+                        const active = document.activeElement;
+                        if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA' && !active.isContentEditable)) {
+                            document.body.classList.remove('keyboard-open');
+                        }
+                    }, 100);
+                }
+            });
+        }
+    }
 }

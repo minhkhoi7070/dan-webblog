@@ -10,9 +10,6 @@
                     Phiên đăng nhập
                 </h2>
             </div>
-            <p class="small text-theme-muted mb-0" style="font-size: 13px;">
-                Đăng xuất khỏi tài khoản trên thiết bị này khi bạn hoàn tất phiên làm việc.
-            </p>
         </header>
 
         <form method="POST" action="{{ route('logout') }}" class="m-0">
@@ -35,9 +32,6 @@
                     Vùng nguy hiểm: Xóa tài khoản
                 </h2>
             </div>
-            <p class="small text-theme-muted mb-0" style="font-size: 13px;">
-                Khi tài khoản bị xóa, toàn bộ dữ liệu, bài viết và tương tác của bạn sẽ bị gỡ bỏ vĩnh viễn và không thể phục hồi.
-            </p>
         </header>
 
         <button

@@ -7,18 +7,18 @@
                 </h1>
             </div>
 
-            <!-- Notion-style Quick Section Jumps -->
-            <nav class="d-flex flex-wrap align-items-center gap-1.5" aria-label="Điều hướng cài đặt">
-                <a href="#appearance" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent" style="font-size: 12px;">
+            <!-- Quick Section Jumps -->
+            <nav class="d-flex align-items-center gap-1.5 overflow-x-auto no-scrollbar py-1" aria-label="Điều hướng cài đặt">
+                <a href="#appearance" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent flex-shrink-0" style="font-size: 12px;">
                     Giao diện
                 </a>
-                <a href="#reading" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent" style="font-size: 12px;">
+                <a href="#reading" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent flex-shrink-0" style="font-size: 12px;">
                     Trải nghiệm đọc
                 </a>
-                <a href="#profile-info" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent" style="font-size: 12px;">
+                <a href="#profile-info" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent flex-shrink-0" style="font-size: 12px;">
                     Hồ sơ
                 </a>
-                <a href="#security" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent" style="font-size: 12px;">
+                <a href="#security" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent flex-shrink-0" style="font-size: 12px;">
                     Bảo mật
                 </a>
             </nav>
@@ -42,14 +42,9 @@
             @include('profile.partials.update-profile-information-form')
         </div>
 
-        <!-- 4. Security & Password Update -->
+        <!-- 4. Security & Account (Đổi mật khẩu, Phiên đăng nhập, Xóa tài khoản) -->
         <div class="settings-section-card">
-            @include('profile.partials.update-password-form')
-        </div>
-
-        <!-- 5. Session & Danger Zone (Logout + Delete Account) -->
-        <div class="settings-section-card">
-            @include('profile.partials.delete-user-form')
+            @include('profile.partials.security-account-settings')
         </div>
     </div>
 </x-app-layout>

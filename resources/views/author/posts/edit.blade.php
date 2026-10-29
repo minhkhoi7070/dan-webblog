@@ -12,7 +12,7 @@
             </a>
             <div>
                 <div class="d-flex align-items-center gap-2 small text-theme-muted label-uppercase mb-0.5" style="font-size: 11px;">
-                    <a href="{{ route('posts.stats') }}" data-app-nav class="text-decoration-none text-theme-muted hover-accent">Tác giả</a>
+                    <a href="{{ route('posts.stats') }}" data-app-nav class="text-decoration-none text-theme-muted hover-accent">{{ auth()->user()?->isAdmin() ? 'Quản trị' : 'Tác giả' }}</a>
                     <span>&rsaquo;</span>
                     <span class="text-accent">Chỉnh sửa bài viết</span>
                 </div>
@@ -45,7 +45,7 @@
             </div>
         </div>
 
-        <div class="d-flex align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center flex-wrap gap-2 justify-content-end">
             @if($post->status === 'published')
                 <a href="{{ route('posts.show', $post->slug) }}" target="_blank" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5" title="Mở trang xem bài viết trên website">
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,33 +64,51 @@
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                     </svg>
-                    <span>Lưu bản nháp</span>
+                    <span><span class="d-none d-sm-inline">Lưu bản nháp</span><span class="d-inline d-sm-none">Lưu nháp</span></span>
                 </button>
-                <button type="submit" form="edit-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit">
-                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                    <span>Gửi bài viết để Admin duyệt</span>
-                </button>
+                @if(auth()->user()?->isAdmin())
+                    <button type="submit" form="edit-post-form" name="action" value="publish" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit btn-action-publish" title="Đăng bài ngay">
+                        <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span><span class="d-none d-sm-inline">Đăng bài ngay</span><span class="d-inline d-sm-none">Đăng ngay</span></span>
+                    </button>
+                @else
+                    <button type="submit" form="edit-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit" title="Gửi bài viết để Admin duyệt">
+                        <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        <span><span class="d-none d-sm-inline">Gửi bài viết để Admin duyệt</span><span class="d-inline d-sm-none">Gửi duyệt</span></span>
+                    </button>
+                @endif
             @elseif($post->status === 'rejected')
                 <button type="submit" form="edit-post-form" name="action" value="draft" class="btn btn-sm btn-outline-theme rounded-pill px-3.5 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5 btn-action-draft">
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                     </svg>
-                    <span>Lưu bản nháp</span>
+                    <span><span class="d-none d-sm-inline">Lưu bản nháp</span><span class="d-inline d-sm-none">Lưu nháp</span></span>
                 </button>
-                <button type="submit" form="edit-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit">
-                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Gửi lại để Admin duyệt (Resubmit)</span>
-                </button>
+                @if(auth()->user()?->isAdmin())
+                    <button type="submit" form="edit-post-form" name="action" value="publish" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit btn-action-publish" title="Đăng bài ngay">
+                        <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span><span class="d-none d-sm-inline">Đăng bài ngay</span><span class="d-inline d-sm-none">Đăng ngay</span></span>
+                    </button>
+                @else
+                    <button type="submit" form="edit-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit" title="Gửi lại để Admin duyệt (Resubmit)">
+                        <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span><span class="d-none d-sm-inline">Gửi lại để Admin duyệt (Resubmit)</span><span class="d-inline d-sm-none">Gửi lại duyệt</span></span>
+                    </button>
+                @endif
             @else
-                <button type="submit" form="edit-post-form" name="action" value="draft" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-draft">
+                <button type="submit" form="edit-post-form" name="action" value="draft" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-draft">
                     <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Lưu thay đổi bài viết</span>
+                    <span><span class="d-none d-sm-inline">Lưu thay đổi bài viết</span><span class="d-inline d-sm-none">Lưu thay đổi</span></span>
                 </button>
             @endif
         </div>
@@ -441,26 +459,42 @@
                                     <svg style="width: 13px; height: 13px; color: var(--color-accent); flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>Kiểm duyệt nội dung</span>
+                                    <span>{{ auth()->user()?->isAdmin() ? 'Xuất bản trực tiếp' : 'Kiểm duyệt nội dung' }}</span>
                                 </div>
                                 <p class="mb-0 text-theme-muted" style="font-size: 11.5px; line-height: 1.45;">
-                                    Bài viết sẽ được chuyển đến Admin để phê duyệt trước khi hiển thị công khai.
+                                    {{ auth()->user()?->isAdmin() ? 'Bài viết do Admin tạo sẽ được xuất bản trực tiếp lên CloudBlog mà không cần chờ duyệt.' : 'Bài viết sẽ được chuyển đến Admin để phê duyệt trước khi hiển thị công khai.' }}
                                 </p>
                             </div>
 
-                            <button
-                                type="submit"
-                                form="edit-post-form"
-                                name="action"
-                                value="submit"
-                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit"
-                                title="Gửi bài viết để Admin kiểm duyệt và xuất bản"
-                            >
-                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                </svg>
-                                <span>Gửi bài viết để Admin duyệt</span>
-                            </button>
+                            @if(auth()->user()?->isAdmin())
+                                <button
+                                    type="submit"
+                                    form="edit-post-form"
+                                    name="action"
+                                    value="publish"
+                                    class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit btn-action-publish"
+                                    title="Đăng bài viết ngay lên CloudBlog"
+                                >
+                                    <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span>Đăng bài ngay</span>
+                                </button>
+                            @else
+                                <button
+                                    type="submit"
+                                    form="edit-post-form"
+                                    name="action"
+                                    value="submit"
+                                    class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit"
+                                    title="Gửi bài viết để Admin kiểm duyệt và xuất bản"
+                                >
+                                    <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                    </svg>
+                                    <span>Gửi bài viết để Admin duyệt</span>
+                                </button>
+                            @endif
 
                             <button
                                 type="submit"
@@ -492,23 +526,39 @@
                                     <span>Bài viết bị từ chối</span>
                                 </div>
                                 <p class="mb-0 text-theme-muted" style="font-size: 11.5px; line-height: 1.45;">
-                                    Vui lòng chỉnh sửa nội dung theo góp ý và gửi lại để Ban biên tập xét duyệt.
+                                    {{ auth()->user()?->isAdmin() ? 'Chỉnh sửa nội dung và đăng trực tiếp lên CloudBlog.' : 'Vui lòng chỉnh sửa nội dung theo góp ý và gửi lại để Ban biên tập xét duyệt.' }}
                                 </p>
                             </div>
 
-                            <button
-                                type="submit"
-                                form="edit-post-form"
-                                name="action"
-                                value="submit"
-                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit"
-                                title="Gửi lại bài viết cho Admin kiểm duyệt"
-                            >
-                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Gửi lại để Admin duyệt (Resubmit)</span>
-                            </button>
+                            @if(auth()->user()?->isAdmin())
+                                <button
+                                    type="submit"
+                                    form="edit-post-form"
+                                    name="action"
+                                    value="publish"
+                                    class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit btn-action-publish"
+                                    title="Đăng bài viết ngay lên CloudBlog"
+                                >
+                                    <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span>Đăng bài ngay</span>
+                                </button>
+                            @else
+                                <button
+                                    type="submit"
+                                    form="edit-post-form"
+                                    name="action"
+                                    value="submit"
+                                    class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit"
+                                    title="Gửi lại bài viết cho Admin kiểm duyệt"
+                                >
+                                    <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Gửi lại để Admin duyệt (Resubmit)</span>
+                                </button>
+                            @endif
 
                             <button
                                 type="submit"

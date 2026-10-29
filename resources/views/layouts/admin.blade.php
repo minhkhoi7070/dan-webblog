@@ -59,8 +59,8 @@
     }
 </style>
 
-<!-- Admin Control Bar -->
-<div class="admin-control-bar user-select-none">
+<!-- Admin Control Bar (Desktop / Tablet only; Mobile uses mobile-header with dynamic title) -->
+<div class="admin-control-bar user-select-none d-none d-md-block">
     <div class="container-fluid px-3 px-sm-4 wide-container">
         <div class="admin-control-bar__inner d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
             <div class="min-w-0">
