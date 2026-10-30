@@ -550,7 +550,7 @@
 </p>
                     <div class="metric-footer">
                         <span>Tổng lưu lượng đọc toàn trang</span>
-                        <span class="ms-auto text-theme-muted">Tất cả bài viết</span>
+                        <a href="{{ route('admin.posts.index') }}" class="ms-auto text-theme-muted text-decoration-none">Tất cả bài viết</a>
                     </div>
                 </article>
             </div>

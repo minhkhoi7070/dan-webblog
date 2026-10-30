@@ -243,7 +243,7 @@
                 <!-- 3. Theme Toggle Row -->
                 <div class="sidebar-account__theme">
                     <!-- Expanded View (Desktop >= 992px) -->
-                    <div class="sidebar-account__theme-row sidebar-label">
+                    <div class="sidebar-account__theme-row">
                         <span class="sidebar-theme-title">CHẾ ĐỘ GIAO DIỆN</span>
 
                         <div class="sidebar-theme-toggle"
@@ -364,7 +364,7 @@
                 <!-- Theme switch (Exact same theme switch as Author) -->
                 <div class="sidebar-account__theme">
                     <!-- Expanded View (Desktop >= 992px) -->
-                    <div class="sidebar-account__theme-row sidebar-label">
+                    <div class="sidebar-account__theme-row">
                         <span class="sidebar-theme-title">CHẾ ĐỘ GIAO DIỆN</span>
 
                         <div class="sidebar-theme-toggle"

@@ -1,6 +1,76 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap");
 @import "bootstrap/dist/css/bootstrap.min.css";
 
+/* Admin post moderation actions: theme-specific colors with AA text contrast. */
+.admin-post-action--approve {
+  color: #166534;
+  background-color: #E8F5EC;
+  border-color: #B7DFC3;
+}
+
+.admin-post-action--approve:hover,
+.admin-post-action--approve:active {
+  color: #14532D;
+  background-color: #D5EADC;
+  border-color: #9FCFAE;
+}
+
+.admin-post-action--reject {
+  color: #9A3412;
+  background-color: #FFF1E6;
+  border-color: #F3C7A9;
+}
+
+.admin-post-action--reject:hover,
+.admin-post-action--reject:active {
+  color: #7C2D12;
+  background-color: #FFE3CF;
+  border-color: #EFB28A;
+}
+
+.admin-post-action--approve:focus-visible,
+.admin-post-action--reject:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+.admin-post-action--approve:disabled,
+.admin-post-action--reject:disabled {
+  opacity: 1;
+}
+
+html[data-theme="dark"] .admin-post-action--approve,
+html.dark .admin-post-action--approve {
+  color: #86EFAC;
+  background-color: #183525;
+  border-color: #356A47;
+}
+
+html[data-theme="dark"] .admin-post-action--approve:hover,
+html[data-theme="dark"] .admin-post-action--approve:active,
+html.dark .admin-post-action--approve:hover,
+html.dark .admin-post-action--approve:active {
+  color: #A7F3B5;
+  background-color: #21452F;
+  border-color: #4D805D;
+}
+
+html[data-theme="dark"] .admin-post-action--reject,
+html.dark .admin-post-action--reject {
+  color: #FDBA74;
+  background-color: #3B241A;
+  border-color: #805237;
+}
+
+html[data-theme="dark"] .admin-post-action--reject:hover,
+html[data-theme="dark"] .admin-post-action--reject:active,
+html.dark .admin-post-action--reject:hover,
+html.dark .admin-post-action--reject:active {
+  color: #FED7AA;
+  background-color: #4A2B1D;
+  border-color: #996744;
+}
+
 /* ============================================================
    1. BlogMNM Centralized Design Tokens (Phase 3 Foundation)
    Modern Editorial Social Blog Visual Foundation
@@ -1143,13 +1213,6 @@ html.dark .sidebar-account-card {
   width: 100%;
 }
 
-.sidebar-account__theme-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 7px;
-}
-
 .sidebar-account__theme-compact {
   display: none;
 }
@@ -1196,13 +1259,11 @@ html.dark .sidebar-account-card {
 
   .sidebar-account__meta,
   .sidebar-account__logout span,
-  .sidebar-account__theme-row,
   .sidebar-account__theme-expanded {
     display: none !important;
   }
 
-  .sidebar-guest-compact,
-  .sidebar-account__theme-compact {
+  .sidebar-guest-compact {
     display: flex !important;
     justify-content: center;
   }
@@ -1225,12 +1286,18 @@ html.dark .sidebar-account-card {
 }
 
 .sidebar-account__theme-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   width: 100%;
   flex-wrap: nowrap;
+}
+
+@media (min-width: 992px) {
+  .sidebar-account__theme-row {
+    display: flex;
+  }
 }
 
 .sidebar-theme-title {
@@ -1384,16 +1451,15 @@ html.dark .sidebar-theme-toggle__btn--light .sidebar-theme-toggle__icon--sun {
   transform: scale(1.15);
 }
 
-/* Compact mode cho collapsed sidebar (< 992px) */
-.sidebar-theme-compact,
-.sidebar-account__theme-compact {
+/* Compact mode for the collapsed sidebar (< 992px). */
+.sidebar-theme-compact {
   display: none;
 }
 
 @media (max-width: 991.98px) {
   .sidebar-theme-compact,
   .sidebar-account__theme-compact {
-    display: flex !important;
+    display: flex;
     justify-content: center;
     margin-bottom: 0;
   }
@@ -3996,6 +4062,12 @@ html:not(.dark)[data-theme="light"] .theme-text-dark {
   }
 }
 
+@media (max-width: 767.98px) {
+  .admin-users-mobile-list > .admin-users-mobile-card:not(:last-child) {
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+}
+
 /* ============================================================
    User Login Page - Fullscreen Atmospheric Pure Glassmorphism
    Inspired by Reference Aesthetic (Editorial Nature & Glass Card)
@@ -4627,6 +4699,209 @@ html.dark .btn-action-delete:hover {
   opacity: 0.65;
   pointer-events: none;
   transition: opacity 0.15s ease;
+}
+
+/* Admin Users: reserve space for the native Bootstrap select indicator. */
+.admin-users-filter-form .admin-users-filter-select {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  padding-right: 2.75rem !important;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+}
+
+/* Adapt the filter bar to its actual available width after layout padding. */
+.admin-users-filter-card {
+  container-name: admin-users-filter;
+  container-type: inline-size;
+}
+
+@container admin-users-filter (min-width: 576px) {
+  .admin-users-filter-form {
+    display: grid;
+    gap: 14px;
+    width: 100%;
+    margin: 0;
+  }
+
+  .admin-users-filter-form > * {
+    width: 100%;
+    max-width: none;
+    margin-top: 0;
+    padding-right: 0;
+    padding-left: 0;
+  }
+}
+
+@container admin-users-filter (min-width: 576px) and (max-width: 689.98px) {
+  .admin-users-filter-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-users-filter-search,
+  .admin-users-filter-submit {
+    grid-column: 1 / -1;
+  }
+}
+
+/* 240px search + two 168px selects + 72px submit + three 14px gaps. */
+@container admin-users-filter (min-width: 690px) {
+  .admin-users-filter-form {
+    grid-template-columns: minmax(240px, 5fr) minmax(168px, 3fr) minmax(168px, 3fr) minmax(72px, 1fr);
+  }
+
+  .admin-users-filter-form > .admin-users-filter-search,
+  .admin-users-filter-form > .admin-users-filter-submit {
+    grid-column: auto;
+  }
+}
+
+/* Keep the table readable only while its card lacks the required width. */
+.admin-users-table-card {
+  min-width: 0;
+  max-width: 100%;
+  container-name: admin-users-table;
+  container-type: inline-size;
+}
+
+.admin-users-table-scroll-tools {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 0.75rem 1rem 0.5rem;
+}
+
+.admin-users-table-card.has-horizontal-overflow .admin-users-table-scroll-tools {
+  display: flex;
+}
+
+.admin-users-table-scroll-hint {
+  min-width: 0;
+}
+
+.admin-users-table-scroll-controls {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.admin-users-table-scroll-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.admin-users-table-scroll-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@container admin-users-table (max-width: 879.98px) {
+  .admin-users-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  .admin-users-table {
+    min-width: 880px;
+  }
+
+  .admin-users-table thead th,
+  .admin-users-table tbody td:nth-child(2),
+  .admin-users-table tbody td:nth-child(3),
+  .admin-users-table tbody td:nth-child(4),
+  .admin-users-table tbody td:nth-child(5) {
+    white-space: nowrap;
+  }
+
+  .admin-users-table tbody td:first-child {
+    min-width: 360px;
+  }
+
+  .admin-users-table__actions {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+}
+
+.admin-users-table-scroll:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: -2px;
+}
+
+/* Keep Users pagination consistent across the responsive paginator layouts. */
+.admin-users-pagination__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  width: 100%;
+  min-width: 0;
+}
+
+.admin-users-pagination__summary {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.admin-users-pagination__links {
+  flex: 0 1 auto;
+  max-width: 100%;
+  margin-left: auto;
+}
+
+.admin-users-pagination__links .pagination {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 100%;
+  gap: 4px;
+}
+
+.admin-users-pagination__links .page-item .page-link {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  text-align: center;
+}
+
+@media (max-width: 575.98px) {
+  .admin-users-pagination__nav {
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .admin-users-pagination__summary {
+    flex: 0 1 auto;
+    text-align: center;
+  }
+
+  .admin-users-pagination__links {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .admin-users-pagination__links .pagination {
+    justify-content: center;
+    gap: 3px;
+  }
+
+  .admin-users-pagination__links .page-item .page-link {
+    min-width: 30px;
+    padding: 0 5px;
+  }
 }
 
 

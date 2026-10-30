@@ -32,7 +32,7 @@
                   data-confirm-btn-class="btn-success"
                   data-confirm-type="success">
                 @csrf
-                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 py-1 fw-semibold" style="font-size: 12.5px;">
+                <button type="submit" class="btn btn-success admin-post-action--approve btn-sm rounded-pill px-3 py-1 fw-semibold" style="font-size: 12.5px;">
                     Duyệt & Xuất bản
                 </button>
             </form>
@@ -56,7 +56,7 @@
                   data-confirm-type="warning">
                 @csrf
                 <input type="hidden" name="rejection_reason" value="">
-                <button type="submit" class="btn btn-outline-warning btn-sm rounded-pill px-3 py-1 fw-semibold" style="font-size: 12.5px;">
+                <button type="submit" class="btn btn-outline-warning admin-post-action--reject btn-sm rounded-pill px-3 py-1 fw-semibold" style="font-size: 12.5px;">
                     Từ chối duyệt
                 </button>
             </form>
@@ -219,7 +219,7 @@
                         ></textarea>
                         <button
                             type="submit"
-                            class="btn btn-outline-warning btn-sm rounded-pill fw-semibold w-100"
+                            class="btn btn-outline-warning admin-post-action--reject btn-sm rounded-pill fw-semibold w-100"
                             style="font-size: 12px;"
                         >
                             Gửi lý do & Từ chối duyệt

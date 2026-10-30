@@ -120,7 +120,7 @@
                                               data-confirm-btn-class="btn-success"
                                               data-confirm-type="success">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;" aria-label="Duyệt bài viết {{ $post->title }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-success admin-post-action--approve rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;" aria-label="Duyệt bài viết {{ $post->title }}">
                                                 Duyệt
                                             </button>
                                         </form>
@@ -142,7 +142,7 @@
                                               data-confirm-type="warning">
                                             @csrf
                                             <input type="hidden" name="rejection_reason" value="">
-                                            <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;" aria-label="Từ chối bài viết {{ $post->title }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning admin-post-action--reject rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;" aria-label="Từ chối bài viết {{ $post->title }}">
                                                 Từ chối
                                             </button>
                                         </form>
