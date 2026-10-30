@@ -7,14 +7,11 @@
     <!-- Top Dashboard Header (Ghost + Notion style) -->
     <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 pb-3 mb-4 border-theme-bottom">
         <div>
-            <div class="d-flex align-items-center gap-2 small text-theme-muted label-uppercase mb-0.5" style="font-size: 11px;">
+            <div class="d-flex align-items-center gap-2 small text-theme-muted label-uppercase mb-0" style="font-size: 11px;">
                 <span>Tác giả</span>
                 <span>&rsaquo;</span>
                 <span class="text-accent">Bảng điều khiển</span>
             </div>
-            <h1 class="h4 fw-bold text-theme tracking-tight mb-0 dashboard-title">
-                Quản lý bài viết & Thống kê
-            </h1>
         </div>
 
         <div class="d-flex align-items-center gap-2 flex-shrink-0 w-100 w-md-auto justify-content-start justify-content-md-end">
@@ -40,9 +37,9 @@
     @endif
 
     <!-- Statistics Grid (All 8 Metrics - Notion & Ghost Style) -->
-    <div class="row g-2 g-sm-3 mb-4">
+    <div class="row g-3 mb-4">
         <!-- 1. Total Posts -->
-        <div class="col-6 col-sm-3 col-lg">
+        <div class="col-6 col-sm-3 col-xxl">
             <a href="{{ route('posts.stats') }}" class="dashboard-stat-card h-100 {{ empty($currentStatus) ? 'active-filter' : '' }}">
                 <span class="label-uppercase d-block mb-1 text-3xs">Tổng bài viết</span>
                 <p class="h4 fw-bold text-theme m-0">{{ number_format($stats['total']) }}</p>
@@ -51,7 +48,7 @@
         </div>
 
         <!-- 2. Draft -->
-        <div class="col-6 col-sm-3 col-lg">
+        <div class="col-6 col-sm-3 col-xxl">
             <a href="{{ route('posts.stats', ['status' => 'draft']) }}" class="dashboard-stat-card h-100 {{ $currentStatus === 'draft' ? 'active-filter' : '' }}">
                 <span class="label-uppercase d-block mb-1 text-theme-secondary text-3xs">Bản nháp</span>
                 <p class="h4 fw-bold text-theme m-0">{{ number_format($stats['draft']) }}</p>
@@ -60,7 +57,7 @@
         </div>
 
         <!-- 3. Pending -->
-        <div class="col-6 col-sm-3 col-lg">
+        <div class="col-6 col-sm-3 col-xxl">
             <a href="{{ route('posts.stats', ['status' => 'pending']) }}" class="dashboard-stat-card h-100 {{ $currentStatus === 'pending' ? 'active-filter' : '' }}">
                 <span class="label-uppercase d-block mb-1 text-warning text-3xs">Chờ duyệt</span>
                 <p class="h4 fw-bold text-warning m-0">{{ number_format($stats['pending']) }}</p>
@@ -69,7 +66,7 @@
         </div>
 
         <!-- 4. Published -->
-        <div class="col-6 col-sm-3 col-lg">
+        <div class="col-6 col-sm-3 col-xxl">
             <a href="{{ route('posts.stats', ['status' => 'published']) }}" class="dashboard-stat-card h-100 {{ $currentStatus === 'published' ? 'active-filter' : '' }}">
                 <span class="label-uppercase d-block mb-1 text-success text-3xs">Xuất bản</span>
                 <p class="h4 fw-bold m-0 text-success">{{ number_format($stats['published']) }}</p>
@@ -78,7 +75,7 @@
         </div>
 
         <!-- 5. Rejected -->
-        <div class="col-6 col-sm-3 col-lg">
+        <div class="col-6 col-sm-3 col-xxl">
             <a href="{{ route('posts.stats', ['status' => 'rejected']) }}" class="dashboard-stat-card h-100 {{ $currentStatus === 'rejected' ? 'active-filter' : '' }}">
                 <span class="label-uppercase d-block mb-1 text-danger text-3xs">Bị từ chối</span>
                 <p class="h4 fw-bold text-danger m-0">{{ number_format($stats['rejected']) }}</p>
@@ -87,7 +84,7 @@
         </div>
 
         <!-- 6. Views -->
-        <div class="col-6 col-sm-3 col-lg">
+        <div class="col-6 col-sm-3 col-xxl">
             <div class="dashboard-stat-card h-100" style="cursor: default;">
                 <span class="label-uppercase d-block mb-1 text-3xs">Lượt xem</span>
                 <p class="h4 fw-bold m-0" style="color: var(--color-accent-text);">{{ number_format($stats['views']) }}</p>
@@ -96,7 +93,7 @@
         </div>
 
         <!-- 7. Likes -->
-        <div class="col-6 col-sm-3 col-lg">
+        <div class="col-6 col-sm-3 col-xxl">
             <div class="dashboard-stat-card h-100" style="cursor: default;">
                 <span class="label-uppercase d-block mb-1 text-3xs" style="color: var(--color-like);">Lượt thích</span>
                 <p class="h4 fw-bold m-0" style="color: var(--color-like);">{{ number_format($stats['likes']) }}</p>
@@ -105,7 +102,7 @@
         </div>
 
         <!-- 8. Comments -->
-        <div class="col-6 col-sm-3 col-lg">
+        <div class="col-6 col-sm-3 col-xxl">
             <div class="dashboard-stat-card h-100" style="cursor: default;">
                 <span class="label-uppercase d-block mb-1 text-theme-secondary text-3xs">Bình luận</span>
                 <p class="h4 fw-bold text-theme m-0">{{ number_format($stats['comments']) }}</p>
@@ -116,9 +113,9 @@
 
     <!-- Filter Tabs & Search Controls (Notion style Database toolbar) -->
     <div class="card p-3 border-theme bg-theme-surface shadow-xs rounded-xl mb-4">
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div class="author-post-toolbar d-flex flex-wrap align-items-center justify-content-between gap-3">
             <!-- Filter Tabs -->
-            <div class="d-flex align-items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" data-feed-status-tabs>
+            <div class="d-flex align-items-center gap-2 overflow-x-auto no-scrollbar py-0.5" data-feed-status-tabs>
                 <a href="{{ route('posts.stats', array_filter(['q' => $search])) }}"
                    data-feed-tab=""
                    data-active-class="btn-editorial-primary text-white"
@@ -162,7 +159,7 @@
             </div>
 
             <!-- Search Form with vertically centered icon & clear button -->
-            <form action="{{ route('posts.stats') }}" method="GET" class="position-relative m-0 w-100" style="max-width: 320px;" data-feed-filter-form>
+            <form action="{{ route('posts.stats') }}" method="GET" class="position-relative m-0 w-100" data-feed-filter-form>
                 @if($currentStatus)
                     <input type="hidden" name="status" value="{{ $currentStatus }}">
                 @endif

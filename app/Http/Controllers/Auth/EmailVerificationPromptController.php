@@ -23,10 +23,15 @@ class EmailVerificationPromptController extends Controller
         $otpService = app(OtpService::class);
         $cooldown = $otpService->getCooldownRemaining($request->user()->email, OtpService::PURPOSE_EMAIL_VERIFICATION);
         $expiry = $otpService->getExpiryRemaining($request->user()->email, OtpService::PURPOSE_EMAIL_VERIFICATION);
+        $hasOtp = $request->user()->emailOtps()
+            ->where('purpose', OtpService::PURPOSE_EMAIL_VERIFICATION)
+            ->whereNull('consumed_at')
+            ->exists();
 
         return view('auth.verify-email', [
             'cooldown' => $cooldown,
             'expiry' => $expiry,
+            'hasOtp' => $hasOtp,
         ]);
     }
 }

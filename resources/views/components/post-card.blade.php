@@ -1,7 +1,6 @@
 @props(['post'])
 
 @php
-    $images = $post->gallery_images ?? [];
     $isFollowing = (auth()->check() && auth()->id() !== $post->user_id) ? auth()->user()->isFollowing($post->user) : false;
     $isOwnerOrAdmin = auth()->check() && (auth()->id() === $post->user_id || auth()->user()->isAdmin());
 @endphp
@@ -156,27 +155,18 @@
             </div>
         @endif
 
-        <!-- Media Carousel / Single Card (Threads Style Gallery) -->
-        @if(!empty($images))
+        <!-- Post Thumbnail: Single representative image only (No Gallery/Carousel) -->
+        @if($post->thumbnail)
             <div class="threads-media-wrapper position-relative">
-                @if(count($images) > 1)
-                    <span class="threads-media-badge position-absolute top-0 end-0 m-2 badge rounded-pill">
-                        1/{{ count($images) }}
-                    </span>
-                    <div class="threads-media-gallery no-scrollbar">
-                        @foreach($images as $imgUrl)
-                            <a href="{{ route('posts.show', $post->slug) }}" class="threads-media-card flex-shrink-0 text-decoration-none d-block" style="width: calc(65% - 8px); min-width: 200px; max-width: 320px;">
-                                <img src="{{ $imgUrl }}" alt="{{ $post->title }}" loading="lazy" style="height: 280px; width: 100%; object-fit: cover; border-radius: 14px;">
-                            </a>
-                        @endforeach
+                <a href="{{ route('posts.show', $post->slug) }}" class="threads-media-single d-block text-decoration-none" aria-label="{{ $post->title }}">
+                    <div class="rounded-3 overflow-hidden border border-theme" style="border-radius: 14px; aspect-ratio: 16 / 9; max-height: 420px; background-color: var(--color-bg-subtle);">
+                        <img src="{{ (str_starts_with($post->thumbnail, 'http://') || str_starts_with($post->thumbnail, 'https://')) ? $post->thumbnail : asset($post->thumbnail) }}"
+                             alt="{{ $post->title }}"
+                             loading="lazy"
+                             class="w-100 h-100"
+                             style="max-height: 420px; object-fit: cover; border-radius: 14px; display: block;">
                     </div>
-                @else
-                    <a href="{{ route('posts.show', $post->slug) }}" class="threads-media-single d-block text-decoration-none" aria-label="{{ $post->title }}">
-                        <div class="rounded-3 overflow-hidden border border-theme" style="border-radius: 14px; aspect-ratio: 16 / 9; max-height: 420px; background-color: var(--color-bg-subtle);">
-                            <img src="{{ $images[0] }}" alt="{{ $post->title }}" loading="lazy" class="w-100 h-100" style="max-height: 420px; object-fit: cover; border-radius: 14px;">
-                        </div>
-                    </a>
-                @endif
+                </a>
             </div>
         @endif
 

@@ -10,6 +10,7 @@ import { initSecuritySettings } from './security-settings';
 import { initAdminUsersTableScroll } from './admin-users-table-scroll';
 import { initAdminPostsTableScroll } from './admin-posts-table-scroll';
 import { initAdminCommentsTableScroll } from './admin-comments-table-scroll';
+import { initTabletSidebar } from './tablet-sidebar';
 
 document.addEventListener('DOMContentLoaded', async () => {
     initAppNavigation();
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initAdminUsersTableScroll();
     initAdminPostsTableScroll();
     initAdminCommentsTableScroll();
+    initTabletSidebar();
     if (document.getElementById('tiptap-editor')) {
         const { initPostEditor } = await import('./editor');
         initPostEditor();

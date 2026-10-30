@@ -45,9 +45,45 @@
             </div>
         </div>
 
+        @auth
+            <div class="d-none d-flex align-items-center gap-3 p-3 p-sm-4 border-theme-bottom bg-theme-surface"
+                 data-feed-for-you-composer>
+                <a href="{{ route('profile.show') }}" class="flex-shrink-0 text-decoration-none" aria-label="Hồ sơ của bạn">
+                    <x-avatar :user="Auth::user()" size="sm" />
+                </a>
+                <div class="flex-grow-1 min-w-0">
+                    @if (Auth::user()->isAuthor() || Auth::user()->isAdmin())
+                        <a href="{{ route('posts.create') }}"
+                           class="text-theme-secondary small text-decoration-none text-truncate d-block hover-accent">
+                            Có gì mới trong thế giới công nghệ hôm nay?
+                        </a>
+                    @else
+                        <span class="text-theme-secondary small text-truncate d-block opacity-75">
+                            Khám phá bài viết và nâng cấp tài khoản để bắt đầu sáng tạo...
+                        </span>
+                    @endif
+                </div>
+                @if (Auth::user()->isAuthor() || Auth::user()->isAdmin())
+                    <a href="{{ route('posts.create') }}"
+                       class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 flex-shrink-0 d-none d-lg-inline-flex align-items-center"
+                       aria-label="Tạo bài viết mới">
+                        Viết bài
+                    </a>
+                @elseif(Auth::user()->role === 'viewer')
+                    <form method="POST" action="{{ route('author.become') }}" class="m-0 flex-shrink-0 d-none d-lg-block">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-editorial-primary rounded-pill px-3 py-1"
+                                aria-label="Đăng ký trở thành tác giả">
+                            Trở thành tác giả
+                        </button>
+                    </form>
+                @endif
+            </div>
+        @endauth
+
         <!-- View Switcher Tabs: Bài viết vs Danh sách tác giả -->
-        <div class="px-3 px-sm-4 py-2.5 border-theme-bottom bg-surface-2 d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-2">
+        <div class="px-3 px-sm-4 py-3 border-theme-bottom bg-surface-2" data-following-view-switcher>
+            <div class="following-view-tabs">
                 <a href="{{ route('following.index', ['tab' => 'feed']) }}"
                    data-feed-tab="feed"
                    class="btn btn-sm rounded-pill px-3 py-1 fw-medium {{ $tab === 'feed' ? 'btn-editorial-primary' : 'btn-outline-theme' }}"
@@ -68,9 +104,6 @@
                 </a>
             </div>
 
-            <span class="small text-theme-muted d-none d-sm-inline" style="font-size: 12px;">
-                Cập nhật bài viết mới nhất từ những người bạn quan tâm
-            </span>
         </div>
 
         <!-- Category Filter Horizontal Chips (Hidden on Following feed) -->

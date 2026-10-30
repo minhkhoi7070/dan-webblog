@@ -30,6 +30,8 @@ class EmailVerificationTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Xác minh email');
         $response->assertSee($user->email);
+        $response->assertSee('Chưa có mã OTP');
+        $this->assertMatchesRegularExpression('/id="otp-expiry-timer">Chưa có mã OTP<\/strong>/', $response->getContent());
     }
 
     public function test_verified_user_visiting_verification_screen_is_redirected_to_dashboard(): void

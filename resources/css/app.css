@@ -1033,7 +1033,62 @@ html:not(.dark) :is(.mobile-top-header, .mobile-drawer, .sidebar-container) .bra
   width: 80px;
   background-color: var(--color-bg-surface);
   border-right: 1px solid var(--color-border-subtle);
-  transition: width var(--duration-base) var(--ease-standard);
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease;
+  overflow-x: hidden;
+}
+
+/* Tablet Sidebar Backdrop & Toggle Button */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 1038;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.sidebar-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.sidebar-toggle-btn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-bg-subtle, rgba(255, 255, 255, 0.04));
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0;
+  transition: background-color var(--duration-fast, 150ms) ease,
+              border-color var(--duration-fast, 150ms) ease,
+              color var(--duration-fast, 150ms) ease,
+              transform var(--duration-fast, 150ms) ease;
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-interactive);
+  border-color: var(--color-border-strong);
+}
+
+.sidebar-toggle-btn:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
 }
 
 .sidebar-label {
@@ -1074,6 +1129,18 @@ html:not(.dark) :is(.mobile-top-header, .mobile-drawer, .sidebar-container) .bra
 }
 
 @media (min-width: 992px) {
+  .sidebar-backdrop,
+  .sidebar-toggle-btn {
+    display: none !important;
+  }
+  .sidebar-header {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    margin-bottom: 24px !important;
+  }
   .sidebar-container {
     width: 256px !important;
   }
@@ -1082,6 +1149,98 @@ html:not(.dark) :is(.mobile-top-header, .mobile-drawer, .sidebar-container) .bra
   }
   .sidebar-link {
     justify-content: flex-start !important;
+  }
+}
+
+/* Tablet (768px to 991.98px) Collapsed & Expanded Styles */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  /* Collapsed Header (80px rail) */
+  .sidebar-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px !important;
+    width: 100%;
+  }
+
+  .sidebar-header .brand-link {
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* When Tablet Sidebar is EXPANDED (Full Overlay) */
+  .sidebar-container.sidebar-expanded {
+    width: 256px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    z-index: 1045 !important;
+  }
+
+  .sidebar-container.sidebar-expanded .sidebar-header {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-inline: 4px !important;
+  }
+
+  .sidebar-container.sidebar-expanded .sidebar-header .brand-link {
+    justify-content: flex-start !important;
+  }
+
+  .sidebar-container.sidebar-expanded .sidebar-label {
+    display: inline !important;
+  }
+
+  .sidebar-container.sidebar-expanded div.sidebar-label {
+    display: block !important;
+  }
+
+  .sidebar-container.sidebar-expanded .sidebar-link {
+    justify-content: flex-start !important;
+  }
+
+  /* Account Card Expanded */
+  .sidebar-container.sidebar-expanded .sidebar-account-card {
+    padding: 14px 12px 12px !important;
+  }
+
+  .sidebar-container.sidebar-expanded .sidebar-account__top {
+    justify-content: flex-start !important;
+  }
+
+  .sidebar-container.sidebar-expanded .sidebar-account__meta {
+    display: block !important;
+  }
+
+  .sidebar-container.sidebar-expanded .sidebar-account__logout span {
+    display: inline !important;
+  }
+
+  .sidebar-container.sidebar-expanded .sidebar-account__logout {
+    padding: 0 12px !important;
+    min-height: 38px !important;
+    justify-content: center !important;
+  }
+
+  .sidebar-container.sidebar-expanded .sidebar-account__divider {
+    margin: 9px 0 !important;
+  }
+
+  /* Theme Switch Expanded */
+  .sidebar-container.sidebar-expanded .sidebar-account__theme-row {
+    display: flex !important;
+  }
+
+  .sidebar-container.sidebar-expanded .sidebar-account__theme-compact {
+    display: none !important;
+  }
+
+  /* Guest Card Expanded */
+  .sidebar-container.sidebar-expanded .sidebar-guest-compact {
+    display: none !important;
   }
 }
 /* Sidebar account footer */
@@ -1698,6 +1857,11 @@ body.keyboard-open .mobile-bottom-nav {
 .mobile-drawer .sidebar-link:focus-visible {
   outline: 2px solid var(--color-interactive);
   outline-offset: 2px;
+}
+
+.mobile-drawer .mobile-drawer-profile-card:hover {
+  background-color: var(--color-surface-hover, var(--color-surface-3)) !important;
+  border-color: var(--color-border-hover, var(--color-border)) !important;
 }
 
 @media (min-width: 768px) {
@@ -5172,6 +5336,92 @@ html.dark .post-status-banner-published .status-banner-badge {
   outline-offset: 2px;
 }
 
+/* Following directory: keep author cards within the available feed width. */
+.following-view-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.following-view-tabs > .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 44px;
+  line-height: 1.4;
+}
+
+.following-view-tabs svg {
+  flex-shrink: 0;
+  margin: 0 !important;
+}
+
+.following-empty-state {
+  padding: 24px 16px;
+}
+
+.following-author-grid,
+.following-author-list {
+  display: grid;
+  gap: 16px;
+}
+
+.following-author-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
+.following-author-card {
+  min-width: 0;
+  padding: 16px;
+  gap: 12px;
+}
+
+.following-author-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.following-author-profile {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.following-author-card [data-action="follow"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 128px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 36px;
+  padding: 6px 12px !important;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.following-author-bio {
+  overflow-wrap: anywhere;
+}
+
+.following-author-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary) !important;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ============================================================
    Author Dashboard (Quản lý bài viết & Thống kê) UI/UX Fixes
    ============================================================ */
@@ -5213,8 +5463,8 @@ html.dark .dashboard-stat-desc {
 .dashboard-search-input.form-control,
 .dashboard-search-input {
   height: 36px;
-  padding-left: 38px;
-  padding-right: 36px;
+  padding-left: 38px !important;
+  padding-right: 36px !important;
   font-size: 13px;
   line-height: normal;
   background-color: var(--color-surface-2);
@@ -5258,6 +5508,195 @@ html.dark .dashboard-stat-desc {
 [data-theme="dark"] .dashboard-post-timestamp,
 html.dark .dashboard-post-timestamp {
   color: #94A3B8;
+}
+
+/* Author post management: adapt to the space left beside the navigation. */
+.author-post-toolbar > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.author-post-toolbar [data-feed-filter-form] {
+  flex: 1 1 260px;
+  max-width: 320px;
+}
+
+.author-post-results {
+  container: author-posts / inline-size;
+}
+
+.author-post-results .author-post-table {
+  display: none;
+}
+
+.author-post-results .dashboard-post-title {
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.author-post-results .badge {
+  max-width: 100%;
+  padding: 4px 8px !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.author-post-results .badge-status-published {
+  color: #a8cbbb !important;
+  background-color: #20332c !important;
+  border-color: #385448 !important;
+}
+
+[data-theme="light"] .author-post-results .badge-status-published {
+  color: #35624e !important;
+  background-color: #edf5f0 !important;
+  border-color: #cbded2 !important;
+}
+
+.author-post-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.author-post-card + .author-post-card {
+  border-top: 1px solid var(--color-border);
+}
+
+.author-post-summary {
+  order: -1;
+  min-width: 0;
+}
+
+.author-post-details,
+.author-post-badges,
+.author-post-metrics,
+.author-post-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.author-post-details {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.author-post-badges,
+.author-post-metrics {
+  flex-wrap: wrap;
+}
+
+.author-post-date,
+.author-post-metrics > span {
+  white-space: nowrap;
+}
+
+.author-post-metrics {
+  gap: 6px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.author-post-footer {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.author-post-actions-card {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.author-post-results .author-post-actions-card .btn.btn-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  border-radius: var(--radius-md) !important;
+  padding-inline: 8px !important;
+  font-size: 12px !important;
+  white-space: nowrap;
+}
+
+.author-post-actions-card > :nth-last-child(2) {
+  grid-column: 2;
+}
+
+.author-post-actions-card > :last-child {
+  grid-column: 3;
+}
+
+.author-post-actions-table {
+  justify-content: flex-end;
+}
+
+.author-post-metrics-table {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+}
+
+@container author-posts (min-width: 600px) {
+  .author-post-card {
+    padding: 24px;
+  }
+
+  .author-post-footer {
+    grid-template-columns: minmax(0, 1fr) 272px;
+    align-items: center;
+    gap: 16px;
+  }
+}
+
+@container author-posts (min-width: 1000px) {
+  .author-post-results .author-post-table {
+    display: block;
+  }
+
+  .author-post-cards {
+    display: none;
+  }
+
+  .author-post-table table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .author-post-column-title { width: 31%; }
+  .author-post-column-category { width: 12%; }
+  .author-post-column-status { width: 13%; }
+  .author-post-column-metrics { width: 14%; }
+  .author-post-column-actions { width: 30%; }
+
+  .author-post-table th,
+  .author-post-table td {
+    padding: 20px 12px !important;
+    border-color: var(--color-border);
+  }
+
+  .author-post-table th:first-child,
+  .author-post-table td:first-child {
+    padding-left: 24px !important;
+  }
+
+  .author-post-table th:last-child,
+  .author-post-table td:last-child {
+    padding-right: 24px !important;
+  }
+
+  .author-post-actions-table .btn {
+    padding-inline: 10px;
+  }
 }
 
 /* 5. Table Action Buttons Uniformity (Height: 34px, Font: 12.5px, Icons: 14px) */

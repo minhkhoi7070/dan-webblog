@@ -3,7 +3,12 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Notifications\EmailVerificationOtpNotification;
+use App\Services\OtpService;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -19,6 +24,8 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        Notification::fake();
+
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
@@ -33,6 +40,73 @@ class RegistrationTest extends TestCase
         $this->assertNotNull($user);
         $this->assertFalse($user->hasVerifiedEmail());
         $this->assertNull($user->email_verified_at);
+        Notification::assertSentToTimes($user, EmailVerificationOtpNotification::class, 1);
+        $this->assertDatabaseCount('email_otps', 1);
+
+        $firstPage = $this->get('/verify-email');
+        $firstPage->assertOk();
+        $this->assertMatchesRegularExpression('/id="otp-expiry-container" data-seconds="(?:29[5-9]|300)"/', $firstPage->getContent());
+
+        $remaining = app(OtpService::class)->getExpiryRemaining($user->email, OtpService::PURPOSE_EMAIL_VERIFICATION);
+        $this->assertGreaterThanOrEqual(295, $remaining);
+
+        $this->travel(30)->seconds();
+        $reloadedPage = $this->get('/verify-email');
+        $reloadedPage->assertOk();
+        $this->assertMatchesRegularExpression('/id="otp-expiry-container" data-seconds="2(?:6[8-9]|70)"/', $reloadedPage->getContent());
+        $this->assertDatabaseCount('email_otps', 1);
+        Notification::assertSentToTimes($user, EmailVerificationOtpNotification::class, 1);
+        $this->assertEqualsWithDelta(270, app(OtpService::class)->getExpiryRemaining($user->email, OtpService::PURPOSE_EMAIL_VERIFICATION), 2);
+
+        $this->travel(271)->seconds();
+        $expiredPage = $this->get('/verify-email');
+        $expiredPage->assertSee('id="otp-expiry-container" data-seconds="0"', false);
+        $expiredPage->assertSee('00:00 (Đã hết hạn)');
+        $this->assertDatabaseCount('email_otps', 1);
+    }
+
+    public function test_registration_sends_otp_when_registered_event_did_not_create_one(): void
+    {
+        Event::fake([Registered::class]);
+        Notification::fake();
+
+        $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'fallback@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])->assertRedirect(route('verification.notice', absolute: false));
+
+        $user = User::where('email', 'fallback@example.com')->firstOrFail();
+        Notification::assertSentToTimes($user, EmailVerificationOtpNotification::class, 1);
+        $this->assertDatabaseCount('email_otps', 1);
+        $this->assertGreaterThan(0, app(OtpService::class)->getExpiryRemaining($user->email, OtpService::PURPOSE_EMAIL_VERIFICATION));
+    }
+
+    public function test_resending_after_cooldown_replaces_the_otp_and_refreshes_the_countdown(): void
+    {
+        Notification::fake();
+
+        $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'resend@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $user = User::where('email', 'resend@example.com')->firstOrFail();
+        $firstOtp = $user->emailOtps()->firstOrFail();
+
+        $this->travel(61)->seconds();
+        $this->post('/email/verification-notification')->assertSessionHas('status', 'verification-link-sent');
+
+        Notification::assertSentToTimes($user, EmailVerificationOtpNotification::class, 2);
+        $this->assertNotNull($firstOtp->fresh()->consumed_at);
+        $this->assertDatabaseCount('email_otps', 2);
+        $this->assertMatchesRegularExpression(
+            '/id="otp-expiry-container" data-seconds="(?:29[5-9]|300)"/',
+            $this->get('/verify-email')->getContent()
+        );
     }
 
     public function test_registration_validation_vietnamese_messages(): void

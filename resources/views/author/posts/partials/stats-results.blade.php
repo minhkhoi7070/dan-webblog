@@ -1,13 +1,20 @@
-<div id="feed-results" tabindex="-1" aria-label="Danh sách bài viết của tác giả"
+<div id="feed-results" class="author-post-results" tabindex="-1" aria-label="Danh sách bài viết của tác giả"
      data-feed-url="{{ request()->fullUrl() }}"
      data-feed-total="{{ $posts->total() }}"
      data-feed-current-status="{{ $currentStatus ?? '' }}">
 
     <!-- Posts Table & Mobile Card View Container -->
     <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4">
-        <!-- Desktop Table View (>= 768px Tablet & Desktop) -->
-        <div class="table-responsive d-none d-md-block">
+        <!-- Use the table only when the content area has room for all five columns. -->
+        <div class="author-post-table">
             <table class="table table-hover align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
+                <colgroup>
+                    <col class="author-post-column-title">
+                    <col class="author-post-column-category">
+                    <col class="author-post-column-status">
+                    <col class="author-post-column-metrics">
+                    <col class="author-post-column-actions">
+                </colgroup>
                 <thead class="border-theme-bottom bg-surface-2">
                     <tr>
                         <th class="ps-3 ps-sm-4 py-3 label-uppercase text-theme-muted" style="font-size: 11px;">Bài viết</th>
@@ -30,8 +37,8 @@
                                             B
                                         </div>
                                     @endif
-                                    <div class="min-w-0" style="max-width: 420px;">
-                                        <a href="{{ route('posts.edit', $post) }}" data-app-nav class="dashboard-post-title text-truncate d-block" title="{{ $post->title }}">
+                                    <div class="min-w-0 flex-grow-1">
+                                        <a href="{{ route('posts.edit', $post) }}" data-app-nav class="dashboard-post-title line-clamp-2" title="{{ $post->title }}">
                                             {{ $post->title }}
                                         </a>
                                         <div class="dashboard-post-timestamp mt-1">
@@ -79,18 +86,16 @@
 
                             <!-- Metrics -->
                             <td class="py-3 small text-theme-secondary">
-                                <div class="d-flex align-items-center gap-2" style="font-size: 12px;">
+                                <div class="author-post-metrics author-post-metrics-table">
                                     <span>{{ number_format($post->views) }} views</span>
-                                    <span class="opacity-50">&bull;</span>
                                     <span>{{ $post->likers_count }} likes</span>
-                                    <span class="opacity-50">&bull;</span>
                                     <span>{{ $post->comments_count }} cmt</span>
                                 </div>
                             </td>
 
                             <!-- Actions -->
                             <td class="pe-3 pe-sm-4 py-3 text-end">
-                                <div class="d-flex align-items-center justify-content-end gap-2 flex-wrap flex-sm-nowrap">
+                                <div class="author-post-actions author-post-actions-table">
                                     <!-- Submit for review / publish button (Available if draft or rejected) -->
                                     @if(in_array($post->status, ['draft', 'rejected'], true))
                                         <form action="{{ route('posts.submit', $post) }}" method="POST" class="d-inline m-0">
@@ -186,12 +191,12 @@
             </table>
         </div>
 
-        <!-- Mobile Card View (< 768px: Mobile-First Responsive Cards) -->
-        <div class="d-block d-md-none divide-y divide-theme">
+        <!-- Cards keep the same information readable in narrower content areas. -->
+        <div class="author-post-cards divide-y divide-theme">
             @forelse($posts as $post)
-                <div class="p-3">
-                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-                        <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                <div class="author-post-card">
+                    <div class="author-post-details">
+                        <div class="author-post-badges">
                             @if($post->status === 'published')
                                 <x-badge variant="status-published" size="xs">Đã xuất bản</x-badge>
                             @elseif($post->status === 'pending')
@@ -205,12 +210,12 @@
                                 {{ $post->category->name }}
                             </span>
                         </div>
-                        <span class="small text-theme-muted" style="font-size: 11px;">
+                        <span class="author-post-date small text-theme-muted" style="font-size: 11px;">
                             {{ $post->updated_at->format('d/m/Y') }}
                         </span>
                     </div>
 
-                    <div class="d-flex align-items-start gap-2.5 mb-2.5">
+                    <div class="author-post-summary d-flex align-items-start gap-3">
                         @if($post->thumbnail)
                             <img src="{{ asset($post->thumbnail) }}" alt="" class="rounded-3 flex-shrink-0 border border-theme shadow-xs" style="width: 44px; height: 44px; object-fit: cover;">
                         @else
@@ -219,7 +224,7 @@
                             </div>
                         @endif
                         <div class="min-w-0 flex-grow-1">
-                            <a href="{{ route('posts.edit', $post) }}" data-app-nav class="fw-bold text-theme text-decoration-none hover-accent d-block line-clamp-2" style="font-size: 14.5px; line-height: 1.35;">
+                            <a href="{{ route('posts.edit', $post) }}" data-app-nav class="dashboard-post-title line-clamp-2" title="{{ $post->title }}">
                                 {{ $post->title }}
                             </a>
                             @if($post->status === 'rejected' && $post->rejection_reason)
@@ -234,8 +239,8 @@
                     </div>
 
                     <!-- Stats and Actions -->
-                    <div class="d-flex align-items-center justify-content-between gap-2 pt-2 border-theme-top flex-wrap">
-                        <div class="d-flex align-items-center gap-2 small text-theme-muted" style="font-size: 11.5px;">
+                    <div class="author-post-footer border-theme-top">
+                        <div class="author-post-metrics small text-theme-muted">
                             <span>{{ number_format($post->views) }} views</span>
                             <span>&bull;</span>
                             <span>{{ $post->likers_count }} likes</span>
@@ -243,7 +248,7 @@
                             <span>{{ $post->comments_count }} cmt</span>
                         </div>
 
-                        <div class="d-flex align-items-center gap-1.5 flex-shrink-0 ms-auto">
+                        <div class="author-post-actions author-post-actions-card">
                             @if(in_array($post->status, ['draft', 'rejected'], true))
                                 <form action="{{ route('posts.submit', $post) }}" method="POST" class="d-inline m-0">
                                     @csrf
@@ -272,7 +277,7 @@
                                   data-confirm-type="danger">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1.5 rounded-circle" title="Xóa bài viết" aria-label="Xóa bài viết">
+                                <button type="submit" class="btn btn-sm btn-outline-danger px-2.5 py-1" title="Xóa bài viết" aria-label="Xóa bài viết">
                                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                 </button>
                             </form>

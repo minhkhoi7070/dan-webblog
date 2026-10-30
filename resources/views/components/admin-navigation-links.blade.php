@@ -84,7 +84,7 @@
         </a>
 
         <a href="{{ route('profile.edit') }}"
-           class="{{ $linkClass }} {{ request()->routeIs('profile.*') ? 'active' : '' }}"
+           class="{{ $linkClass }} {{ request()->routeIs('profile.edit') ? 'active' : '' }}"
            title="Cài đặt tài khoản"
            aria-label="Cài đặt"
            @if($isDrawer) data-bs-dismiss="offcanvas" data-app-nav @endif>

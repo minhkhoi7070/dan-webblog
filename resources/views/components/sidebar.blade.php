@@ -1,9 +1,30 @@
-<aside class="d-none d-md-flex flex-column position-fixed top-0 bottom-0 start-0 border-theme-right bg-theme-surface px-2 px-lg-3 py-4 user-select-none sidebar-container" style="z-index: 1040;">
-    <!-- Brand Logo -->
-    <a href="{{ route('posts.index') }}" class="brand-link flex items-center gap-2.5 font-bold text-xl tracking-tight text-decoration-none px-2 mb-4" aria-label="CloudBlog Trang chủ">
-        <x-logo class="w-11 h-11" />
-        <span class="brand-text sidebar-label">CloudBlog</span>
-    </a>
+<!-- Tablet Sidebar Overlay Backdrop (768px-991px) -->
+<div id="sidebarBackdrop" class="sidebar-backdrop d-none" aria-hidden="true"></div>
+
+<aside id="appSidebar" class="d-none d-md-flex flex-column position-fixed top-0 bottom-0 start-0 border-theme-right bg-theme-surface px-2 px-lg-3 py-4 user-select-none sidebar-container" style="z-index: 1040;">
+    <!-- Brand Logo & Tablet Toggle Header -->
+    <div class="sidebar-header d-flex align-items-center mb-4">
+        <a href="{{ route('posts.index') }}" class="brand-link flex items-center gap-2.5 font-bold text-xl tracking-tight text-decoration-none px-2" aria-label="CloudBlog Trang chủ">
+            <x-logo class="w-11 h-11" />
+            <span class="brand-text sidebar-label">CloudBlog</span>
+        </a>
+
+        <!-- Tablet Sidebar Toggle Button (768px <= width < 992px) -->
+        <button type="button"
+                id="tabletSidebarToggle"
+                class="sidebar-toggle-btn d-none d-md-inline-flex d-lg-none align-items-center justify-content-center"
+                aria-label="Mở rộng menu"
+                aria-expanded="false"
+                aria-controls="appSidebar"
+                title="Mở rộng menu">
+            <svg class="sidebar-toggle-icon sidebar-toggle-icon--menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <svg class="sidebar-toggle-icon sidebar-toggle-icon--close d-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
 
     <!-- Primary Nav Links -->
     <nav class="d-flex flex-column gap-1 flex-grow-1 overflow-y-auto no-scrollbar" role="navigation" aria-label="Menu điều hướng chính">
@@ -104,7 +125,7 @@
                         <span class="sidebar-label small">Bình luận bài viết</span>
                     </a>
                     <a href="{{ route('profile.edit') }}"
-                       class="d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none {{ request()->routeIs('profile.*') ? 'active' : '' }}"
+                       class="d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none {{ request()->routeIs('profile.edit') ? 'active' : '' }}"
                        title="Cài đặt tài khoản"
                        aria-label="Cài đặt">
                         <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,7 +144,7 @@
             @else
                 <div class="my-2 border-theme-top pt-2">
                     <a href="{{ route('profile.edit') }}"
-                       class="d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none {{ request()->routeIs('profile.*') ? 'active' : '' }}"
+                       class="d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none {{ request()->routeIs('profile.edit') ? 'active' : '' }}"
                        title="Cài đặt tài khoản"
                        aria-label="Cài đặt">
                         <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">

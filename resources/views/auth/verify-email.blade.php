@@ -57,13 +57,15 @@
         <x-otp-input name="otp" :autofocus="true" />
 
         <!-- Expiry countdown timer -->
-        <div class="text-center small text-theme-secondary mb-3" id="otp-expiry-container" data-seconds="{{ $expiry ?? 300 }}">
+        <div class="text-center small text-theme-secondary mb-3" id="otp-expiry-container" data-seconds="{{ $expiry }}" data-has-otp="{{ $hasOtp ? '1' : '0' }}">
             <span class="d-inline-flex align-items-center gap-1.5">
                 <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span>Mã hết hạn sau:</span>
-                <strong class="text-theme" id="otp-expiry-timer">05:00</strong>
+                @if($hasOtp)
+                    <span>Mã hết hạn sau:</span>
+                @endif
+                <strong class="text-theme" id="otp-expiry-timer">{{ ! $hasOtp ? 'Chưa có mã OTP' : ($expiry === 0 ? '00:00 (Đã hết hạn)' : sprintf('%02d:%02d', intdiv($expiry, 60), $expiry % 60)) }}</strong>
             </span>
         </div>
 
@@ -104,19 +106,22 @@
         // Expiry countdown
         var expiryEl = document.getElementById('otp-expiry-timer');
         var expiryContainer = document.getElementById('otp-expiry-container');
-        var expirySeconds = parseInt(expiryContainer?.dataset.seconds || '300', 10);
+        var expirySeconds = parseInt(expiryContainer?.dataset.seconds || '0', 10);
+        var expiryDeadline = performance.now() + expirySeconds * 1000;
 
         function updateExpiry() {
-            if (expirySeconds <= 0) {
+            if (!expiryEl?.isConnected) return;
+            if (expiryContainer?.dataset.hasOtp !== '1') return;
+            var remaining = Math.max(0, Math.ceil((expiryDeadline - performance.now()) / 1000));
+            if (remaining <= 0) {
                 if (expiryEl) expiryEl.textContent = '00:00 (Đã hết hạn)';
                 return;
             }
-            var m = Math.floor(expirySeconds / 60);
-            var s = expirySeconds % 60;
+            var m = Math.floor(remaining / 60);
+            var s = remaining % 60;
             if (expiryEl) {
                 expiryEl.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
             }
-            expirySeconds--;
             setTimeout(updateExpiry, 1000);
         }
         updateExpiry();

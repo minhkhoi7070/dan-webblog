@@ -13,13 +13,18 @@
     <div class="offcanvas-body d-flex flex-column p-3 overflow-y-auto no-scrollbar">
         @auth
             <!-- User Profile Summary Card -->
-            <a href="{{ route('profile.show') }}" class="d-flex align-items-center gap-3 p-2.5 rounded-3 border border-theme bg-surface-2 text-decoration-none mb-3" data-bs-dismiss="offcanvas" data-app-nav>
-                <x-avatar :user="Auth::user()" size="md" />
-                <div class="min-w-0 flex-grow-1">
-                    <div class="fw-bold text-theme text-truncate" style="font-size: 14.5px;">{{ Auth::user()->name }}</div>
-                    <div class="small text-theme-muted text-truncate" style="font-size: 12px;">{{ '@' . (Auth::user()->username ?? strtolower(str_replace(' ', '', Auth::user()->name))) }}</div>
+            <a href="{{ route('profile.show') }}"
+               class="mobile-drawer-profile-card d-flex align-items-center rounded-3 border border-theme bg-surface-2 text-decoration-none"
+               style="padding: 13px 14px; gap: 12px; margin-top: 0; margin-bottom: 20px; transition: background-color var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;"
+               data-bs-dismiss="offcanvas"
+               data-app-nav>
+                <x-avatar :user="Auth::user()" size="md" class="flex-shrink-0" />
+                <div class="d-flex flex-column justify-content-center min-w-0 flex-grow-1" style="gap: 4px;">
+                    <div class="fw-bold text-theme text-truncate" style="font-size: 14.5px; line-height: 1.25;">{{ Auth::user()->name }}</div>
+                    <div class="small text-theme-muted text-truncate" style="font-size: 12px; line-height: 1.25;">{{ '@' . (Auth::user()->username ?? strtolower(str_replace(' ', '', Auth::user()->name))) }}</div>
                 </div>
-                <span class="sidebar-account__badge {{ Auth::user()->isAdmin() ? 'sidebar-account__badge--admin' : (Auth::user()->isAuthor() ? 'sidebar-account__badge--author' : 'sidebar-account__badge--viewer') }}">
+                <span class="sidebar-account__badge flex-shrink-0 ms-auto {{ Auth::user()->isAdmin() ? 'sidebar-account__badge--admin' : (Auth::user()->isAuthor() ? 'sidebar-account__badge--author' : 'sidebar-account__badge--viewer') }}"
+                      style="margin-left: 10px;">
                     {{ Auth::user()->isAdmin() ? 'Admin' : (Auth::user()->isAuthor() ? 'Tác giả' : 'Độc giả') }}
                 </span>
             </a>
@@ -78,7 +83,7 @@
                             <span class="small">Trang cá nhân</span>
                         </a>
                         @if(!Auth::user()->isAdmin())
-                        <a href="{{ route('profile.edit') }}" class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" data-bs-dismiss="offcanvas" data-app-nav>
+                        <a href="{{ route('profile.edit') }}" class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none sidebar-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" data-bs-dismiss="offcanvas" data-app-nav>
                             <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

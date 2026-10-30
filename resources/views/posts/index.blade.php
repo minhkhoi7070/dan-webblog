@@ -65,7 +65,7 @@
 
             <!-- Inline Post Composer Prompt (Substack Notes / Threads Style) -->
             @auth
-                <div class="d-flex align-items-center gap-3 p-3 p-sm-4 border-theme-bottom bg-theme-surface">
+                <div class="d-flex align-items-center gap-3 p-3 p-sm-4 border-theme-bottom bg-theme-surface" data-feed-for-you-composer>
                     <a href="{{ route('profile.show') }}" class="flex-shrink-0 text-decoration-none" aria-label="Hồ sơ của bạn">
                         <x-avatar :user="Auth::user()" size="sm" />
                     </a>
@@ -83,12 +83,12 @@
                     </div>
                     @if (Auth::user()->isAuthor() || Auth::user()->isAdmin())
                         <a href="{{ route('posts.create') }}"
-                            class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 flex-shrink-0"
+                            class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 flex-shrink-0 d-none d-lg-inline-flex align-items-center"
                             aria-label="Tạo bài viết mới">
                             Viết bài
                         </a>
                     @elseif(Auth::user()->role === 'viewer')
-                        <form method="POST" action="{{ route('author.become') }}" class="m-0 flex-shrink-0">
+                        <form method="POST" action="{{ route('author.become') }}" class="m-0 flex-shrink-0 d-none d-lg-block">
                             @csrf
                             <button type="submit" class="btn btn-sm btn-editorial-primary rounded-pill px-3 py-1"
                                 aria-label="Đăng ký trở thành tác giả">

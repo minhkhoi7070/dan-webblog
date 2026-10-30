@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
+use App\Services\OtpService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -44,6 +45,22 @@ class RegisteredUserController extends Controller
                 'user_id' => $user->id,
                 'email' => $user->email,
             ]);
+        }
+
+        /** @var OtpService $otpService */
+        $otpService = app(OtpService::class);
+
+        if ($otpService->getExpiryRemaining($user->email, OtpService::PURPOSE_EMAIL_VERIFICATION) === 0) {
+            try {
+                $user->sendEmailVerificationNotification();
+                $mailSent = true;
+            } catch (Throwable $e) {
+                $mailSent = false;
+                Log::error('Không thể cấp mã OTP xác minh khi đăng ký user: '.$e->getMessage(), [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                ]);
+            }
         }
 
         Auth::login($user);

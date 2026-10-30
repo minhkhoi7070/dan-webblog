@@ -120,6 +120,12 @@ export function initFeedShell(shell) {
      */
     const syncTopTabs = (targetUrl) => {
         const isFollowing = isFollowingUrl(targetUrl);
+        shell.querySelectorAll('[data-feed-for-you-composer]').forEach((composer) => {
+            composer.classList.toggle('d-none', isFollowing);
+        });
+        shell.querySelectorAll('[data-following-view-switcher]').forEach((switcher) => {
+            switcher.classList.toggle('d-none', !isFollowing);
+        });
         shell.querySelectorAll('.feed-tab, [data-feed-type]').forEach((tab) => {
             const type = tab.dataset.feedType || (tab.getAttribute('href')?.includes('/following') ? 'following' : 'for-you');
             const isActive = isFollowing ? (type === 'following') : (type === 'for-you');
@@ -271,7 +277,7 @@ export function initFeedShell(shell) {
         if (typeof document === 'undefined') return;
         const targetPath = cleanPath(targetUrl.pathname);
         const isFollowing = isFollowingUrl(targetUrl);
-        document.querySelectorAll('.sidebar-container .sidebar-link, .mobile-bottom-nav .mobile-bottom-nav-link').forEach((link) => {
+        document.querySelectorAll('.sidebar-container .sidebar-link, .mobile-drawer .sidebar-link, .mobile-bottom-nav .mobile-bottom-nav-link').forEach((link) => {
             const href = link.getAttribute('href');
             if (!href) return;
             try {

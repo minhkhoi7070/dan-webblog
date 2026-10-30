@@ -120,6 +120,12 @@ export function syncActiveMenu(doc = null, targetUrl = null) {
             });
         }
 
+        const newActiveDrawer = doc.querySelector('.mobile-drawer .sidebar-link.active');
+        const activeDrawerHref = newActiveDrawer?.getAttribute('href') ?? newActiveSidebar?.getAttribute('href');
+        document.querySelectorAll('.mobile-drawer .sidebar-link').forEach((link) => {
+            link.classList.toggle('active', Boolean(activeDrawerHref && link.getAttribute('href') === activeDrawerHref));
+        });
+
         const newActiveMobile = doc.querySelector('.mobile-bottom-nav .mobile-bottom-nav-link.active');
         if (newActiveMobile) {
             const activeHref = newActiveMobile.getAttribute('href');
@@ -131,7 +137,7 @@ export function syncActiveMenu(doc = null, targetUrl = null) {
     }
 
     // Strategy 2: Optimistic client-side heuristic before server response
-    document.querySelectorAll('.sidebar-container .sidebar-link, .mobile-bottom-nav .mobile-bottom-nav-link').forEach((link) => {
+    document.querySelectorAll('.sidebar-container .sidebar-link, .mobile-drawer .sidebar-link, .mobile-bottom-nav .mobile-bottom-nav-link').forEach((link) => {
         const linkHref = link.getAttribute('href');
         if (!linkHref) return;
 
@@ -654,6 +660,14 @@ export function initAppNavigation(root = document) {
                     }, 100);
                 }
             });
+
+            // Ensure mobile drawer menu active state is always fresh upon opening
+            const drawerElement = document.getElementById('mobileAppDrawer');
+            if (drawerElement) {
+                drawerElement.addEventListener('show.bs.offcanvas', () => {
+                    syncActiveMenu(null, getCurrentLocation());
+                });
+            }
 
             // Ensure drawer closes cleanly and backdrop/scroll-lock is cleaned up when resizing past mobile breakpoint
             const handleDesktopBreakpoint = () => {
