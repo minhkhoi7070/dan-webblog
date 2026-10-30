@@ -25,12 +25,12 @@
     @endif
 
     <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl">
-        <form action="{{ route('admin.tags.store') }}" method="POST" class="d-flex flex-column gap-3.5">
+        <form action="{{ route('admin.tags.store') }}" method="POST" class="d-flex flex-column gap-3">
             @csrf
 
             <div>
-                <label for="name" class="label-uppercase text-theme mb-1.5 d-block">
-                    Tên thẻ (Tag Name) <span class="text-danger">*</span>
+                <label for="name" class="label-uppercase text-theme mb-2 d-block">
+                    Tên thẻ <span class="text-danger">*</span>
                 </label>
                 <div class="input-group">
                     <span class="input-group-text bg-surface-2 border-theme text-theme-muted font-monospace">#</span>
@@ -45,17 +45,17 @@
                         class="form-control form-control-editorial @error('name') is-invalid @enderror"
                     >
                 </div>
-                <div class="form-text small text-theme-muted mt-1" style="font-size: 11px;">
+                <div class="form-text small text-theme-muted mt-2" style="font-size: 11px;">
                     Dấu <code>#</code> thừa hoặc khoảng trắng sẽ tự động được chuẩn hóa.
                 </div>
                 @error('name')
-                    <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+                    <div class="invalid-feedback d-block mt-2">{{ $message }}</div>
                 @enderror
             </div>
 
             <div>
-                <label for="slug" class="label-uppercase text-theme mb-1.5 d-block">
-                    Đường dẫn tĩnh (Slug URL)
+                <label for="slug" class="label-uppercase text-theme mb-2 d-block">
+                    Đường dẫn thẻ
                 </label>
                 <input
                     type="text"
@@ -65,15 +65,15 @@
                     placeholder="VD: laravel (để trống nếu muốn hệ thống tự sinh)"
                     class="form-control form-control-editorial font-monospace @error('slug') is-invalid @enderror"
                 >
-                <div class="form-text small text-theme-muted mt-1" style="font-size: 11px;">
-                    Chỉ dùng chữ cái thường, số và dấu gạch ngang (-).
+                <div class="form-text small text-theme-muted mt-2" style="font-size: 11px;">
+                    Chỉ dùng chữ cái thường, số và dấu gạch ngang (-). Nếu để trống, hệ thống sẽ tự động tạo đường dẫn từ tên thẻ.
                 </div>
                 @error('slug')
-                    <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+                    <div class="invalid-feedback d-block mt-2">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div class="d-flex align-items-center justify-content-end gap-2.5 pt-3 border-theme-top mt-2">
+            <div class="d-flex align-items-center justify-content-end gap-2 pt-1 border-theme-top mt-0">
                 <a href="{{ route('admin.tags.index') }}" class="btn btn-outline-theme btn-sm rounded-pill px-3.5 py-1.5">
                     Hủy bỏ
                 </a>

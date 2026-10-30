@@ -9,10 +9,10 @@
      class="position-relative">
 
     <!-- Filter & Search Toolbar (Unified Height Toolbar) -->
-    <div class="card p-3 border-theme bg-theme-surface shadow-xs rounded-xl mb-4">
-        <form action="{{ route('admin.users.index') }}" method="GET" class="row g-2.5 align-items-center" data-feed-filter-form>
+    <div class="card p-3 border-theme bg-theme-surface shadow-xs rounded-xl mb-4 admin-users-filter-card">
+        <form action="{{ route('admin.users.index') }}" method="GET" class="row g-2.5 align-items-center admin-users-filter-form" data-feed-filter-form>
             <!-- Search Input -->
-            <div class="col-12 col-md-5">
+            <div class="col-12 col-md-5 admin-users-filter-search">
                 <div class="position-relative w-100">
                     <span
                         class="position-absolute d-flex align-items-center justify-content-center text-theme-muted"
@@ -64,11 +64,11 @@
             </div>
 
             <!-- Role Filter -->
-            <div class="col-12 col-sm-6 col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 admin-users-filter-role">
                 <select
                     name="role"
                     data-feed-auto-submit
-                    class="form-select form-control-editorial rounded-pill w-100"
+                    class="form-select form-control-editorial rounded-pill w-100 admin-users-filter-select"
                     style="height: 40px; font-size: 13px;"
                     aria-label="Lọc theo vai trò"
                 >
@@ -80,11 +80,11 @@
             </div>
 
             <!-- Status Filter -->
-            <div class="col-12 col-sm-6 col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 admin-users-filter-status">
                 <select
                     name="status"
                     data-feed-auto-submit
-                    class="form-select form-control-editorial rounded-pill w-100"
+                    class="form-select form-control-editorial rounded-pill w-100 admin-users-filter-select"
                     style="height: 40px; font-size: 13px;"
                     aria-label="Lọc theo trạng thái"
                 >
@@ -94,7 +94,7 @@
                 </select>
             </div>
 
-            <div class="col-12 col-md-1">
+            <div class="col-12 col-md-1 admin-users-filter-submit">
                 <button type="submit" class="btn btn-editorial-primary rounded-pill w-100 fw-semibold d-inline-flex align-items-center justify-content-center" style="height: 40px; font-size: 13px;">
                     Lọc
                 </button>

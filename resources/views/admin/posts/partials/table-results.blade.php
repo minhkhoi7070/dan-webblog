@@ -5,8 +5,21 @@
      data-feed-counts='@json($statusCounts ?? [])'>
 
     <!-- Posts Moderation Table (High Information Density) -->
-    <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4">
-        <div class="table-responsive">
+    <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4 admin-posts-table-card">
+        <div class="admin-posts-table-scroll-tools" data-posts-table-scroll-tools>
+            <p id="admin-posts-table-scroll-hint" class="admin-posts-table-scroll-hint small text-theme-muted mb-0">
+                Cuộn ngang để xem các cột còn lại.
+            </p>
+            <div class="admin-posts-table-scroll-controls" role="group" aria-label="Điều khiển cuộn ngang bảng bài viết">
+                <button type="button" class="btn btn-sm btn-outline-theme" data-posts-table-scroll="left" aria-label="Cuộn bảng bài viết sang trái" disabled>
+                    <span aria-hidden="true">&lsaquo;</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-theme" data-posts-table-scroll="right" aria-label="Cuộn bảng bài viết sang phải" disabled>
+                    <span aria-hidden="true">&rsaquo;</span>
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive admin-posts-table-scroll" role="region" tabindex="0" aria-label="Bảng bài viết có thể cuộn ngang" aria-describedby="admin-posts-table-scroll-hint">
             <table class="table table-hover align-middle mb-0 ap-table" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
                 <colgroup>
                     <col class="col-post">
@@ -18,7 +31,7 @@
                 </colgroup>
                 <thead class="border-theme-bottom bg-surface-2">
                     <tr>
-                        <th class="ap-col py-3 label-uppercase text-theme-muted col-post text-center" style="font-size: 11px;">Bài viết</th>
+                        <th class="ap-col py-3 label-uppercase text-theme-muted col-post text-start" style="font-size: 11px;">Bài viết</th>
                         <th class="ap-col py-3 label-uppercase text-theme-muted col-author text-start" style="font-size: 11px;">Tác giả</th>
                         <th class="ap-col py-3 label-uppercase text-theme-muted col-cat text-center" style="font-size: 11px;">Chuyên mục</th>
                         <th class="ap-col py-3 label-uppercase text-theme-muted col-status text-center" style="font-size: 11px;">Trạng thái</th>
@@ -30,19 +43,16 @@
                     @forelse($posts as $post)
                         <tr>
                             <!-- Post Title & Thumbnail -->
-                            <td class="ap-col py-3 col-post text-center">
+                            <td class="ap-col py-3 col-post text-start">
                                 <div class="ap-post-wrap">
-                                    <div class="ap-thumb flex-shrink-0">
+                                    <div class="ap-thumb {{ $post->thumbnail ? '' : 'is-fallback' }} flex-shrink-0">
                                         @if($post->thumbnail)
-                                            <img src="{{ asset($post->thumbnail) }}" alt="" class="rounded-2 border border-theme shadow-xs" style="width: 36px; height: 36px; object-fit: cover;">
-                                        @else
-                                            <div class="rounded-2 bg-surface-2 text-theme-muted d-flex align-items-center justify-content-center border border-theme fw-bold" style="width: 36px; height: 36px; font-size: 10px;">
-                                                B
-                                            </div>
+                                            <img src="{{ str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset($post->thumbnail) }}" alt="" class="rounded-2 border border-theme shadow-xs" loading="lazy" onerror="this.parentElement.classList.add('is-fallback');">
                                         @endif
+                                        <span class="ap-thumb__placeholder rounded-2 bg-surface-2 text-theme-muted border border-theme fw-bold" aria-hidden="true">B</span>
                                     </div>
                                     <div class="ap-post-text">
-                                        <a href="{{ route('admin.posts.show', $post) }}" class="fw-semibold text-theme text-decoration-none hover-accent ap-post-title text-truncate d-block" style="font-size: 13px;" title="{{ $post->title }}">
+                                        <a href="{{ route('admin.posts.show', $post) }}" class="fw-semibold text-theme text-decoration-none hover-accent ap-post-title d-block" style="font-size: 13px;" title="{{ $post->title }}">
                                             {{ $post->title }}
                                         </a>
                                         <div class="small text-theme-muted mt-0.5 ap-post-date" style="font-size: 11px;">
@@ -53,7 +63,7 @@
                             </td>
 
                             <!-- Author (Unified Single-Line Avatar + Name) -->
-                            <td class="ap-col py-3 col-author text-start">
+                            <td class="ap-col py-3 col-author text-start" data-label="Tác giả">
                                 <div class="ap-author-wrap">
                                     <div class="flex-shrink-0">
                                         <x-avatar :user="$post->user" size="xs" />
@@ -68,14 +78,14 @@
                             </td>
 
                             <!-- Category -->
-                            <td class="ap-col py-3 col-cat text-center">
+                            <td class="ap-col py-3 col-cat text-center" data-label="Chuyên mục">
                                 <span class="badge bg-surface-2 border border-theme text-theme-secondary rounded-pill fw-medium ap-badge" style="font-size: 11px;" title="{{ $post->category->name }}">
                                     {{ $post->category->name }}
                                 </span>
                             </td>
 
                             <!-- Status Badge -->
-                            <td class="ap-col py-3 col-status text-center">
+                            <td class="ap-col py-3 col-status text-center" data-label="Trạng thái">
                                 @if($post->status === 'published')
                                     <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill ap-badge" style="font-size: 11px;">
                                         Đã xuất bản
@@ -96,7 +106,7 @@
                             </td>
 
                             <!-- Interactions (Centered Vertical Stack) -->
-                            <td class="ap-col py-3 col-interact text-center">
+                            <td class="ap-col py-3 col-interact text-center" data-label="Tương tác">
                                 <div class="ap-interact text-theme-secondary">
                                     <span>{{ number_format($post->views) }} views</span>
                                     <span>{{ number_format($post->likers_count) }} likes</span>
@@ -105,7 +115,7 @@
                             </td>
 
                             <!-- Moderation Actions -->
-                            <td class="ap-col py-3 col-actions text-center">
+                            <td class="ap-col py-3 col-actions text-center" data-label="Thao tác">
                                 <div class="ap-actions-wrap">
                                     @if($post->status === 'pending')
                                         <!-- Approve Form -->
@@ -120,7 +130,7 @@
                                               data-confirm-btn-class="btn-success"
                                               data-confirm-type="success">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;" aria-label="Duyệt bài viết {{ $post->title }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-success admin-post-action--approve rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;" aria-label="Duyệt bài viết {{ $post->title }}">
                                                 Duyệt
                                             </button>
                                         </form>
@@ -142,7 +152,7 @@
                                               data-confirm-type="warning">
                                             @csrf
                                             <input type="hidden" name="rejection_reason" value="">
-                                            <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;" aria-label="Từ chối bài viết {{ $post->title }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning admin-post-action--reject rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;" aria-label="Từ chối bài viết {{ $post->title }}">
                                                 Từ chối
                                             </button>
                                         </form>
@@ -189,8 +199,8 @@
         </div>
 
         @if($posts->hasPages())
-            <div data-feed-pagination class="px-3 px-sm-4 py-3 border-theme-top bg-theme-surface d-flex justify-content-center">
-                {{ $posts->links() }}
+            <div data-feed-pagination class="admin-posts-pagination px-3 px-sm-4 py-3 border-theme-top bg-theme-surface">
+                {{ $posts->onEachSide(1)->links('admin.posts.partials.pagination') }}
             </div>
         @endif
     </div>

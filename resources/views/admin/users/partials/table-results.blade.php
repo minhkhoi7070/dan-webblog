@@ -3,13 +3,26 @@
      data-feed-total="{{ $users->total() }}">
 
     <!-- Users Database Table & Mobile Card View Container -->
-    <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4">
+    <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4 admin-users-table-card">
         <!-- Desktop Table View (>= 768px Tablet & Desktop) -->
-        <div class="table-responsive d-none d-md-block">
-            <table class="table table-hover align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
+        <div class="admin-users-table-scroll-tools" data-table-scroll-tools>
+            <p id="admin-users-table-scroll-hint" class="admin-users-table-scroll-hint small text-theme-muted mb-0">
+                Cuộn ngang để xem các cột còn lại.
+            </p>
+            <div class="admin-users-table-scroll-controls" role="group" aria-label="Điều khiển cuộn ngang bảng">
+                <button type="button" class="btn btn-sm btn-outline-theme" data-table-scroll="left" aria-label="Cuộn bảng sang trái" disabled>
+                    <span aria-hidden="true">&lsaquo;</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-theme" data-table-scroll="right" aria-label="Cuộn bảng sang phải" disabled>
+                    <span aria-hidden="true">&rsaquo;</span>
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive admin-users-table-scroll d-none d-md-block" role="region" tabindex="0" aria-label="Bảng người dùng có thể cuộn ngang" aria-describedby="admin-users-table-scroll-hint">
+            <table class="table table-hover align-middle mb-0 admin-users-table" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
                 <thead class="border-theme-bottom bg-surface-2">
                     <tr>
-                        <th class="ps-3 ps-sm-4 py-3 text-center label-uppercase text-theme-muted" style="font-size: 11px;">Người dùng</th>
+                        <th class="ps-3 ps-sm-4 py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Người dùng</th>
                         <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Vai trò</th>
                         <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Bài viết</th>
                         <th class="py-3 text-start label-uppercase text-theme-muted" style="font-size: 11px;">Bình luận</th>
@@ -75,7 +88,7 @@
 
                             <!-- Actions -->
                             <td class="pe-3 pe-sm-4 py-3 text-center">
-                                <div class="d-inline-flex align-items-center gap-1.5">
+                                <div class="d-inline-flex align-items-center gap-1.5 admin-users-table__actions">
                                     <a href="{{ route('admin.users.show', $user) }}" class="btn btn-sm btn-outline-theme rounded-pill px-2.5 py-1 text-theme-secondary" style="font-size: 11px;" aria-label="Xem chi tiết người dùng {{ $user->name }}">
                                         Chi tiết
                                     </a>
@@ -136,9 +149,9 @@
         </div>
 
         <!-- Mobile Card View (< 768px: Mobile-First Responsive Cards) -->
-        <div class="d-block d-md-none divide-y divide-theme">
+        <div class="d-block d-md-none divide-y divide-theme admin-users-mobile-list">
             @forelse($users as $user)
-                <div class="p-3">
+                <div class="p-3 admin-users-mobile-card">
                     <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
                         <div class="d-flex align-items-center gap-1.5 flex-wrap">
                             @if($user->role === 'admin')
@@ -244,8 +257,8 @@
     </div>
 
         @if($users->hasPages())
-            <div data-feed-pagination class="px-3 px-sm-4 py-3 border-theme-top bg-theme-surface d-flex justify-content-center">
-                {{ $users->links() }}
+            <div data-feed-pagination class="admin-users-pagination px-3 px-sm-4 py-3 border-theme-top bg-theme-surface">
+                {{ $users->onEachSide(1)->links('admin.users.partials.pagination') }}
             </div>
         @endif
     </div>

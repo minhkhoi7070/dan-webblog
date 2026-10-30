@@ -451,6 +451,23 @@
         color: #16a34a !important;
         transform: scale(1.04);
     }
+
+    html[data-theme="light"] .admin-dashboard .dashboard-warning-text,
+    html[data-theme="light"] .admin-dashboard .dashboard-warning-badge.text-warning {
+        color: #92400E !important;
+    }
+
+    html[data-theme="light"] .admin-dashboard .dashboard-warning-badge.text-warning {
+        background-color: #FFFBEB !important;
+        border-color: #FDE68A !important;
+    }
+
+    html[data-theme="dark"] .admin-dashboard .dashboard-warning-badge.text-warning,
+    html.dark .admin-dashboard .dashboard-warning-badge.text-warning {
+        color: #FDE68A !important;
+        background-color: #382A16 !important;
+        border-color: #785622 !important;
+    }
 </style>
 
 @php
@@ -550,7 +567,7 @@
 </p>
                     <div class="metric-footer">
                         <span>Tổng lưu lượng đọc toàn trang</span>
-                        <span class="ms-auto text-theme-muted">Tất cả bài viết</span>
+                        <a href="{{ route('admin.posts.index') }}" class="ms-auto text-theme-muted text-decoration-none">Tất cả bài viết</a>
                     </div>
                 </article>
             </div>
@@ -567,8 +584,8 @@
                     </div>
                     <p class="metric-value" data-metric="comments">{{ number_format($metrics['comments']) }}</p>
                     <div class="metric-footer">
-                        <span>Cần xử lý</span>
-                        <span class="badge {{ $moderationTotal > 0 ? 'bg-warning-subtle text-warning border border-warning' : 'bg-surface-2 border border-theme text-theme-muted' }}" data-metric="moderation">
+                        <span class="dashboard-warning-text">Cần xử lý</span>
+                        <span class="badge dashboard-warning-badge {{ $moderationTotal > 0 ? 'bg-warning-subtle text-warning border border-warning' : 'bg-surface-2 border border-theme text-theme-muted' }}" data-metric="moderation">
                             {{ number_format($moderationTotal) }}
                         </span>
                         @if($moderationTotal > 0)
@@ -596,8 +613,8 @@
             </a>
 
             <a href="{{ route('admin.posts.index', ['status' => 'pending']) }}" class="status-card {{ $metrics['pending'] > 0 ? 'active-filter' : '' }}">
-                <span class="status-label text-warning">Chờ duyệt</span>
-                <p class="status-value text-warning" data-metric="pending">{{ number_format($metrics['pending']) }}</p>
+                <span class="status-label text-warning dashboard-warning-text">Chờ duyệt</span>
+                <p class="status-value text-warning dashboard-warning-text" data-metric="pending">{{ number_format($metrics['pending']) }}</p>
             </a>
 
             <a href="{{ route('admin.posts.index', ['status' => 'published']) }}" class="status-card">

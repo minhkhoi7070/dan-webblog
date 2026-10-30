@@ -25,11 +25,11 @@
     @endif
 
     <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl">
-        <form action="{{ route('admin.categories.store') }}" method="POST" class="d-flex flex-column gap-3.5">
+        <form action="{{ route('admin.categories.store') }}" method="POST" class="d-flex flex-column gap-3">
             @csrf
 
             <div>
-                <label for="name" class="label-uppercase text-theme mb-1.5 d-block">
+                <label for="name" class="label-uppercase text-theme mb-2 d-block">
                     Tên chuyên mục <span class="text-danger">*</span>
                 </label>
                 <input
@@ -43,13 +43,13 @@
                     class="form-control form-control-editorial @error('name') is-invalid @enderror"
                 >
                 @error('name')
-                    <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+                    <div class="invalid-feedback d-block mt-2">{{ $message }}</div>
                 @enderror
             </div>
 
             <div>
-                <label for="slug" class="label-uppercase text-theme mb-1.5 d-block">
-                    Đường dẫn tĩnh (Slug URL)
+                <label for="slug" class="label-uppercase text-theme mb-2 d-block">
+                    Đường dẫn chuyên mục
                 </label>
                 <input
                     type="text"
@@ -59,13 +59,13 @@
                     placeholder="VD: tri-tue-nhan-tao (để trống nếu muốn tự sinh)"
                     class="form-control form-control-editorial font-monospace @error('slug') is-invalid @enderror"
                 >
-                <div class="small text-theme-muted mt-1" style="font-size: 11.5px;">Nếu để trống, hệ thống sẽ tự động tạo slug từ tên chuyên mục.</div>
+                <div class="small text-theme-muted mt-2" style="font-size: 11.5px;">Nếu để trống, hệ thống sẽ tự động tạo đường dẫn từ tên chuyên mục.</div>
                 @error('slug')
-                    <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+                    <div class="invalid-feedback d-block mt-2">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div class="d-flex align-items-center gap-2 pt-3 border-theme-top mt-2">
+            <div class="d-flex align-items-center gap-2 pt-1 border-theme-top mt-0">
                 <button
                     type="submit"
                     class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-2 fw-semibold"

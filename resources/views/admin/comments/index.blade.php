@@ -48,7 +48,7 @@
             data-feed-tab="pending"
             data-active-class="btn-warning text-dark fw-bold"
             data-inactive-class="btn-outline-theme text-warning"
-            class="btn btn-sm rounded-pill px-3 py-1 fw-medium {{ $currentStatus === 'pending' ? 'btn-warning text-dark fw-bold' : 'btn-outline-theme text-warning' }}"
+            class="btn btn-sm rounded-pill px-3 py-1 fw-medium admin-comments-pending {{ $currentStatus === 'pending' ? 'btn-warning text-dark fw-bold' : 'btn-outline-theme text-warning' }}"
             style="font-size: 12.5px;"
             @if($currentStatus === 'pending') aria-current="page" @endif
         >
