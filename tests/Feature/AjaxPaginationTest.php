@@ -239,7 +239,7 @@ class AjaxPaginationTest extends TestCase
         $response->assertOk()
             ->assertViewIs('posts.partials.feed-results')
             ->assertSee('id="feed-results"', false)
-            ->assertSee('Chưa có bài viết nào');
+            ->assertSee('Không tìm thấy bài viết');
 
         // 2. Out of bounds page redirects to max page
         Post::factory()->count(10)->published()->create();

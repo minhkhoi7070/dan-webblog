@@ -31,8 +31,7 @@ class PostCardThreadsRedesignTest extends TestCase
         // 1. Author, Category, and Timestamp must be rendered in header
         $response->assertSee('Đặng Minh Khôi');
         $response->assertSee('Công nghệ');
-        $response->assertSee('›');
-        $response->assertSee('•');
+        $response->assertSee('·');
         $response->assertSee('Bài viết mẫu Threads');
     }
 
@@ -137,6 +136,6 @@ class PostCardThreadsRedesignTest extends TestCase
         $this->assertStringContainsString('#Laravel', $view);
         $this->assertStringContainsString('#VueJS', $view);
         // Ensure there is distinct tag separation classes
-        $this->assertStringContainsString('d-flex align-items-center flex-wrap gap-2', $view);
+        $this->assertStringContainsString('threads-hashtag-list', $view);
     }
 }

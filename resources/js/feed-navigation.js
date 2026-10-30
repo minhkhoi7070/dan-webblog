@@ -80,6 +80,7 @@ export function initFeedShell(shell) {
     let previousCategory = currentUrl.searchParams.get('category') || '';
     let retryUrl = currentUrl;
     let navigationSequence = 0;
+    let skeletonTimer = null;
 
     const cleanPath = (path) => path.replace(/\/+$/, '') || '/';
 
@@ -310,10 +311,10 @@ export function initFeedShell(shell) {
     };
 
     /**
-     * Render skeleton cards into target results container
+     * Render skeleton cards into target results container (used on delayed threshold)
      */
-    const showSkeleton = () => {
-        const resultsEl = shell.querySelector(targetSelector) || document.querySelector(targetSelector);
+    const showSkeleton = (targetEl) => {
+        const resultsEl = targetEl || shell.querySelector(targetSelector) || document.querySelector(targetSelector);
         if (!resultsEl) return;
 
         resultsEl.setAttribute('aria-busy', 'true');
@@ -322,7 +323,6 @@ export function initFeedShell(shell) {
             resultsEl.innerHTML = '';
             resultsEl.appendChild(clone);
         } else {
-            resultsEl.style.opacity = '0.5';
             resultsEl.style.pointerEvents = 'none';
         }
     };
@@ -376,8 +376,36 @@ export function initFeedShell(shell) {
             }
         }
 
-        // 3. Render Skeleton Loading
-        showSkeleton();
+        if (skeletonTimer) {
+            clearTimeout(skeletonTimer);
+            skeletonTimer = null;
+        }
+
+        const targetId = targetSelector.startsWith('#') ? targetSelector.slice(1) : 'feed-results';
+        const currentResults = shell.querySelector(targetSelector)
+            || document.getElementById(targetId)
+            || document.getElementById('feed-results');
+
+        // Maintain current height during loading transition to prevent height collapse & scroll jump
+        if (currentResults) {
+            const currentHeight = currentResults.offsetHeight;
+            if (currentHeight > 0) {
+                currentResults.style.minHeight = `${currentHeight}px`;
+            }
+            currentResults.setAttribute('aria-busy', 'true');
+        }
+
+        // Delay skeleton injection by 160ms threshold: if network request returns quickly, skip skeleton completely (no flicker!)
+        skeletonTimer = setTimeout(() => {
+            if (sequence === navigationSequence) {
+                const liveResults = shell.querySelector(targetSelector)
+                    || document.getElementById(targetId)
+                    || document.getElementById('feed-results');
+                if (liveResults && liveResults.getAttribute('aria-busy') === 'true') {
+                    showSkeleton(liveResults);
+                }
+            }
+        }, 160);
 
         // 4. Dispatch feed-loading event for interaction state hydration
         document.dispatchEvent(new CustomEvent('blogmnm:feed-loading', {
@@ -390,8 +418,12 @@ export function initFeedShell(shell) {
                 return;
             }
 
+            if (skeletonTimer) {
+                clearTimeout(skeletonTimer);
+                skeletonTimer = null;
+            }
+
             const parsed = new DOMParser().parseFromString(result.html, 'text/html');
-            const targetId = targetSelector.startsWith('#') ? targetSelector.slice(1) : 'feed-results';
             const nextResults = parsed.querySelector(targetSelector)
                 || parsed.getElementById(targetId)
                 || parsed.getElementById('feed-results');
@@ -407,16 +439,23 @@ export function initFeedShell(shell) {
             }
 
             // 5. Smoothly replace feed results
-            const currentResults = shell.querySelector(targetSelector)
+            const activeResults = shell.querySelector(targetSelector)
                 || document.getElementById(targetId)
                 || document.getElementById('feed-results');
 
-            if (currentResults) {
-                currentResults.replaceWith(nextResults);
+            if (activeResults) {
+                activeResults.replaceWith(nextResults);
             }
             nextResults.removeAttribute('aria-busy');
             nextResults.style.opacity = '1';
             nextResults.style.pointerEvents = '';
+
+            // Cleanly release minHeight on next paint so natural height takes over smoothly (no empty white space)
+            requestAnimationFrame(() => {
+                if (nextResults) {
+                    nextResults.style.minHeight = '';
+                }
+            });
 
             // 6. Synchronize History & URL
             const nextState = {
@@ -479,6 +518,11 @@ export function initFeedShell(shell) {
             }));
 
         } catch (error) {
+            if (skeletonTimer) {
+                clearTimeout(skeletonTimer);
+                skeletonTimer = null;
+            }
+
             if (sequence !== navigationSequence) {
                 return;
             }
@@ -505,6 +549,7 @@ export function initFeedShell(shell) {
             const currentResults = shell.querySelector(targetSelector) || document.getElementById('feed-results');
             if (currentResults) {
                 currentResults.removeAttribute('aria-busy');
+                currentResults.style.minHeight = '';
                 currentResults.style.opacity = '1';
                 currentResults.style.pointerEvents = '';
             }

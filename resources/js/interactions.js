@@ -89,9 +89,246 @@ const initializeInteractions = () => {
     };
     const states = new Map();
     const buttonSelector = '[data-action="like"], [data-action="favorite"], [data-action="follow"]';
-    const buttonsFor = (action, id) => document.querySelectorAll(
-        `[data-action="${action}"][data-${action === 'follow' ? 'author-id' : 'post-id'}="${CSS.escape(id)}"]`
-    );
+    const buttonsFor = (action, id) => {
+        if (action === 'follow') {
+            return document.querySelectorAll(
+                `[data-action="follow"][data-author-id="${CSS.escape(id)}"], [data-action="quick-follow-open"][data-author-id="${CSS.escape(id)}"]`
+            );
+        }
+        return document.querySelectorAll(
+            `[data-action="${action}"][data-post-id="${CSS.escape(id)}"]`
+        );
+    };
+
+    const popoverState = {
+        element: null,
+        activeAuthorId: null,
+        activeTrigger: null,
+    };
+
+    const getOrCreatePopover = () => {
+        if (!popoverState.element) {
+            const popover = document.createElement('div');
+            popover.id = 'quick-follow-popover';
+            popover.className = 'quick-follow-popover';
+            popover.setAttribute('role', 'dialog');
+            popover.setAttribute('aria-modal', 'false');
+            popover.setAttribute('aria-labelledby', 'quick-follow-popover-title');
+
+            const title = document.createElement('h3');
+            title.id = 'quick-follow-popover-title';
+            title.className = 'quick-follow-popover-title';
+
+            const desc = document.createElement('p');
+            desc.id = 'quick-follow-popover-desc';
+            desc.className = 'quick-follow-popover-desc';
+
+            const actions = document.createElement('div');
+            actions.className = 'quick-follow-popover-actions';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'quick-follow-popover-btn-close';
+            closeBtn.textContent = 'Đóng';
+
+            const confirmBtn = document.createElement('button');
+            confirmBtn.type = 'button';
+            confirmBtn.className = 'quick-follow-popover-btn-confirm';
+
+            actions.append(closeBtn, confirmBtn);
+
+            const error = document.createElement('div');
+            error.className = 'quick-follow-popover-error d-none';
+            error.setAttribute('role', 'alert');
+
+            popover.append(title, desc, actions, error);
+            document.body.appendChild(popover);
+            popoverState.element = popover;
+
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                closePopover();
+            });
+
+            confirmBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (!popoverState.activeTrigger) return;
+                if (popoverState.activeTrigger.dataset.guest === 'true') {
+                    window.location.assign(popoverState.activeTrigger.dataset.loginUrl || '/login');
+                    return;
+                }
+                const authorId = popoverState.activeAuthorId;
+                const key = `follow:${authorId}`;
+                let entry = states.get(key);
+                if (!entry) {
+                    entry = createInteraction(popoverState.activeTrigger);
+                    states.set(key, entry);
+                }
+                if (entry) {
+                    confirmBtn.disabled = true;
+                    const isCurrentlyFollowing = entry.state.snapshot.state;
+                    confirmBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" style="width: 12px; height: 12px; border-width: 2px;"></span>${isCurrentlyFollowing ? 'Đang bỏ theo dõi...' : 'Đang theo dõi...'}`;
+                    hidePopoverError();
+                    try {
+                        await entry.state.toggle();
+                    } catch (err) {
+                        // handled by onError callback in createInteraction
+                    }
+                }
+            });
+        }
+        return popoverState.element;
+    };
+
+    const showPopoverError = (message) => {
+        if (!popoverState.element) return;
+        const errorEl = popoverState.element.querySelector('.quick-follow-popover-error');
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.classList.remove('d-none');
+        }
+    };
+
+    const hidePopoverError = () => {
+        if (!popoverState.element) return;
+        const errorEl = popoverState.element.querySelector('.quick-follow-popover-error');
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.classList.add('d-none');
+        }
+    };
+
+    const positionPopover = (trigger) => {
+        if (!popoverState.element || !trigger) return;
+        const rect = trigger.getBoundingClientRect();
+        const popoverWidth = popoverState.element.offsetWidth || 260;
+        const popoverHeight = popoverState.element.offsetHeight || 120;
+
+        let top = rect.bottom + 8;
+        let left = rect.left;
+
+        if (left + popoverWidth > window.innerWidth - 12) {
+            left = window.innerWidth - popoverWidth - 12;
+        }
+        if (left < 12) {
+            left = 12;
+        }
+
+        if (top + popoverHeight > window.innerHeight - 12) {
+            top = rect.top - popoverHeight - 8;
+        }
+        if (top < 12) {
+            top = 12;
+        }
+
+        popoverState.element.style.top = `${Math.round(top)}px`;
+        popoverState.element.style.left = `${Math.round(left)}px`;
+    };
+
+    const updateQuickFollowPopover = (authorId, snapshot) => {
+        if (!popoverState.element || !popoverState.element.classList.contains('is-open')) return;
+        if (popoverState.activeAuthorId !== authorId) return;
+
+        const popover = popoverState.element;
+        const title = popover.querySelector('.quick-follow-popover-title');
+        const desc = popover.querySelector('.quick-follow-popover-desc');
+        const confirmBtn = popover.querySelector('.quick-follow-popover-btn-confirm');
+        const authorName = popoverState.activeTrigger?.dataset.authorName || 'tác giả';
+
+        if (snapshot.state) {
+            title.textContent = `Đang theo dõi ${authorName}`;
+            desc.textContent = '';
+            desc.classList.add('d-none');
+            confirmBtn.className = 'quick-follow-popover-btn-confirm is-unfollow';
+            confirmBtn.textContent = 'Bỏ theo dõi';
+            confirmBtn.disabled = snapshot.pending;
+        } else {
+            title.textContent = `Theo dõi ${authorName}?`;
+            desc.textContent = 'Nhận bài viết mới từ tác giả này.';
+            desc.classList.remove('d-none');
+            confirmBtn.className = 'quick-follow-popover-btn-confirm is-follow';
+            confirmBtn.textContent = 'Theo dõi';
+            confirmBtn.disabled = snapshot.pending;
+        }
+
+        if (snapshot.pending) {
+            confirmBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" style="width: 12px; height: 12px; border-width: 2px;"></span>${snapshot.state ? 'Bỏ theo dõi' : 'Theo dõi'}`;
+        }
+        if (snapshot.uncertain) {
+            showPopoverError('Không thể đồng bộ trạng thái. Vui lòng thử lại.');
+        } else {
+            hidePopoverError();
+        }
+        positionPopover(popoverState.activeTrigger);
+    };
+
+    const openQuickFollowPopover = (trigger) => {
+        const authorId = trigger.dataset.authorId;
+        const authorName = trigger.dataset.authorName || 'tác giả';
+        const isGuest = trigger.dataset.guest === 'true';
+
+        if (popoverState.element?.classList.contains('is-open') && popoverState.activeTrigger === trigger) {
+            closePopover();
+            return;
+        }
+
+        closePopover();
+
+        popoverState.activeAuthorId = authorId;
+        popoverState.activeTrigger = trigger;
+        trigger.setAttribute('aria-expanded', 'true');
+
+        const popover = getOrCreatePopover();
+        const title = popover.querySelector('.quick-follow-popover-title');
+        const desc = popover.querySelector('.quick-follow-popover-desc');
+        const confirmBtn = popover.querySelector('.quick-follow-popover-btn-confirm');
+
+        hidePopoverError();
+
+        if (isGuest) {
+            title.textContent = `Theo dõi ${authorName}`;
+            desc.textContent = 'Đăng nhập để theo dõi tác giả.';
+            desc.classList.remove('d-none');
+            confirmBtn.className = 'quick-follow-popover-btn-confirm is-follow';
+            confirmBtn.textContent = 'Đăng nhập';
+            confirmBtn.disabled = false;
+        } else {
+            const key = `follow:${authorId}`;
+            const isCurrentlyFollowing = states.has(key)
+                ? states.get(key).state.snapshot.state
+                : (trigger.dataset.following === 'true' || trigger.getAttribute('aria-pressed') === 'true');
+
+            if (isCurrentlyFollowing) {
+                title.textContent = `Đang theo dõi ${authorName}`;
+                desc.textContent = '';
+                desc.classList.add('d-none');
+                confirmBtn.className = 'quick-follow-popover-btn-confirm is-unfollow';
+                confirmBtn.textContent = 'Bỏ theo dõi';
+                confirmBtn.disabled = false;
+            } else {
+                title.textContent = `Theo dõi ${authorName}?`;
+                desc.textContent = 'Nhận bài viết mới từ tác giả này.';
+                desc.classList.remove('d-none');
+                confirmBtn.className = 'quick-follow-popover-btn-confirm is-follow';
+                confirmBtn.textContent = 'Theo dõi';
+                confirmBtn.disabled = false;
+            }
+        }
+
+        popover.classList.add('is-open');
+        positionPopover(trigger);
+    };
+
+    const closePopover = () => {
+        if (!popoverState.element || !popoverState.element.classList.contains('is-open')) return;
+        popoverState.element.classList.remove('is-open');
+        if (popoverState.activeTrigger) {
+            popoverState.activeTrigger.setAttribute('aria-expanded', 'false');
+        }
+        popoverState.activeAuthorId = null;
+        popoverState.activeTrigger = null;
+        hidePopoverError();
+    };
 
     const renderInteraction = (action, id, snapshot) => {
         buttonsFor(action, id).forEach((button) => {
@@ -124,10 +361,18 @@ const initializeInteractions = () => {
                 }
             } else {
                 if (button.classList.contains('threads-avatar-follow-btn')) {
-                    button.classList.toggle('d-none', Boolean(snapshot.state));
-                    button.style.display = snapshot.state ? 'none' : 'flex';
-                    button.setAttribute('aria-label', `${snapshot.state ? 'Bỏ theo dõi' : 'Theo dõi'} ${button.dataset.authorName || ''}`.trim());
-                    button.setAttribute('title', snapshot.state ? 'Đang theo dõi' : 'Theo dõi');
+                    button.classList.remove('d-none');
+                    button.style.display = 'flex';
+                    button.dataset.following = String(snapshot.state);
+                    const authorName = button.dataset.authorName || '';
+                    const label = snapshot.state ? `Đang theo dõi ${authorName}`.trim() : `Theo dõi ${authorName}`.trim();
+                    button.setAttribute('aria-label', label);
+                    button.setAttribute('title', label);
+
+                    const plusIcon = button.querySelector('.follow-icon-plus');
+                    const checkIcon = button.querySelector('.follow-icon-check');
+                    if (plusIcon) plusIcon.classList.toggle('d-none', Boolean(snapshot.state));
+                    if (checkIcon) checkIcon.classList.toggle('d-none', !snapshot.state);
                 } else {
                     button.textContent = snapshot.state ? 'Đang theo dõi' : 'Theo dõi';
                     button.classList.toggle('btn-outline-theme', snapshot.state);
@@ -136,10 +381,13 @@ const initializeInteractions = () => {
                 }
             }
         });
-        if (action === 'follow' && snapshot.count !== null) {
-            document.querySelectorAll(`[data-follower-count][data-author-id="${CSS.escape(id)}"]`).forEach((label) => {
-                label.textContent = String(snapshot.count);
-            });
+        if (action === 'follow') {
+            updateQuickFollowPopover(id, snapshot);
+            if (snapshot.count !== null) {
+                document.querySelectorAll(`[data-follower-count][data-author-id="${CSS.escape(id)}"]`).forEach((label) => {
+                    label.textContent = String(snapshot.count);
+                });
+            }
         }
         if (action === 'favorite') {
             const total = document.querySelector('[data-favorites-total]');
@@ -151,7 +399,7 @@ const initializeInteractions = () => {
     };
 
     const createInteraction = (button) => {
-        const action = button.dataset.action;
+        const action = button.dataset.action === 'quick-follow-open' ? 'follow' : button.dataset.action;
         const definition = definitions[action];
         const id = button.dataset[definition.id];
         const url = button.dataset.url;
@@ -162,7 +410,7 @@ const initializeInteractions = () => {
             count: definition.count && data[definition.count] !== undefined ? Number(data[definition.count]) : null,
         });
         const state = new InteractionState({
-            state: button.getAttribute('aria-pressed') === 'true',
+            state: button.getAttribute('aria-pressed') === 'true' || button.dataset.following === 'true',
             count: initialCount,
             mutate: async (desired) => mapResult(await requestJson(url, {
                 method: 'POST',
@@ -172,18 +420,23 @@ const initializeInteractions = () => {
             reconcile: async () => mapResult(await requestJson(url)),
             onChange: (snapshot) => renderInteraction(action, id, snapshot),
             onError: (error, { reconciled }) => {
-                showToast(`${error.message}${reconciled ? '' : ' Hãy tải lại trang để kiểm tra trạng thái mới nhất.'}`, 'error');
+                if (popoverState.activeAuthorId === id && popoverState.element?.classList.contains('is-open')) {
+                    showPopoverError(error.message);
+                } else {
+                    showToast(`${error.message}${reconciled ? '' : ' Hãy tải lại trang để kiểm tra trạng thái mới nhất.'}`, 'error');
+                }
                 if (error.status === 401) window.location.assign(button.dataset.loginUrl || '/login');
             },
         });
-        return { state, action, id };
+        return { state, action, id, url };
     };
 
     let feedNavigation = null;
     const hydrateInteractions = (root = document, navigation = null) => {
         const seen = new Set();
-        root.querySelectorAll(buttonSelector).forEach((button) => {
-            const action = button.dataset.action;
+        const targets = root.querySelectorAll(`${buttonSelector}, [data-action="quick-follow-open"]:not([data-guest="true"])`);
+        targets.forEach((button) => {
+            const action = button.dataset.action === 'quick-follow-open' ? 'follow' : button.dataset.action;
             const id = button.dataset[definitions[action].id];
             if (!id || !button.dataset.url) return;
             const key = `${action}:${id}`;
@@ -197,7 +450,7 @@ const initializeInteractions = () => {
                 const expectedRevision = navigation
                     ? loadedState?.pending ? -1 : loadedState?.revision ?? 0
                     : existing.state.revision;
-                existing.state.hydrate(button.getAttribute('aria-pressed') === 'true', count, expectedRevision);
+                existing.state.hydrate(button.getAttribute('aria-pressed') === 'true' || button.dataset.following === 'true', count, expectedRevision);
             } else {
                 states.set(key, createInteraction(button));
             }
@@ -205,6 +458,7 @@ const initializeInteractions = () => {
     };
     hydrateInteractions();
     document.addEventListener('blogmnm:feed-loading', (event) => {
+        closePopover();
         feedNavigation = {
             id: event.detail?.navigationId,
             revisions: new Map(Array.from(states, ([key, entry]) => [key, {
@@ -217,6 +471,20 @@ const initializeInteractions = () => {
         hydrateInteractions(event.detail?.root || document, navigation);
     });
     document.addEventListener('click', (event) => {
+        const quickFollowBtn = event.target.closest('[data-action="quick-follow-open"]');
+        if (quickFollowBtn) {
+            event.preventDefault();
+            event.stopPropagation();
+            openQuickFollowPopover(quickFollowBtn);
+            return;
+        }
+
+        if (popoverState.element && popoverState.element.classList.contains('is-open')) {
+            if (!popoverState.element.contains(event.target)) {
+                closePopover();
+            }
+        }
+
         const button = event.target.closest(buttonSelector);
         if (!button || !button.dataset.url) return;
         event.preventDefault();
@@ -226,6 +494,28 @@ const initializeInteractions = () => {
         if (!states.has(key)) states.set(key, createInteraction(button));
         states.get(key).state.toggle();
     });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && popoverState.element?.classList.contains('is-open')) {
+            const trigger = popoverState.activeTrigger;
+            closePopover();
+            trigger?.focus();
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (popoverState.activeTrigger) {
+            positionPopover(popoverState.activeTrigger);
+        }
+    }, { passive: true });
+
+    window.addEventListener('scroll', () => {
+        if (popoverState.activeTrigger) {
+            positionPopover(popoverState.activeTrigger);
+        }
+    }, { passive: true });
+
+    window.addEventListener('popstate', () => closePopover());
 
     document.addEventListener('click', (event) => {
         const button = event.target.closest('[data-action="toggle-reply"]');

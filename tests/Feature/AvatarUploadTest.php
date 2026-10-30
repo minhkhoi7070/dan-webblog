@@ -174,7 +174,9 @@ class AvatarUploadTest extends TestCase
 
         $view = $this->actingAs($viewer)->view('components.post-card', ['post' => $post]);
         $view->assertSee('threads-avatar-follow-btn');
-        $view->assertSee('data-action="follow"', false);
+        $view->assertSee('data-action="quick-follow-open"', false);
+        $view->assertSee('follow-icon-plus');
+        $view->assertSee('follow-icon-check');
     }
 
     public function test_quick_follow_badge_not_rendered_for_author_on_own_posts(): void
@@ -183,7 +185,7 @@ class AvatarUploadTest extends TestCase
         $post = Post::factory()->published()->create(['user_id' => $author->id]);
 
         $view = $this->actingAs($author)->view('components.post-card', ['post' => $post]);
-        $view->assertDontSee('data-action="follow"', false);
+        $view->assertDontSee('data-action="quick-follow-open"', false);
         $view->assertDontSee('threads-avatar-follow-btn');
     }
 
@@ -194,6 +196,8 @@ class AvatarUploadTest extends TestCase
 
         $view = $this->view('components.post-card', ['post' => $post]);
         $view->assertSee('threads-avatar-follow-btn');
+        $view->assertSee('data-action="quick-follow-open"', false);
+        $view->assertSee('data-guest="true"', false);
         $view->assertSee(route('login'));
     }
 

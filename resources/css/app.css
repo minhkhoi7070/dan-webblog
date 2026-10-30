@@ -298,6 +298,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  scrollbar-gutter: stable;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -3364,7 +3365,6 @@ pre {
 
 /* Sticky Feed Header */
 .feed-top-header {
-  min-height: 56px;
   z-index: 1020;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -3376,30 +3376,115 @@ pre {
   }
 }
 .feed-top-header-inner {
-  min-height: 54px;
+  min-height: 56px;
+}
+.feed-tabs-container {
+  display: flex;
+  align-items: center;
+}
+.feed-search-section {
+  width: 100%;
+}
+@media (min-width: 576px) {
+  .feed-search-section {
+    width: auto;
+    flex: 0 0 auto;
+  }
 }
 .feed-search-wrapper {
-  max-width: 220px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
 }
-.feed-search-btn {
-  left: 10px;
-  width: 16px;
-  height: 16px;
-}
-@media (max-width: 480px) {
+@media (min-width: 576px) {
   .feed-search-wrapper {
-    max-width: 135px;
+    width: 240px;
+    max-width: 260px;
   }
-  .feed-search-wrapper input {
-    font-size: 11.5px;
-    padding-left: 28px;
+}
+
+/* Cố định nút cao bằng 100% ô input và căn giữa SVG bằng flex */
+.feed-search-btn {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 38px !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 3;
+  line-height: 1;
+  box-shadow: none !important;
+  color: var(--color-text-secondary) !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  transition: color var(--duration-fast, 150ms) var(--ease-standard);
+}
+.feed-search-btn:hover {
+  color: var(--color-text) !important;
+}
+
+.feed-search-icon {
+  width: 15px;
+  height: 15px;
+  display: block;
+  margin: 0;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.feed-search-input {
+  width: 100% !important;
+  height: 36px !important;
+  padding: 0 14px 0 38px !important;
+  font-size: 0.8125rem !important;
+  line-height: 34px !important;
+  border-radius: 9999px !important;
+  border: 1px solid var(--color-border) !important;
+  background-color: var(--color-surface-2) !important;
+  color: var(--color-text) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: border-color var(--duration-fast, 150ms) var(--ease-standard),
+              background-color var(--duration-fast, 150ms) var(--ease-standard),
+              box-shadow var(--duration-fast, 150ms) var(--ease-standard) !important;
+}
+.feed-search-input::placeholder {
+  color: var(--color-text-muted) !important;
+  opacity: 0.85;
+  font-size: 0.8125rem;
+}
+.feed-search-input:focus {
+  border-color: var(--color-interactive) !important;
+  background-color: var(--color-surface) !important;
+  box-shadow: 0 0 0 2px var(--color-interactive-soft, rgba(0, 112, 243, 0.15)) !important;
+  outline: none !important;
+  transform: none !important;
+}
+
+@media (max-width: 575.98px) {
+  .feed-top-header-inner {
+    padding-top: 0.25rem;
+    padding-bottom: 0.5rem;
   }
-  .feed-search-btn {
-    left: 8px;
+  .feed-search-input {
+    font-size: 16px !important; /* Prevents auto-zoom in iOS Safari */
+    line-height: 36px !important;
+  }
+  .feed-search-input::placeholder {
+    font-size: 13.5px;
   }
   .feed-tab {
-    padding: 0.75rem 0.15rem;
-    font-size: 13px;
+    padding: 0.65rem 0.2rem;
+    font-size: 13.5px;
   }
 }
 
@@ -3449,33 +3534,11 @@ pre {
   border-bottom: none !important;
 }
 
-/* Threads Avatar Follow '+' Badge */
-.threads-avatar-follow-btn {
-  width: 18px;
-  height: 18px;
-  background-color: var(--color-interactive);
-  color: var(--color-bg-canvas);
-  border: 2px solid var(--color-surface) !important;
-  transform: translate(3px, 3px);
-  bottom: 0;
-  right: 0;
-  z-index: 2;
-  transition: transform var(--duration-fast) var(--ease-standard),
-              opacity var(--duration-fast) var(--ease-standard);
-}
-.threads-avatar-follow-btn:hover {
-  transform: translate(3px, 3px) scale(1.15);
-}
-
-/* Threads Post Typography */
-.threads-post-title {
-  font-family: var(--font-sans);
-  color: var(--color-text-primary);
-  word-break: break-word;
-}
-
-/* Threads Post Card Interface (Meta Threads Style) */
+/* ==========================================================================
+   CloudBlog — Threads Post Card Layout & Typography
+   ========================================================================== */
 .threads-post {
+  align-items: flex-start;
   padding-top: 1rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--color-border);
@@ -3489,24 +3552,38 @@ pre {
   }
 }
 
-.threads-post-header {
-  margin-top: 0;
+/* 1. Avatar Column & Quick Follow Button */
+.threads-avatar-col {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  margin: 0;
+  padding: 0;
 }
 
-.threads-author-name {
-  font-size: 15px;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
+.threads-avatar-box {
+  position: relative;
+  display: block;
+  width: 38px;
+  height: 38px;
 }
 
-.threads-category-name {
-  font-size: 15px;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-  background: transparent !important;
-  background-color: transparent !important;
-  border: none !important;
-  padding: 0 !important;
+.threads-avatar-box > a {
+  display: block;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.threads-avatar-box img,
+.threads-avatar-box .avatar {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+  object-fit: cover;
+  display: block;
 }
 
 .threads-avatar-follow-btn {
@@ -3536,6 +3613,16 @@ pre {
   transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease;
 }
 
+/* Touch target hit area enlargement (accessible for mobile 320px/390px) */
+.threads-avatar-follow-btn::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+}
+
 .threads-avatar-follow-btn:hover {
   transform: scale(1.15);
   background-color: #262626;
@@ -3551,9 +3638,321 @@ pre {
   background-color: #e5e5e5;
 }
 
+/* 2. Header: Author Name & Metadata */
+.threads-post-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  min-width: 0;
+}
+
+.threads-header-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.threads-author-name {
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.threads-submeta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 6px;
+  row-gap: 2px;
+  font-size: 13px;
+  line-height: 1.35;
+  min-width: 0;
+}
+
+.threads-category-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary, inherit);
+  opacity: 0.82;
+  text-decoration: none;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  overflow-wrap: anywhere;
+}
+
+.threads-meta-dot {
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.55;
+  user-select: none;
+}
+
+.threads-post-time {
+  font-size: 13px;
+  line-height: 1.35;
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
+.threads-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-top: -2px;
+}
+
+/* 3. Post Title & Excerpt */
+.threads-post-link {
+  display: block;
+  margin: 0;
+  text-decoration: none;
+}
+
 .threads-post-title {
+  margin: 0;
   font-family: var(--font-sans);
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
   color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.threads-post-excerpt {
+  margin: 5px 0 0;
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  opacity: 0.9;
+  overflow-wrap: anywhere;
+}
+
+/* 4. Hashtags */
+.threads-hashtag-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 4px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  min-width: 0;
+}
+
+.threads-hashtag-item {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--color-text-secondary, inherit);
+  opacity: 0.78;
+  text-decoration: none;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.threads-hashtag-item:hover,
+.threads-hashtag-item:focus-visible {
+  opacity: 1;
+  color: var(--color-text-primary, currentColor);
+  text-decoration: underline;
+}
+
+/* 5. Media Gallery */
+.threads-media-wrapper {
+  margin-top: 10px;
+  margin-bottom: 4px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.threads-media-gallery {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.threads-media-gallery::-webkit-scrollbar {
+  display: none;
+}
+
+/* 6. Action Bar Wrapper */
+.threads-action-wrapper {
+  margin-top: 10px;
+  padding-top: 2px;
+}
+
+.threads-post [data-action="like"],
+.threads-post [data-action="comment"],
+.threads-post [data-action="share"],
+.threads-post [data-action="bookmark"],
+.threads-post [data-action="save"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   Quick Follow Popover (Threads style floating confirmation)
+   ========================================================================== */
+.quick-follow-popover {
+  position: fixed;
+  z-index: 1090;
+  width: 260px;
+  max-width: calc(100vw - 24px);
+  padding: 14px 16px;
+  background-color: var(--color-bg-surface, #ffffff);
+  color: var(--color-text-primary, #111827);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+[data-theme="dark"] .quick-follow-popover {
+  background-color: var(--color-bg-surface, #1e1e1e);
+  color: var(--color-text-primary, #f3f4f6);
+  border-color: var(--color-border, #2d2d2d);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.quick-follow-popover.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.quick-follow-popover-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  line-height: 1.35;
+  color: var(--color-text-primary, currentColor);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.quick-follow-popover-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary, #6b7280);
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
+.quick-follow-popover-desc:empty {
+  display: none;
+  margin-bottom: 8px;
+}
+
+.quick-follow-popover-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.quick-follow-popover-btn-close {
+  font-size: 13px;
+  padding: 5px 12px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary, #6b7280);
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.quick-follow-popover-btn-close:hover,
+.quick-follow-popover-btn-close:focus-visible {
+  color: var(--color-text-primary, currentColor);
+  background-color: var(--color-bg-subtle, rgba(0, 0, 0, 0.05));
+}
+
+.quick-follow-popover-btn-confirm {
+  font-size: 13px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.quick-follow-popover-btn-confirm:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.quick-follow-popover-btn-confirm:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Primary confirm (Theo dõi / Đăng nhập) */
+.quick-follow-popover-btn-confirm.is-follow {
+  background-color: var(--color-interactive, #000000);
+  color: var(--color-bg-canvas, #ffffff);
+}
+
+[data-theme="dark"] .quick-follow-popover-btn-confirm.is-follow {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.quick-follow-popover-btn-confirm.is-follow:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+/* Outline confirm (Bỏ theo dõi) */
+.quick-follow-popover-btn-confirm.is-unfollow {
+  background-color: transparent;
+  color: var(--color-danger, #ef4444);
+  border-color: var(--color-danger, #ef4444);
+}
+
+.quick-follow-popover-btn-confirm.is-unfollow:hover:not(:disabled) {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.quick-follow-popover-error {
+  font-size: 12px;
+  color: var(--color-danger, #ef4444);
+  margin-top: 8px;
+  line-height: 1.35;
   word-break: break-word;
 }
 
@@ -3820,6 +4219,147 @@ pre {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+/* ==========================================================================
+   Favorites Page — Minimalist Threads Header & Layout
+   ========================================================================== */
+.favorites-header {
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(8px);
+}
+
+.favorites-title {
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+}
+
+.favorites-counter-badge {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------
+   Favorite Feed Dividers: Ensure horizontal line between posts
+   ------------------------------------------------------------ */
+[data-favorite-entry] .threads-post {
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+[data-favorite-entry]:last-child .threads-post {
+  border-bottom: none !important;
+}
+
+[data-favorite-entry][data-saved="false"] {
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+
+/* ==========================================================================
+   Activity Page — Threads-Inspired Minimalist Activity Feed
+   ========================================================================== */
+.activity-header {
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.activity-title {
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+}
+
+.activity-filter-btn {
+  border-color: var(--color-border) !important;
+  color: var(--color-text-secondary) !important;
+  background-color: var(--color-surface-2) !important;
+  transition: all var(--duration-fast, 150ms) var(--ease-standard);
+}
+
+.activity-filter-btn:hover {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-border-medium) !important;
+}
+
+.activity-item {
+  position: relative;
+  background-color: transparent;
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-sans);
+  transition: background-color var(--duration-fast, 150ms) var(--ease-standard);
+}
+
+.activity-item:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.activity-item:last-child {
+  border-bottom: none !important;
+}
+
+.activity-item-avatar-col {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+}
+
+.activity-item-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  max-width: 18px;
+  max-height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-surface);
+  z-index: 2;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.activity-item-badge.badge-comment {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.activity-item-badge.badge-like {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+.activity-post-link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  transition: color var(--duration-fast, 150ms) var(--ease-standard);
+}
+
+.activity-post-link:hover {
+  color: var(--color-interactive, #0070f3) !important;
+}
+
+.activity-comment-body {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.activity-thumbnail-preview {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
 .feed-status {
   min-height: 1.25rem;
 }
@@ -3828,16 +4368,83 @@ pre {
 }
 #feed-results {
   position: relative;
+  outline: none;
 }
 #feed-results[aria-busy="true"]::before {
   content: '';
   position: absolute;
   inset: 0 0 auto;
-  z-index: 1;
+  z-index: 2;
   height: 2px;
-  background: var(--color-interactive);
-  opacity: 0.55;
+  background: var(--color-interactive, #0070f3);
+  animation: feedProgressIndeterminate 1.2s ease-in-out infinite;
   pointer-events: none;
+}
+@keyframes feedProgressIndeterminate {
+  0% {
+    left: 0;
+    right: 100%;
+  }
+  50% {
+    left: 20%;
+    right: 20%;
+  }
+  100% {
+    left: 100%;
+    right: 0;
+  }
+}
+.feed-filter-indicator {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+.feed-clear-filter-btn {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  transition: color var(--duration-fast, 150ms) var(--ease-standard);
+}
+.feed-clear-filter-btn:hover {
+  color: var(--color-interactive);
+}
+[data-feed-pagination] .pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+}
+[data-feed-pagination] .page-item .page-link {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.75rem;
+  font-size: 13.5px;
+  border-radius: var(--radius-md, 8px) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border) !important;
+  background-color: transparent !important;
+  color: var(--color-text-secondary) !important;
+  box-shadow: none !important;
+  transition: all var(--duration-fast, 150ms) var(--ease-standard);
+}
+[data-feed-pagination] .page-item:not(.active):not(.disabled) .page-link:hover {
+  background-color: var(--color-surface-2) !important;
+  border-color: var(--color-border-medium) !important;
+  color: var(--color-text) !important;
+}
+[data-feed-pagination] .page-item.active .page-link {
+  background-color: var(--color-text) !important;
+  border-color: var(--color-text) !important;
+  color: var(--color-canvas) !important;
+  font-weight: 600;
+}
+[data-feed-pagination] .page-item.disabled .page-link {
+  border-color: var(--color-border) !important;
+  color: var(--color-text-muted) !important;
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .btn-action-interactive:focus-visible {
   outline: 2px solid var(--color-interactive) !important;

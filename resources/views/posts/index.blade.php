@@ -5,49 +5,48 @@
 
     <div class="w-100 d-flex justify-content-center px-0 px-sm-3 py-0 py-sm-3 py-md-4">
         <div class="w-100 feed-container bg-theme-surface border-0 border-sm-start border-sm-end border-sm-top border-sm-bottom border-theme rounded-0 rounded-sm-4 overflow-hidden mb-4"
-             data-feed-shell
-             data-feed-base-url="{{ route('posts.index') }}"
-             data-feed-home-url="{{ route('home') }}"
-             @auth data-feed-following-url="{{ route('following.index') }}" @endauth>
+            data-feed-shell data-feed-base-url="{{ route('posts.index') }}" data-feed-home-url="{{ route('home') }}"
+            @auth data-feed-following-url="{{ route('following.index') }}" @endauth>
 
-            <!-- Feed Top Header (Editorial / Substack Style Header) -->
+            <!-- Feed Top Header (Editorial / Threads Style Header) -->
             <div class="sticky-top bg-theme-surface border-theme-bottom px-3 px-sm-4 feed-top-header">
-                <div class="d-flex align-items-center justify-content-between gap-2 gap-sm-3 feed-top-header-inner">
-                    <div class="d-flex align-items-center gap-2 gap-sm-4" role="tablist" aria-label="Bộ lọc bài viết" data-feed-tabs>
-                        <a href="{{ route('home') }}" class="feed-tab active" role="tab" aria-selected="true" tabindex="0" data-feed-type="for-you">
+                <div
+                    class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center justify-content-between gap-2 gap-sm-3 feed-top-header-inner">
+                    <div class="d-flex align-items-center gap-2 gap-sm-4 feed-tabs-container" role="tablist"
+                        aria-label="Bộ lọc bài viết" data-feed-tabs>
+                        <a href="{{ route('home') }}" class="feed-tab active" role="tab" aria-selected="true"
+                            tabindex="0" data-feed-type="for-you">
                             Dành cho bạn
                         </a>
                         @auth
-                            <a href="{{ route('following.index') }}" class="feed-tab" role="tab" aria-selected="false" data-feed-type="following">
-                                Đang theo dõi
-                            </a>
-                        @else
-                            <a href="{{ route('login') }}" class="feed-tab" role="tab" aria-selected="false" title="Đăng nhập để xem bài viết từ tác giả đang theo dõi">
+                            <a href="{{ route('following.index') }}" class="feed-tab" role="tab" aria-selected="false"
+                                data-feed-type="following">
                                 Đang theo dõi
                             </a>
                         @endauth
                     </div>
 
                     <!-- Search Input -->
-                    <div class="position-relative d-flex align-items-center flex-grow-1 flex-sm-grow-0 justify-content-end">
+                    <div class="feed-search-section d-flex align-items-center justify-content-end">
                         <form action="{{ route('posts.index') }}" method="GET"
                             class="d-flex align-items-center m-0 w-100 justify-content-end" role="search">
                             @if ($currentCategorySlug)
                                 <input type="hidden" name="category" value="{{ $currentCategorySlug }}">
                             @endif
                             <div class="position-relative d-flex align-items-center w-100 feed-search-wrapper">
-                                <input type="search" id="feed-search-input" name="q" value="{{ $search }}"
-                                    placeholder="Tìm kiếm bài viết..." autocomplete="off"
-                                    class="form-control form-control-sm rounded-pill ps-4 pe-3 py-1.5 text-xs"
-                                    aria-label="Tìm kiếm bài viết">
                                 <button type="submit"
-                                    class="btn btn-link p-0 position-absolute border-0 text-theme-secondary d-flex align-items-center justify-content-center cursor-pointer feed-search-btn"
+                                    class="btn btn-link p-0 position-absolute top-0 bottom-0 start-0 h-100 border-0 text-theme-secondary d-flex align-items-center justify-content-center cursor-pointer feed-search-btn"
                                     aria-label="Tìm kiếm" title="Tìm kiếm">
-                                    <svg class="icon-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="feed-search-icon" width="15" height="15" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                 </button>
+                                <input type="search" id="feed-search-input" name="q" value="{{ $search }}"
+                                    placeholder="Tìm kiếm bài viết..." autocomplete="off"
+                                    class="form-control rounded-pill feed-search-input"
+                                    aria-label="Tìm kiếm bài viết">
                             </div>
                         </form>
                     </div>
@@ -101,24 +100,23 @@
             @endauth
 
             <!-- Category Filter Horizontal Chips -->
-            <nav class="px-3 px-sm-4 py-2.5 border-theme-bottom bg-theme-surface" aria-label="Bộ lọc chuyên mục" data-feed-categories-nav>
+            <nav class="px-3 px-sm-4 py-2.5 bg-theme-surface" aria-label="Bộ lọc chuyên mục"
+                data-feed-categories-nav>
                 <div class="d-flex align-items-center gap-2 overflow-x-auto no-scrollbar py-1" role="navigation">
                     <!-- All Categories -->
-                    <a href="{{ route('posts.index', array_filter(['q' => $search])) }}"
-                        data-feed-category=""
+                    <a href="{{ route('posts.index', array_filter(['q' => $search])) }}" data-feed-category=""
                         data-feed-category-chip
                         class="btn btn-sm rounded-pill flex-shrink-0 py-1 px-3 small {{ empty($currentCategorySlug) ? 'btn-editorial-primary' : 'btn-outline-theme' }}"
-                        @if(empty($currentCategorySlug)) aria-current="page" @endif>
+                        @if (empty($currentCategorySlug)) aria-current="page" @endif>
                         Tất cả
                     </a>
 
                     <!-- Categories -->
                     @foreach ($categories as $category)
                         <a href="{{ route('posts.index', array_filter(['category' => $category->slug, 'q' => $search])) }}"
-                            data-feed-category="{{ $category->slug }}"
-                            data-feed-category-chip
+                            data-feed-category="{{ $category->slug }}" data-feed-category-chip
                             class="btn btn-sm rounded-pill flex-shrink-0 py-1 px-3 small {{ $currentCategorySlug === $category->slug ? 'btn-editorial-primary' : 'btn-outline-theme' }}"
-                            @if($currentCategorySlug === $category->slug) aria-current="page" @endif>
+                            @if ($currentCategorySlug === $category->slug) aria-current="page" @endif>
                             {{ $category->name }}
                         </a>
                     @endforeach
@@ -143,7 +141,8 @@
                 <div class="feed-skeleton-card">
                     <!-- Author Row -->
                     <div class="d-flex align-items-center gap-2 mb-2">
-                        <div class="skeleton-shimmer rounded-circle" style="width: 32px; height: 32px; flex-shrink: 0;"></div>
+                        <div class="skeleton-shimmer rounded-circle" style="width: 32px; height: 32px; flex-shrink: 0;">
+                        </div>
                         <div class="d-flex flex-column gap-1 flex-grow-1">
                             <div class="skeleton-shimmer" style="width: 120px; height: 13px;"></div>
                             <div class="skeleton-shimmer" style="width: 60px; height: 10px;"></div>

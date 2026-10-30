@@ -144,8 +144,8 @@ class FeedNavigationTest extends TestCase
             ->get(route('posts.index', ['category' => $emptyCategory->slug]));
 
         $response->assertOk()
-            ->assertSee('Chưa có bài viết nào phù hợp')
-            ->assertSee('Quay lại tất cả bài viết');
+            ->assertSee('Không tìm thấy bài viết')
+            ->assertSee('Xem tất cả bài viết');
     }
 
     public function test_home_feed_has_unified_tabs_with_proper_data_attributes(): void
@@ -228,5 +228,37 @@ class FeedNavigationTest extends TestCase
         $this->withHeader('X-BlogMNM-Feed', '1')
             ->get(route('following.index'))
             ->assertRedirect(route('login'));
+    }
+
+    public function test_guest_only_sees_for_you_tab_on_home_feed(): void
+    {
+        $response = $this->get(route('home'));
+
+        $response->assertOk()
+            ->assertViewIs('posts.index')
+            ->assertSee('Dành cho bạn')
+            ->assertDontSee('Đang theo dõi')
+            ->assertDontSee('data-feed-type="following"', false)
+            ->assertDontSee(route('following.index'))
+            ->assertDontSee('data-feed-following-url', false);
+    }
+
+    public function test_viewer_author_and_admin_see_both_tabs_on_home_feed(): void
+    {
+        $viewer = User::factory()->viewer()->create();
+        $author = User::factory()->author()->create();
+        $admin = User::factory()->admin()->create();
+
+        foreach ([$viewer, $author, $admin] as $user) {
+            $response = $this->actingAs($user)->get(route('home'));
+
+            $response->assertOk()
+                ->assertViewIs('posts.index')
+                ->assertSee('Dành cho bạn')
+                ->assertSee('Đang theo dõi')
+                ->assertSee('data-feed-type="following"', false)
+                ->assertSee(route('following.index'))
+                ->assertSee('data-feed-following-url="'.route('following.index').'"', false);
+        }
     }
 }

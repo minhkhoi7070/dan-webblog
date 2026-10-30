@@ -11,8 +11,8 @@
          data-feed-following-url="{{ route('following.index') }}">
         <!-- Feed Top Header (Editorial / Threads Style Header) -->
         <div class="sticky-top bg-theme-surface border-theme-bottom px-3 px-sm-4 feed-top-header">
-            <div class="d-flex align-items-center justify-content-between gap-2 gap-sm-3 feed-top-header-inner">
-                <div class="d-flex align-items-center gap-2 gap-sm-4" role="tablist" aria-label="Bộ lọc bài viết" data-feed-tabs>
+            <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center justify-content-between gap-2 gap-sm-3 feed-top-header-inner">
+                <div class="d-flex align-items-center gap-2 gap-sm-4 feed-tabs-container" role="tablist" aria-label="Bộ lọc bài viết" data-feed-tabs>
                     <a href="{{ route('home') }}" class="feed-tab" role="tab" aria-selected="false" data-feed-type="for-you">
                         Dành cho bạn
                     </a>
@@ -22,22 +22,23 @@
                 </div>
 
                 <!-- Search Input -->
-                <div class="position-relative d-flex align-items-center flex-grow-1 flex-sm-grow-0 justify-content-end">
+                <div class="feed-search-section d-flex align-items-center justify-content-end">
                     <form action="{{ route('posts.index') }}" method="GET"
                         class="d-flex align-items-center m-0 w-100 justify-content-end" role="search">
                         <div class="position-relative d-flex align-items-center w-100 feed-search-wrapper">
-                            <input type="search" id="feed-search-input" name="q" value=""
-                                placeholder="Tìm kiếm bài viết..." autocomplete="off"
-                                class="form-control form-control-sm rounded-pill ps-4 pe-3 py-1.5 text-xs"
-                                aria-label="Tìm kiếm bài viết">
                             <button type="submit"
-                                class="btn btn-link p-0 position-absolute border-0 text-theme-secondary d-flex align-items-center justify-content-center cursor-pointer feed-search-btn"
+                                class="btn btn-link p-0 position-absolute top-0 bottom-0 start-0 h-100 border-0 text-theme-secondary d-flex align-items-center justify-content-center cursor-pointer feed-search-btn"
                                 aria-label="Tìm kiếm" title="Tìm kiếm">
-                                <svg class="icon-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="feed-search-icon" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </button>
+
+                            <input type="search" id="feed-search-input" name="q" value="{{ request('q') }}"
+                                placeholder="Tìm kiếm bài viết..." autocomplete="off"
+                                class="form-control rounded-pill feed-search-input"
+                                aria-label="Tìm kiếm bài viết">
                         </div>
                     </form>
                 </div>
@@ -73,7 +74,7 @@
         </div>
 
         <!-- Category Filter Horizontal Chips (Hidden on Following feed) -->
-        <nav class="px-3 px-sm-4 py-2.5 border-theme-bottom bg-theme-surface d-none" aria-label="Bộ lọc chuyên mục" data-feed-categories-nav>
+        <nav class="px-3 px-sm-4 py-2.5 bg-theme-surface d-none" aria-label="Bộ lọc chuyên mục" data-feed-categories-nav>
             <div class="d-flex align-items-center gap-2 overflow-x-auto no-scrollbar py-1" role="navigation">
                 <a href="{{ route('posts.index') }}"
                     data-feed-category=""

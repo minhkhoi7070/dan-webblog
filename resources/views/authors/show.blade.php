@@ -73,16 +73,22 @@
             </div>
 
             <!-- Search -->
-            <form action="{{ route('authors.show', $author) }}" method="GET" class="position-relative m-0">
-                <input type="search"
-                       name="q"
-                       value="{{ $search }}"
-                       placeholder="Tìm trong bài tác giả..."
-                       class="form-control form-control-sm form-control-editorial rounded-pill ps-4 pe-3 py-1 small"
-                       style="max-width: 220px; font-size: 12px;">
-                <svg style="width: 13px; height: 13px; position: absolute; left: 10px; top: 9px; pointer-events: none;" class="text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+            <form action="{{ route('authors.show', $author) }}" method="GET" class="d-flex align-items-center justify-content-end m-0" role="search">
+                <div class="position-relative d-flex align-items-center feed-search-wrapper" style="width: 220px; max-width: 100%;">
+                    <button type="submit"
+                        class="btn btn-link p-0 position-absolute border-0 text-theme-secondary d-inline-flex align-items-center justify-content-center cursor-pointer feed-search-btn"
+                        aria-label="Tìm kiếm" title="Tìm kiếm">
+                        <svg class="feed-search-icon" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+
+                    <input type="search" name="q" value="{{ $search }}"
+                        placeholder="Tìm trong bài tác giả..." autocomplete="off"
+                        class="form-control rounded-pill feed-search-input"
+                        aria-label="Tìm kiếm bài viết tác giả">
+                </div>
             </form>
         </div>
 
