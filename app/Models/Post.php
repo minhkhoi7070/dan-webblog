@@ -11,11 +11,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Post extends Model
 {
     /** @use HasFactory<PostFactory> */
     use HasFactory;
+
+    public const RESERVED_SLUGS = ['create', 'stats', 'check-slug'];
 
     /** @var list<string> */
     protected $fillable = [
@@ -324,5 +327,51 @@ class Post extends Model
                 ->orWhere('excerpt', 'like', "%{$search}%")
                 ->orWhere('body', 'like', "%{$search}%");
         });
+    }
+
+    /**
+     * Retrieve the model for a bound value with legacy ID fallback.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return Model|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $post = parent::resolveRouteBinding($value, $field);
+        if ($post) {
+            return $post;
+        }
+
+        // Backward compatibility: If lookup by slug fails but $value is numeric, check by primary key ID
+        if (($field === 'slug' || $field === null) && is_numeric($value)) {
+            return static::where('id', (int) $value)->first();
+        }
+
+        return null;
+    }
+
+    /**
+     * Generate a unique, SEO-friendly slug for a post.
+     */
+    public static function generateUniqueSlug(string $titleOrSlug, ?int $ignoreId = null): string
+    {
+        $baseSlug = rtrim(mb_substr(Str::slug($titleOrSlug), 0, 255), '-');
+        if ($baseSlug === '') {
+            $baseSlug = 'bai-viet';
+        }
+
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (in_array($slug, self::RESERVED_SLUGS, true) || static::where('slug', $slug)
+            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+            ->exists()) {
+            $counter++;
+            $suffix = "-{$counter}";
+            $slug = rtrim(mb_substr($baseSlug, 0, 255 - strlen($suffix)), '-').$suffix;
+        }
+
+        return $slug;
     }
 }

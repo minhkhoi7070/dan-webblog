@@ -167,6 +167,11 @@ export function updateMobileHeader(targetUrl) {
     if (typeof document === 'undefined') return;
     const leftEl = document.getElementById('mobile-header-left');
     if (!leftEl) return;
+    const logo = document.querySelector?.('.mobile-drawer .bloub-svg, .sidebar-container .bloub-svg')?.cloneNode(true);
+    logo?.classList.remove('w-11', 'h-11');
+    logo?.classList.add('w-8', 'h-8');
+    logo?.setAttribute('style', 'width: 32px; height: 32px; max-width: 32px; max-height: 32px;');
+    const logoMarkup = logo?.outerHTML ?? '';
 
     let path = '/';
     try {
@@ -214,10 +219,7 @@ export function updateMobileHeader(targetUrl) {
     if (isHome || !subTitle) {
         leftEl.innerHTML = `
             <a href="/" class="brand-link d-flex align-items-center gap-2 font-bold text-lg tracking-tight text-decoration-none flex-shrink-0" aria-label="CloudBlog Trang chủ" data-app-nav id="mobile-header-brand">
-                <svg class="cloud-logo w-8 h-8 flex-shrink-0" style="width: 32px; height: 32px; max-width: 32px; max-height: 32px;" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="40" height="40" rx="10" fill="#09090b"/>
-                    <path d="M12 24C12 20.6863 14.6863 18 18 18C18.6868 18 19.3458 18.1154 19.96 18.3283C21.0371 15.7877 23.5593 14 26.5 14C30.6421 14 34 17.3579 34 21.5C34 21.6705 33.9943 21.8396 33.9831 22.007C34.5957 22.5694 35 23.3644 35 24.25C35 25.7688 33.7688 27 32.25 27H15C13.3431 27 12 25.6569 12 24Z" fill="#3b82f6"/>
-                </svg>
+                ${logoMarkup}
                 <span class="brand-text text-theme fw-bold" style="white-space: nowrap;">CloudBlog</span>
             </a>
         `;
@@ -234,9 +236,16 @@ export function updateMobileHeader(targetUrl) {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                 </a>
-                <span class="fw-bold text-theme text-truncate" style="font-size: 16px; letter-spacing: -0.01em;" id="mobile-header-subpage-title">
-                    ${subTitle}
-                </span>
+                ${path === '/following' ? `
+                    <a href="/" class="brand-link d-flex align-items-center gap-2 font-bold text-lg tracking-tight text-decoration-none min-w-0 flex-shrink-1" aria-label="CloudBlog Trang chủ" data-app-nav id="mobile-header-brand">
+                        ${logoMarkup}
+                        <span class="brand-text text-theme fw-bold text-truncate">CloudBlog</span>
+                    </a>
+                ` : `
+                    <span class="fw-bold text-theme text-truncate" style="font-size: 16px; letter-spacing: -0.01em;" id="mobile-header-subpage-title">
+                        ${subTitle}
+                    </span>
+                `}
             </div>
         `;
     }

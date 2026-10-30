@@ -23,7 +23,7 @@
     </div>
 
     <!-- Security Warning Card -->
-    <div style="background-color: #fef2f2; border-left: 3px solid #ef4444; padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 12.5px; color: #991b1b; line-height: 1.5; margin: 24px 0 16px;">
+    <div style="background-color: #fef2f2; border-left: 3px solid #131111ff; padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 12.5px; color: #991b1b; line-height: 1.5; margin: 24px 0 16px;">
         <strong>Lưu ý bảo mật:</strong> Tuyệt đối không chia sẻ mã này cho bất kỳ ai. Đội ngũ CloudBlog không bao giờ yêu cầu bạn cung cấp mã OTP.
     </div>
 

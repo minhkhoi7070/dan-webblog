@@ -41,7 +41,7 @@
 
 <!-- Mobile Top Navigation Header (320px–767px Mobile App Shell) -->
 <header {{ $attributes->merge(['class' => 'd-flex d-md-none align-items-center justify-content-between px-3 sticky-top bg-theme-surface border-theme-bottom z-3 user-select-none mobile-top-header']) }} style="height: var(--mobile-header-height, 56px); max-height: var(--mobile-header-height, 56px);">
-    <!-- Left: Brand Logo (Home) OR Back Button + Subpage Title -->
+    <!-- Left: Brand Logo OR Back Button + Subpage Title -->
     <div class="d-flex align-items-center min-w-0 flex-grow-1 flex-shrink-1 me-2" id="mobile-header-left">
         @if($isHome || !$subpageTitle)
             <a href="{{ route('home') }}" class="brand-link d-flex align-items-center gap-2 font-bold text-lg tracking-tight text-decoration-none flex-shrink-0" aria-label="CloudBlog Trang chủ" data-app-nav id="mobile-header-brand">
@@ -60,9 +60,16 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                 </a>
-                <span class="fw-bold text-theme text-truncate" style="font-size: 16px; letter-spacing: -0.01em;" id="mobile-header-subpage-title">
-                    {{ $subpageTitle }}
-                </span>
+                @if(request()->routeIs('following.index'))
+                    <a href="{{ route('home') }}" class="brand-link d-flex align-items-center gap-2 font-bold text-lg tracking-tight text-decoration-none min-w-0 flex-shrink-1" aria-label="CloudBlog Trang chủ" data-app-nav id="mobile-header-brand">
+                        <x-logo class="w-8 h-8 flex-shrink-0" style="width: 32px; height: 32px; max-width: 32px; max-height: 32px;" />
+                        <span class="brand-text text-theme fw-bold text-truncate">CloudBlog</span>
+                    </a>
+                @else
+                    <span class="fw-bold text-theme text-truncate" style="font-size: 16px; letter-spacing: -0.01em;" id="mobile-header-subpage-title">
+                        {{ $subpageTitle }}
+                    </span>
+                @endif
             </div>
         @endif
     </div>

@@ -3,6 +3,7 @@
 .env
 .env.backup
 .env.production
+/.env.e2e
 .phpactor.json
 .phpunit.result.cache
 /.codex
@@ -18,6 +19,9 @@
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
+/playwright-report
+/test-results
+/storage/e2e
 /storage/*.key
 /storage/pail
 /vendor

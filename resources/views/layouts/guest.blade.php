@@ -1,7 +1,7 @@
 @extends('layouts.base')
 @section('title', config('app.name', 'CloudBlog') . ' - ' . ($title ?? 'Đăng nhập & Đăng ký'))
 @section('html_class', 'h-100')
-@section('body_class', 'd-flex flex-column justify-content-center align-items-center min-vh-100 px-3 py-5 bg-theme text-theme position-relative')
+@section('body_class', 'd-flex flex-column justify-content-center align-items-center min-vh-100 px-3 py-5 bg-theme text-theme position-relative' . (request()->routeIs('register') ? ' register-page-body' : ''))
 
 @section('body')
     <!-- Accessibility Skip to Main Content Link -->

@@ -189,6 +189,8 @@ html.dark {
   /* Master Specification Semantic Tokens */
   --color-bg-canvas: #09090B;
   --color-bg-surface: #121215;
+  --color-panel-surface: #1D1D1F;
+  --color-feed-frame: #151518;
   --color-bg-subtle: #18181B;
   --color-bg-hover: #27272A;
   --color-text-primary: #F4F4F5;
@@ -927,6 +929,32 @@ html.dark .brand-link span,
 html.dark a:has(.bloub-svg),
 html.dark a:has(.bloub-svg) span {
   color: #ffffff !important;
+}
+
+/* Đảm bảo biểu tượng đám mây logo luôn giữ màu cam đặc trưng #f08a24 */
+:is(.mobile-top-header, .mobile-drawer, .sidebar-container) .cloud-body-group {
+  fill: #f08a24 !important;
+}
+
+/* Nền logo luôn trong suốt, đồng nhất với nền Sidebar / Header (không có khung viền trắng) */
+:is(.mobile-top-header, .mobile-drawer, .sidebar-container) .brand-link {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Dark Mode: chữ CloudBlog hiển thị màu trắng (#ffffff) */
+:root[data-theme="dark"] :is(.mobile-top-header, .mobile-drawer, .sidebar-container) .brand-link .brand-text,
+[data-theme="dark"] :is(.mobile-top-header, .mobile-drawer, .sidebar-container) .brand-link .brand-text,
+html.dark :is(.mobile-top-header, .mobile-drawer, .sidebar-container) .brand-link .brand-text {
+  color: #ffffff !important;
+}
+
+/* Light Mode: chữ CloudBlog hiển thị màu đen (#000000) */
+:root[data-theme="light"] :is(.mobile-top-header, .mobile-drawer, .sidebar-container) .brand-link .brand-text,
+[data-theme="light"] :is(.mobile-top-header, .mobile-drawer, .sidebar-container) .brand-link .brand-text,
+html:not(.dark) :is(.mobile-top-header, .mobile-drawer, .sidebar-container) .brand-link .brand-text {
+  color: #000000 !important;
 }
 
 
@@ -2635,6 +2663,61 @@ html[data-theme="light"] span.theme-text-dark {
   opacity: 0.6;
 }
 
+/* Sidebar Post Slug Card (Apple macOS style) */
+.sidebar-slug-card {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sidebar-slug-card:focus-within {
+  border-color: rgba(0, 122, 255, 0.35);
+  box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.15);
+}
+
+.sidebar-slug-card .input-group-text {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  user-select: none;
+}
+
+.sidebar-slug-card input#slug-edit-input {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Editor Top Toolbar Stabilization (Apple HIG Minimalist) */
+.editor-top-toolbar {
+  min-height: 52px;
+}
+
+.editor-toolbar-left {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.editor-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+  .editor-toolbar-actions {
+    width: 100%;
+    justify-content: flex-end;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+}
+
+.sidebar-slug-card input#slug-edit-input:focus {
+  border-color: #007aff !important;
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.15) !important;
+  outline: none;
+}
+
 /* Seamless Excerpt Input */
 .editor-excerpt-input {
   font-family: var(--font-sans);
@@ -3473,9 +3556,24 @@ pre {
   -webkit-backdrop-filter: blur(12px);
 }
 @media (max-width: 767.98px) {
+  .mobile-top-header #mobile-header-left,
+  .mobile-top-header #mobile-header-brand {
+    min-width: 0;
+  }
+
+  .feed-container[data-feed-shell] {
+    overflow: clip !important;
+  }
+
   .feed-container > .sticky-top,
   .feed-top-header {
     top: var(--mobile-header-height, 56px);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .main-layout > div:has(> [data-feed-shell]) {
+    padding-top: 0 !important;
   }
 }
 .feed-top-header-inner {
@@ -4498,16 +4596,22 @@ pre {
   }
 }
 .feed-filter-indicator {
-  min-height: 44px;
+  min-height: 40px;
   box-sizing: border-box;
+  background-color: var(--color-surface);
 }
 .feed-clear-filter-btn {
-  font-size: 13px;
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--color-text-secondary);
-  transition: color var(--duration-fast, 150ms) var(--ease-standard);
+  padding: 4px 8px;
+  border-radius: var(--radius-xs, 6px);
+  transition: color var(--duration-fast, 150ms) var(--ease-standard),
+              background-color var(--duration-fast, 150ms) var(--ease-standard);
 }
 .feed-clear-filter-btn:hover {
   color: var(--color-interactive);
+  background-color: var(--color-surface-2);
 }
 [data-feed-pagination] .pagination {
   display: flex;
@@ -4734,6 +4838,10 @@ html:not(.dark)[data-theme="light"] .theme-text-dark {
   align-items: center;
   justify-content: center;
   padding: 2.5rem 1rem;
+}
+
+.login-page-wrapper,
+.register-page-body {
   background-image: 
     linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.45) 100%),
     url('/images/login-bg.jpg');
@@ -5888,3 +5996,848 @@ ul.pagination.admin-pagination-compact {
 }
 
 
+
+/* ============================================================
+   CloudBlog Minimalist SaaS Settings & Sidebar Redesign (V2)
+   Linear / Notion / Stripe Dashboard Philosophy
+   ============================================================ */
+
+/* 1. Overall Settings Layout: 680px Centered Minimal Document */
+.settings-header-wrap {
+  margin-bottom: 0.5rem;
+}
+
+.settings-main-document {
+  max-width: 680px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.settings-surface-panel {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 14px;
+}
+
+@media (max-width: 576px) {
+  .settings-surface-panel {
+    padding: 1.25rem 1rem !important;
+    border-radius: 10px;
+  }
+}
+
+.settings-section-wrap:last-child {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+  border-bottom: none !important;
+}
+
+/* 2. Top Navigation: 3 Minimalist Pills (Hồ sơ, Bảo mật, Giao diện) */
+.settings-nav-pills {
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.settings-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.settings-nav-link:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-hover);
+}
+
+.settings-nav-link.active {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-surface);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* 3. Input Fields: 44px Height, White Surface, Clean Border, Gentle Focus */
+.settings-field-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.settings-field-input {
+  height: 44px;
+  padding: 9px 13px;
+  font-size: 13.5px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+[data-theme="dark"] .settings-field-input,
+html.dark .settings-field-input {
+  background-color: #18181B;
+  border-color: #27272A;
+  color: #F4F4F5;
+}
+
+.settings-field-input:focus {
+  background-color: #FFFFFF;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+[data-theme="dark"] .settings-field-input:focus,
+html.dark .settings-field-input:focus {
+  background-color: #18181B;
+  border-color: rgba(129, 140, 248, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.18) !important;
+}
+
+.settings-field-input::placeholder {
+  color: var(--color-text-tertiary);
+  opacity: 0.75;
+}
+
+/* 4. Password Input & Eye Toggle Alignment */
+.password-input-wrap .btn-toggle-password {
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+  z-index: 5;
+}
+
+.password-input-wrap .btn-toggle-password:hover {
+  color: var(--color-text-primary);
+}
+
+.strength-bar {
+  transition: background-color 0.25s ease;
+}
+
+/* 5. Theme Tiles (3 Compact Minimalist Boxes) */
+.settings-theme-tile {
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  min-height: 48px;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+[data-theme="dark"] .settings-theme-tile,
+html.dark .settings-theme-tile {
+  background-color: #18181B;
+  border-color: #27272A;
+}
+
+.settings-theme-tile:hover {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-bg-hover);
+}
+
+.settings-theme-tile.active {
+  border-color: var(--color-interactive) !important;
+  box-shadow: 0 0 0 1px var(--color-interactive);
+}
+
+.theme-tile-check {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--color-border-subtle);
+  color: transparent;
+  transition: all 0.15s ease;
+}
+
+.settings-theme-tile.active .theme-tile-check {
+  background-color: var(--color-interactive);
+  border-color: var(--color-interactive);
+  color: var(--color-accent-fg);
+}
+
+/* ============================================================
+   Apple macOS System Settings Scoped Profile Design
+   macOS Ventura / Sonoma / Sequoia Aesthetic
+   Scope: ONLY applies to .macos-profile-header and .macos-profile-page
+   ============================================================ */
+
+/* 1. Header & Segmented Control */
+.macos-profile-header {
+  width: min(100%, 820px);
+  padding-top: 1.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.macos-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #1D1D1F;
+}
+
+.macos-subtitle {
+  font-size: 13px;
+  color: #86868B;
+  letter-spacing: -0.01em;
+}
+
+[data-theme="dark"] .macos-title,
+html.dark .macos-title {
+  color: #F5F5F7;
+}
+
+[data-theme="dark"] .macos-subtitle,
+html.dark .macos-subtitle {
+  color: #98989D;
+}
+
+.macos-segmented-bar {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  background-color: #E5E5EA;
+  border-radius: 9px;
+  padding: 3px;
+  gap: 2px;
+  box-shadow: inset 0 0.5px 1px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .macos-segmented-bar,
+html.dark .macos-segmented-bar {
+  background-color: #323236;
+  box-shadow: inset 0 0.5px 1px rgba(0, 0, 0, 0.3);
+}
+
+.macos-segmented-tab {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #48484A;
+  text-decoration: none;
+  transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
+  user-select: none;
+}
+
+.macos-segmented-tab:hover {
+  color: #1D1D1F;
+  text-decoration: none;
+}
+
+[data-theme="dark"] .macos-segmented-tab,
+html.dark .macos-segmented-tab {
+  color: #AEAEB2;
+}
+
+[data-theme="dark"] .macos-segmented-tab:hover,
+html.dark .macos-segmented-tab:hover {
+  color: #FFFFFF;
+}
+
+.macos-segmented-tab.active {
+  background-color: #FFFFFF;
+  color: #1D1D1F;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0.5px 1px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .macos-segmented-tab.active,
+html.dark .macos-segmented-tab.active {
+  background-color: #545458;
+  color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* 2. Page & Cards (macOS Grouped Rounded Inset) */
+.macos-profile-page {
+  width: min(100%, 820px);
+  min-width: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+  --settings-space: 16px;
+}
+
+.macos-profile-page .settings-card-stack {
+  gap: var(--settings-space);
+}
+
+.macos-card {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-theme="dark"] .macos-card,
+html.dark .macos-card {
+  background-color: var(--color-panel-surface);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.macos-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: #1D1D1F;
+}
+
+.macos-card-subtitle {
+  font-size: 13px;
+  color: #86868B;
+  letter-spacing: -0.005em;
+}
+
+[data-theme="dark"] .macos-card-title,
+html.dark .macos-card-title {
+  color: #F5F5F7;
+}
+
+[data-theme="dark"] .macos-card-subtitle,
+html.dark .macos-card-subtitle {
+  color: #98989D;
+}
+
+.macos-divider {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .macos-divider,
+html.dark .macos-divider {
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+/* 3. Apple Account Avatar & Header */
+.macos-avatar-box {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  background-color: #8E8E93;
+}
+
+[data-theme="dark"] .macos-avatar-box,
+html.dark .macos-avatar-box {
+  border-color: rgba(255, 255, 255, 0.12);
+  background-color: #636366;
+}
+
+.macos-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-size: 30px;
+  font-weight: 600;
+  background-color: #8E8E93;
+  user-select: none;
+}
+
+[data-theme="dark"] .macos-avatar-placeholder,
+html.dark .macos-avatar-placeholder {
+  background-color: #636366;
+}
+
+.macos-account-name {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #1D1D1F;
+}
+
+.macos-account-email {
+  font-size: 13px;
+  color: #86868B;
+}
+
+[data-theme="dark"] .macos-account-name,
+html.dark .macos-account-name {
+  color: #F5F5F7;
+}
+
+[data-theme="dark"] .macos-account-email,
+html.dark .macos-account-email {
+  color: #98989D;
+}
+
+.macos-hint-text {
+  font-size: 12px;
+  color: #86868B;
+}
+
+[data-theme="dark"] .macos-hint-text,
+html.dark .macos-hint-text {
+  color: #8E8E93;
+}
+
+.macos-badge-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #34C759;
+}
+
+/* 4. macOS Controls: Labels, Inputs, Buttons */
+.macos-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1D1D1F;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+[data-theme="dark"] .macos-label,
+html.dark .macos-label {
+  color: #E5E5EA;
+}
+
+.macos-input {
+  height: 42px;
+  padding: 8px 12px;
+  font-size: 13.5px;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 7px;
+  color: #1D1D1F;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+[data-theme="dark"] .macos-input,
+html.dark .macos-input {
+  background-color: #1C1C1E;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #F5F5F7;
+}
+
+.macos-input:focus {
+  background-color: #FFFFFF;
+  border-color: #007AFF !important;
+  box-shadow: 0 0 0 3.5px rgba(0, 122, 255, 0.22) !important;
+  color: #1D1D1F;
+  outline: none;
+}
+
+[data-theme="dark"] .macos-input:focus,
+html.dark .macos-input:focus {
+  background-color: #1C1C1E;
+  border-color: #0A84FF !important;
+  box-shadow: 0 0 0 3.5px rgba(10, 132, 255, 0.28) !important;
+  color: #F5F5F7;
+}
+
+.macos-input::placeholder {
+  color: #8E8E93;
+  opacity: 0.85;
+}
+
+.macos-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  min-height: 34px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.macos-btn-primary {
+  background-color: #007AFF;
+  color: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 122, 255, 0.25);
+}
+
+.macos-btn-primary:hover {
+  background-color: #0066D6;
+  color: #FFFFFF;
+}
+
+.macos-btn-primary:active {
+  background-color: #0051A8;
+}
+
+.macos-btn-secondary {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #1D1D1F;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.macos-btn-secondary:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  color: #1D1D1F;
+}
+
+[data-theme="dark"] .macos-btn-secondary,
+html.dark .macos-btn-secondary {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #F5F5F7;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .macos-btn-secondary:hover,
+html.dark .macos-btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+}
+
+.macos-btn-destructive {
+  background-color: transparent;
+  color: #FF3B30;
+  border: 1px solid rgba(255, 59, 48, 0.35);
+}
+
+.macos-btn-destructive:hover {
+  background-color: rgba(255, 59, 48, 0.08);
+  color: #FF3B30;
+  border-color: #FF3B30;
+}
+
+.macos-btn-danger {
+  background-color: #FF3B30;
+  color: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.macos-btn-danger:hover {
+  background-color: #E0352B;
+  color: #FFFFFF;
+}
+
+.macos-status-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #34C759;
+  transition: opacity 0.25s ease;
+}
+
+.macos-profile-page .macos-profile-summary {
+  flex: 1 1 280px;
+}
+
+.macos-profile-page .macos-btn {
+  min-height: 38px;
+}
+
+.macos-profile-page .macos-field-heading {
+  min-height: 21px;
+  margin-bottom: 6px;
+}
+
+.macos-profile-page .macos-badge-verified {
+  white-space: nowrap;
+}
+
+.macos-profile-page .macos-danger-title {
+  color: #FF3B30;
+}
+
+.macos-profile-page .settings-reading-options {
+  display: grid;
+  gap: var(--settings-space);
+}
+
+.macos-profile-page .settings-reading-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
+}
+
+.macos-profile-page .settings-segmented-group {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  min-width: 0;
+}
+
+.macos-profile-page .settings-segmented-btn {
+  min-width: 0;
+  padding: 6px 8px;
+}
+
+.macos-profile-page .macos-appearance-tile {
+  height: 100%;
+}
+
+@media (max-width: 575.98px) {
+  .macos-profile-header {
+    padding-top: 0.5rem;
+  }
+
+  .macos-profile-page .macos-card {
+    padding: 16px;
+  }
+
+  .macos-profile-page .macos-btn {
+    min-height: 40px;
+  }
+
+  .macos-profile-page .settings-reading-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .macos-profile-page .macos-appearance-tile {
+    padding: 8px;
+  }
+
+  .macos-profile-page #theme-radio-cards {
+    --bs-gutter-x: 12px;
+  }
+}
+
+/* 5. Appearance macOS Tiles (Sáng, Tối, Tự động) */
+.macos-appearance-tile {
+  background-color: #F5F5F7;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-theme="dark"] .macos-appearance-tile,
+html.dark .macos-appearance-tile {
+  background-color: #1C1C1E;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.macos-appearance-tile:hover {
+  border-color: rgba(0, 122, 255, 0.4);
+}
+
+.macos-appearance-tile.active {
+  border-color: #007AFF !important;
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.25);
+}
+
+[data-theme="dark"] .macos-appearance-tile.active,
+html.dark .macos-appearance-tile.active {
+  border-color: #0A84FF !important;
+  background-color: #2C2C2E;
+  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.3);
+}
+
+.macos-appearance-preview {
+  width: 100%;
+  height: 52px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.macos-appearance-preview-light {
+  background-color: #FFFFFF;
+}
+
+.macos-appearance-preview-dark {
+  background-color: #1E1E1E;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.macos-appearance-preview-system {
+  background: linear-gradient(135deg, #FFFFFF 50%, #1E1E1E 50%);
+}
+
+.macos-appearance-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: all 0.15s ease;
+}
+
+[data-theme="dark"] .macos-appearance-check,
+html.dark .macos-appearance-check {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.macos-appearance-tile.active .macos-appearance-check {
+  background-color: #007AFF;
+  border-color: #007AFF;
+  color: #FFFFFF;
+}
+
+/* 6. Password Wrap & Eye Toggle */
+.macos-password-wrap .btn-toggle-password {
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: #8E8E93;
+  transition: color 0.15s ease;
+  z-index: 5;
+}
+
+.macos-password-wrap .btn-toggle-password:hover {
+  color: #1D1D1F;
+}
+
+[data-theme="dark"] .macos-password-wrap .btn-toggle-password:hover {
+  color: #F5F5F7;
+}
+
+/* Match Dark Mode panels to the Settings cards without changing canvas or controls. */
+html[data-theme="dark"] .card.bg-theme-surface,
+html[data-theme="dark"] .card:not([class*="bg-"]),
+html[data-theme="dark"] .feed-container .card.bg-surface-2,
+html[data-theme="dark"] .card [data-feed-pagination].bg-theme-surface,
+html[data-theme="dark"] .editorial-article-container.bg-theme-surface {
+  background-color: var(--color-panel-surface) !important;
+}
+
+html[data-theme="dark"] .auth-card-editorial,
+html[data-theme="dark"] .dashboard-stat-card:not(.active-filter):not(:hover),
+html[data-theme="dark"] .admin-dashboard .dashboard-metric-card,
+html[data-theme="dark"] .admin-dashboard .dashboard-panel,
+html[data-theme="dark"] .admin-dashboard .queue-panel {
+  background-color: var(--color-panel-surface);
+}
+
+html[data-theme="dark"] .sidebar-container,
+html[data-theme="dark"] .mobile-drawer,
+html[data-theme="dark"] .feed-container.bg-theme-surface,
+html[data-theme="dark"] .feed-container > .bg-theme-surface,
+html[data-theme="dark"] .feed-container [data-feed-pagination].bg-theme-surface,
+html[data-theme="dark"] .threads-post,
+html[data-theme="dark"] .threads-post:hover,
+html[data-theme="dark"] .post-card,
+html[data-theme="dark"] .post-card:hover,
+html[data-theme="dark"] .card.related-post-card,
+html[data-theme="dark"] .card.related-post-card:hover {
+  background-color: var(--color-feed-frame) !important;
+}
+
+.register-page-body {
+  justify-content: flex-start !important;
+  background-attachment: scroll;
+}
+
+.register-page-body .auth-wrapper {
+  padding-inline: 0 !important;
+}
+
+.register-page-body .auth-card-editorial,
+html[data-theme="dark"] .register-page-body .auth-card-editorial {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 2.25rem 2rem;
+  backdrop-filter: blur(26px) saturate(145%);
+  -webkit-backdrop-filter: blur(26px) saturate(145%);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  transform: none;
+}
+
+.register-page-body .register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.register-page-body .register-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.register-page-body .register-field .invalid-feedback {
+  margin-top: 0 !important;
+}
+
+.register-page-body .register-submit {
+  margin-top: 0.25rem;
+}
+
+.register-page-body .form-control-glass:disabled {
+  opacity: 0.6;
+}
+
+.register-page-body .form-control-glass:-webkit-autofill,
+.register-page-body .form-control-glass:-webkit-autofill:hover,
+.register-page-body .form-control-glass:-webkit-autofill:focus {
+  -webkit-text-fill-color: #FFFFFF;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.register-page-body .brand-link,
+.register-page-body .brand-link > span,
+.register-page-body > .mt-4 a {
+  color: #FFFFFF !important;
+}
+
+html[data-theme="light"] .register-page-body .brand-link,
+html[data-theme="light"] .register-page-body .brand-link > span {
+  color: #FFFFFF !important;
+}
+
+.register-page-body .btn-outline-theme {
+  color: #FFFFFF !important;
+  background: rgba(127, 120, 120, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@media (max-width: 575.98px) {
+  .register-page-body .auth-card-editorial {
+    padding: 1.75rem 1.25rem;
+    border-radius: 20px;
+  }
+}

@@ -5,6 +5,7 @@ namespace App\Services;
 use DOMDocument;
 use DOMElement;
 use DOMNode;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class PostContentService
@@ -149,6 +150,49 @@ class PostContentService
         }
 
         return trim($cleanHtml);
+    }
+
+    /**
+     * Determine whether sanitized editor content has visible text or usable media.
+     */
+    public static function hasMeaningfulContent(string $sanitizedHtml): bool
+    {
+        $text = html_entity_decode(strip_tags($sanitizedHtml), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace('/&(?:ZeroWidthSpace|zwnj|zwj|lrm|rlm);/i', '', $text);
+        $visibleText = preg_replace('/[\p{Z}\p{C}\s]+/u', '', $text);
+
+        if ($visibleText !== null && $visibleText !== '') {
+            return true;
+        }
+
+        $document = new DOMDocument;
+        $previousErrors = libxml_use_internal_errors(true);
+        $loaded = $document->loadHTML('<?xml encoding="utf-8" ?><body>'.$sanitizedHtml.'</body>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousErrors);
+
+        if (! $loaded) {
+            return false;
+        }
+
+        foreach ($document->getElementsByTagName('iframe') as $iframe) {
+            if (preg_match('/^https:\/\/(?:www\.)?youtube(?:-nocookie)?\.com\/embed\/[a-zA-Z0-9_-]{11}(?:\?.*)?$/i', $iframe->getAttribute('src'))) {
+                return true;
+            }
+        }
+
+        foreach (['img' => 'images', 'video' => 'videos', 'source' => 'videos'] as $tag => $directory) {
+            $extensions = $directory === 'images' ? 'jpg|jpeg|png|webp|gif' : 'mp4|webm';
+            foreach ($document->getElementsByTagName($tag) as $element) {
+                $src = $element->getAttribute('src');
+                if (preg_match('#^/storage/posts/'.$directory.'/[a-zA-Z0-9_-]+\.(?:'.$extensions.')$#i', $src)
+                    && Storage::disk('public')->exists(ltrim(substr($src, strlen('/storage/')), '/'))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

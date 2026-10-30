@@ -12,7 +12,7 @@
     }
 @endphp
 
-<div class="card border-theme bg-theme-surface shadow-xs rounded-xl thumbnail-uploader-widget" style="padding: 22px;"
+<div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl thumbnail-uploader-widget"
      id="thumbnail-uploader-widget"
      data-initial-thumbnail="{{ $initialUrl ?? '' }}"
      data-form-id="{{ $formId }}">

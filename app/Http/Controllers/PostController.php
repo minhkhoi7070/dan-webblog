@@ -97,11 +97,17 @@ class PostController extends Controller
     /**
      * Display the specified post and increment its view count.
      */
-    public function show(Post $post, Request $request): View
+    public function show(Post $post, Request $request): View|RedirectResponse
     {
         // Enforce guest access: unpublished posts return 404 for guests and non-authorized users
         if ($post->status !== 'published' && Gate::denies('view', $post)) {
             abort(404);
+        }
+
+        // Backward compatibility: If post was accessed via legacy numeric ID in URL, 301 redirect to canonical slug URL
+        $pathSegment = $request->segment(2);
+        if ($pathSegment && is_numeric($pathSegment) && $post->slug && $pathSegment !== $post->slug) {
+            return redirect()->to(route('posts.show', array_merge(['post' => $post->slug], $request->query())), 301);
         }
 
         // Increment view count
@@ -238,7 +244,8 @@ class PostController extends Controller
         $body = $request->input('body') ?? $request->input('content');
         $body = PostContentService::cleanHtml($body);
         $excerpt = $request->validated('excerpt') ?: Str::limit(strip_tags($body), 150);
-        $slug = Str::slug($request->validated('title')).'-'.Str::lower(Str::random(6));
+        $rawSlug = $request->validated('slug');
+        $slug = $rawSlug ?: Post::generateUniqueSlug($request->validated('title'));
 
         $action = $request->input('action');
         $user = $request->user();
@@ -287,6 +294,70 @@ class PostController extends Controller
 
         return redirect()->route('posts.edit', $post)
             ->with('success', 'Bài viết đã được tạo thành công dưới dạng Bản nháp (Draft).');
+    }
+
+    /**
+     * Check slug availability and validity via AJAX.
+     */
+    public function checkSlug(Request $request): JsonResponse
+    {
+        Gate::authorize('create', Post::class);
+
+        $rawSlug = (string) $request->query('slug', '');
+        $postId = $request->query('post_id');
+        $postId = is_numeric($postId) ? (int) $postId : null;
+        if ($postId !== null) {
+            Gate::authorize('update', Post::findOrFail($postId));
+        }
+
+        $slug = Str::slug($rawSlug);
+
+        if ($slug === '') {
+            return response()->json([
+                'valid' => false,
+                'available' => false,
+                'slug' => '',
+                'message' => 'Đường dẫn không được để trống.',
+            ]);
+        }
+
+        if (mb_strlen($slug) > 255) {
+            return response()->json([
+                'valid' => false,
+                'available' => false,
+                'slug' => $slug,
+                'message' => 'Đường dẫn vượt quá giới hạn 255 ký tự.',
+            ]);
+        }
+
+        if (in_array($slug, Post::RESERVED_SLUGS, true)) {
+            return response()->json([
+                'valid' => false,
+                'available' => false,
+                'slug' => $slug,
+                'message' => 'Đường dẫn này được dành riêng cho chức năng hệ thống. Vui lòng chọn đường dẫn khác.',
+            ]);
+        }
+
+        $isTaken = Post::where('slug', $slug)
+            ->when($postId, fn ($q) => $q->where('id', '!=', $postId))
+            ->exists();
+
+        if ($isTaken) {
+            return response()->json([
+                'valid' => true,
+                'available' => false,
+                'slug' => $slug,
+                'message' => 'Đường dẫn này đã được sử dụng bởi một bài viết khác.',
+            ]);
+        }
+
+        return response()->json([
+            'valid' => true,
+            'available' => true,
+            'slug' => $slug,
+            'message' => 'Đường dẫn hợp lệ và có thể sử dụng.',
+        ]);
     }
 
     /**
@@ -396,6 +467,11 @@ class PostController extends Controller
 
         $safeName = Str::random(40).'.'.$extension;
         $path = $file->storeAs('posts/videos', $safeName, 'public');
+        abort_unless(is_string($path), 500);
+
+        $temporaryVideos = $request->session()->get('temporary_post_videos', []);
+        $temporaryVideos[$safeName] = $request->user()->id;
+        $request->session()->put('temporary_post_videos', $temporaryVideos);
 
         return response()->json([
             'success' => true,
@@ -415,19 +491,23 @@ class PostController extends Controller
         Gate::authorize('create', Post::class);
 
         $filename = $request->input('filename');
-        if (! $filename || ! is_string($filename) || preg_match('/[^a-zA-Z0-9._-]/', $filename)) {
+        if (! is_string($filename) || ! preg_match('/^[a-zA-Z0-9_-]+\.(mp4|webm)$/i', $filename)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Tên file video không hợp lệ.',
             ], 422);
         }
 
-        $safeBasename = basename($filename);
-        $path = 'posts/videos/'.$safeBasename;
+        $temporaryVideos = $request->session()->get('temporary_post_videos', []);
+        abort_unless(($temporaryVideos[$filename] ?? null) === $request->user()->id, 403);
+        abort_if(Post::query()->where('body', 'like', '%'.$filename.'%')->exists(), 403);
 
-        if (Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
+        $path = 'posts/videos/'.$filename;
+        abort_unless(Storage::disk('public')->exists($path), 404);
+        abort_unless(Storage::disk('public')->delete($path), 500);
+
+        unset($temporaryVideos[$filename]);
+        $request->session()->put('temporary_post_videos', $temporaryVideos);
 
         return response()->json([
             'success' => true,
@@ -495,6 +575,13 @@ class PostController extends Controller
         $post->excerpt = $excerpt;
         $post->body = $body;
 
+        if ($request->has('slug')) {
+            $customSlug = $request->validated('slug');
+            $post->slug = $customSlug ?: Post::generateUniqueSlug($post->title, $post->id);
+        } elseif (empty($post->slug)) {
+            $post->slug = Post::generateUniqueSlug($post->title, $post->id);
+        }
+
         $action = $request->input('action');
         $user = $request->user();
         $isPublishAction = in_array($action, ['submit', 'publish'], true);
@@ -550,17 +637,28 @@ class PostController extends Controller
      */
     public function submit(Request $request, Post $post): JsonResponse|RedirectResponse
     {
-        Gate::authorize('submit', $post);
-
         $user = $request->user();
+        $post = DB::transaction(function () use ($post, $user): Post {
+            $lockedPost = Post::query()->lockForUpdate()->findOrFail($post->id);
+            Gate::authorize('submit', $lockedPost);
+            abort_unless(in_array($lockedPost->status, ['draft', 'rejected'], true), 422);
 
-        // If creator is Admin and submitting their own draft or rejected post, publish immediately
-        if ($user->isAdmin() && $post->user_id === $user->id) {
-            $post->update([
-                'status' => 'published',
-                'published_at' => $post->published_at ?? now(),
-                'rejection_reason' => null,
-            ]);
+            if ($user->isAdmin() && $lockedPost->user_id === $user->id) {
+                $lockedPost->update([
+                    'status' => 'published',
+                    'published_at' => $lockedPost->published_at ?? now(),
+                    'rejection_reason' => null,
+                ]);
+
+                return $lockedPost;
+            }
+
+            $lockedPost->update(['status' => 'pending']);
+
+            return $lockedPost;
+        });
+
+        if ($post->status === 'published') {
 
             if ($request->expectsJson()) {
                 return response()->json([
@@ -573,8 +671,6 @@ class PostController extends Controller
             return redirect()->back()
                 ->with('success', "Bài viết '{$post->title}' đã được xuất bản thành công.");
         }
-
-        $post->update(['status' => 'pending']);
 
         if ($request->expectsJson()) {
             return response()->json([

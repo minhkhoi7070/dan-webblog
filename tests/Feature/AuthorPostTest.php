@@ -525,10 +525,15 @@ class AuthorPostTest extends TestCase
 
         $editResponse = $this->actingAs($author)->get(route('posts.edit', $draftPost));
         $editResponse->assertOk();
+        $editResponse->assertDontSee('Quy trình xuất bản');
         $editResponse->assertSee('Chuyên mục');
+        $editResponse->assertSee('Đường dẫn bài viết');
+        $editResponse->assertSee('sidebar-slug-card');
         $editResponse->assertSee('Ảnh bìa');
         $editResponse->assertSee('Thẻ bài viết');
         $editResponse->assertSee('Bản nháp');
+        $editResponse->assertSee('Xóa bài viết');
+        $editResponse->assertSee('Quay lại danh sách');
     }
 
     public function test_post_status_labels_and_helpers_work_consistently(): void
@@ -554,5 +559,100 @@ class AuthorPostTest extends TestCase
         $rejected = Post::factory()->rejected()->create(['user_id' => $author->id]);
         $this->assertSame('Bị từ chối', $rejected->status_label);
         $this->assertTrue($rejected->isRejected());
+    }
+
+    public function test_editor_toolbar_layout_consistency_across_draft_saving_and_workflows(): void
+    {
+        $author = User::factory()->author()->create();
+        $category = Category::factory()->create();
+
+        // 1. Open create post page
+        $createRes = $this->actingAs($author)->get(route('posts.create'));
+        $createRes->assertOk();
+        $createRes->assertSee('editor-top-toolbar');
+        $createRes->assertSee('editor-toolbar-left');
+        $createRes->assertSee('editor-toolbar-actions');
+        $createRes->assertSee('Hủy bỏ');
+        $createRes->assertSee('Lưu bản nháp');
+        $createRes->assertSee('Gửi bài viết để Admin duyệt');
+        $createRes->assertSee('Bản nháp');
+
+        // 2. Save draft first time
+        $postData = [
+            'title' => 'Bài viết lưu nháp lần đầu',
+            'category_id' => $category->id,
+            'content' => '<p>Nội dung nháp ban đầu...</p>',
+            'action' => 'draft',
+        ];
+        $storeRes = $this->actingAs($author)->post(route('posts.store'), $postData);
+        $post = Post::where('title', 'Bài viết lưu nháp lần đầu')->firstOrFail();
+        $this->assertTrue($post->isDraft());
+        $storeRes->assertRedirect(route('posts.edit', $post));
+
+        // Follow redirect to edit page after first draft save
+        $editRes1 = $this->actingAs($author)->get(route('posts.edit', $post));
+        $editRes1->assertOk();
+        $editRes1->assertSee('editor-top-toolbar');
+        $editRes1->assertSee('editor-toolbar-left');
+        $editRes1->assertSee('editor-toolbar-actions');
+        $editRes1->assertSee('Hủy bỏ');
+        $editRes1->assertSee('Lưu bản nháp');
+        $editRes1->assertSee('Gửi bài viết để Admin duyệt');
+        $editRes1->assertSee('Bản nháp');
+        $editRes1->assertSee('alert-success');
+
+        // 3. Save draft second time (multiple times)
+        $updateData = [
+            'title' => 'Bài viết lưu nháp lần hai',
+            'category_id' => $category->id,
+            'content' => '<p>Nội dung nháp cập nhật lần hai...</p>',
+            'action' => 'draft',
+        ];
+        $updateRes = $this->actingAs($author)->put(route('posts.update', $post), $updateData);
+        $updateRes->assertRedirect(route('posts.edit', $post));
+        $this->assertSame('Bài viết lưu nháp lần hai', $post->fresh()->title);
+        $this->assertTrue($post->fresh()->isDraft());
+
+        $editRes2 = $this->actingAs($author)->get(route('posts.edit', $post));
+        $editRes2->assertOk();
+        $editRes2->assertSee('Hủy bỏ');
+        $editRes2->assertSee('Lưu bản nháp');
+        $editRes2->assertSee('Gửi bài viết để Admin duyệt');
+        $editRes2->assertSee('Bản nháp');
+
+        // 4. Submit draft to Admin for review
+        $submitData = [
+            'title' => 'Bài viết hoàn thiện gửi Admin duyệt',
+            'category_id' => $category->id,
+            'content' => '<p>Nội dung hoàn chỉnh...</p>',
+            'action' => 'submit',
+        ];
+        $submitRes = $this->actingAs($author)->put(route('posts.update', $post), $submitData);
+        $submitRes->assertRedirect(route('posts.edit', $post));
+        $this->assertTrue($post->fresh()->isPending());
+
+        $pendingRes = $this->actingAs($author)->get(route('posts.edit', $post));
+        $pendingRes->assertOk();
+        $pendingRes->assertSee('Chờ duyệt');
+        $pendingRes->assertSee('Hủy bỏ');
+        $pendingRes->assertSee('Lưu thay đổi bài viết');
+        $pendingRes->assertDontSee('Lưu bản nháp');
+
+        // 5. Save changes while pending
+        $savePendingData = [
+            'title' => 'Bài viết hoàn thiện gửi Admin duyệt (sửa thêm)',
+            'category_id' => $category->id,
+            'content' => '<p>Nội dung hoàn chỉnh sửa thêm...</p>',
+            'action' => 'draft',
+        ];
+        $savePendingRes = $this->actingAs($author)->put(route('posts.update', $post), $savePendingData);
+        $savePendingRes->assertRedirect(route('posts.edit', $post));
+        $this->assertTrue($post->fresh()->isPending());
+
+        $pendingRes2 = $this->actingAs($author)->get(route('posts.edit', $post));
+        $pendingRes2->assertOk();
+        $pendingRes2->assertSee('Chờ duyệt');
+        $pendingRes2->assertSee('Hủy bỏ');
+        $pendingRes2->assertSee('Lưu thay đổi bài viết');
     }
 }

@@ -6,6 +6,8 @@ use App\Models\Category;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class StatusBannerAndImageAltTest extends TestCase
@@ -162,6 +164,9 @@ class StatusBannerAndImageAltTest extends TestCase
 
     public function test_update_post_image_alt_does_not_affect_other_images(): void
     {
+        Storage::fake('public');
+        UploadedFile::fake()->image('imgA.png')->storeAs('posts/images', 'imgA.png', 'public');
+        UploadedFile::fake()->image('imgB.png')->storeAs('posts/images', 'imgB.png', 'public');
         $author = User::factory()->author()->create();
         $category = Category::factory()->create();
 
