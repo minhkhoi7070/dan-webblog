@@ -18,7 +18,7 @@
                 </colgroup>
                 <thead class="border-theme-bottom bg-surface-2">
                     <tr>
-                        <th class="ap-col py-3 label-uppercase text-theme-muted col-post text-center" style="font-size: 11px;">Bài viết</th>
+                        <th class="ap-col py-3 label-uppercase text-theme-muted col-post text-start" style="font-size: 11px;">Bài viết</th>
                         <th class="ap-col py-3 label-uppercase text-theme-muted col-author text-start" style="font-size: 11px;">Tác giả</th>
                         <th class="ap-col py-3 label-uppercase text-theme-muted col-cat text-center" style="font-size: 11px;">Chuyên mục</th>
                         <th class="ap-col py-3 label-uppercase text-theme-muted col-status text-center" style="font-size: 11px;">Trạng thái</th>
@@ -30,19 +30,16 @@
                     @forelse($posts as $post)
                         <tr>
                             <!-- Post Title & Thumbnail -->
-                            <td class="ap-col py-3 col-post text-center">
+                            <td class="ap-col py-3 col-post text-start">
                                 <div class="ap-post-wrap">
-                                    <div class="ap-thumb flex-shrink-0">
+                                    <div class="ap-thumb {{ $post->thumbnail ? '' : 'is-fallback' }} flex-shrink-0">
                                         @if($post->thumbnail)
-                                            <img src="{{ asset($post->thumbnail) }}" alt="" class="rounded-2 border border-theme shadow-xs" style="width: 36px; height: 36px; object-fit: cover;">
-                                        @else
-                                            <div class="rounded-2 bg-surface-2 text-theme-muted d-flex align-items-center justify-content-center border border-theme fw-bold" style="width: 36px; height: 36px; font-size: 10px;">
-                                                B
-                                            </div>
+                                            <img src="{{ str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset($post->thumbnail) }}" alt="" class="rounded-2 border border-theme shadow-xs" loading="lazy" onerror="this.parentElement.classList.add('is-fallback');">
                                         @endif
+                                        <span class="ap-thumb__placeholder rounded-2 bg-surface-2 text-theme-muted border border-theme fw-bold" aria-hidden="true">B</span>
                                     </div>
                                     <div class="ap-post-text">
-                                        <a href="{{ route('admin.posts.show', $post) }}" class="fw-semibold text-theme text-decoration-none hover-accent ap-post-title text-truncate d-block" style="font-size: 13px;" title="{{ $post->title }}">
+                                        <a href="{{ route('admin.posts.show', $post) }}" class="fw-semibold text-theme text-decoration-none hover-accent ap-post-title d-block" style="font-size: 13px;" title="{{ $post->title }}">
                                             {{ $post->title }}
                                         </a>
                                         <div class="small text-theme-muted mt-0.5 ap-post-date" style="font-size: 11px;">
