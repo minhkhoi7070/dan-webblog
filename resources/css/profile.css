@@ -1,0 +1,553 @@
+/* ==========================================================================
+   CloudBlog Profile — Threads-Inspired Minimalist Layout
+   Scoped strictly to .threads-profile-shell to protect Desktop & App Shell
+   ========================================================================== */
+.threads-profile-shell {
+    --border-color: var(--color-border);
+    --text-primary: var(--color-text-primary);
+    --text-secondary: var(--color-text-secondary);
+    --bg-subtle: var(--color-surface-2);
+    border-radius: 0;
+}
+
+@media (min-width: 576px) {
+    .threads-profile-shell {
+        border-radius: var(--radius-xl, 20px) !important;
+    }
+}
+
+/* 1. Top Bar (Desktop) */
+.threads-profile-topbar {
+    height: 48px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.14));
+}
+
+.threads-topbar-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary, #6b7280);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.threads-topbar-link:hover {
+    color: var(--text-primary, #111111);
+}
+
+/* 2. Profile Hero (Giống Ảnh 1: Tên bên trái, Avatar tròn bên phải) */
+.threads-profile-hero {
+    padding: 20px 16px 16px;
+}
+
+@media (min-width: 576px) {
+    .threads-profile-hero {
+        padding: 24px 24px 18px;
+    }
+}
+
+.threads-profile-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.threads-profile-name {
+    font-size: 1.5rem; /* 24px */
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin: 0;
+    word-break: break-word;
+}
+
+.threads-profile-handle-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.threads-profile-username {
+    font-size: 0.9375rem; /* 15px */
+    color: var(--text-secondary, #6b7280);
+    font-weight: 400;
+}
+
+.threads-role-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 9999px;
+    background-color: var(--bg-subtle, rgba(128, 128, 128, 0.08));
+    color: var(--text-secondary, #6b7280);
+    border: 1px solid var(--border-color, rgba(128, 128, 128, 0.16));
+}
+
+/* Fix triệt để khung vuông quanh Avatar ở Ảnh 2 */
+.threads-profile-avatar-wrap {
+    width: 68px;
+    height: 68px;
+    flex: 0 0 68px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid var(--border-color, rgba(128, 128, 128, 0.16));
+    background-color: var(--bg-subtle, rgba(128, 128, 128, 0.06));
+}
+
+@media (min-width: 576px) {
+    .threads-profile-avatar-wrap {
+        width: 80px;
+        height: 80px;
+        flex: 0 0 80px;
+    }
+}
+
+.threads-profile-avatar-wrap > *,
+.threads-profile-avatar-wrap img,
+.threads-profile-avatar-wrap .avatar,
+.threads-profile-avatar-wrap .avatar-wrapper,
+.threads-profile-avatar-wrap .avatar-inner {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    border-radius: 50% !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    object-fit: cover;
+    display: block;
+}
+
+/* Bio & Dòng thống kê gọn kiểu "0 người theo dõi" ở Ảnh 1 */
+.threads-profile-bio {
+    margin: 12px 0 0;
+    font-size: 0.9375rem; /* 15px */
+    line-height: 1.5;
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+.threads-profile-meta-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.threads-profile-stats-inline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    column-gap: 8px;
+    row-gap: 4px;
+    font-size: 0.875rem; /* 14px */
+    color: var(--text-secondary, #6b7280);
+}
+
+.threads-stat-inline-link {
+    color: var(--text-secondary, #6b7280);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.threads-stat-inline-link:hover {
+    color: var(--text-primary, #111111);
+    text-decoration: underline;
+}
+
+.threads-stat-inline-num {
+    font-weight: 600;
+    color: var(--text-primary, inherit);
+}
+
+.threads-profile-quick-icons {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.threads-quick-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary, inherit);
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+}
+
+.threads-quick-icon-btn:hover {
+    background-color: var(--bg-subtle, rgba(128, 128, 128, 0.1));
+    color: var(--text-primary, inherit);
+}
+
+/* 3. Hai nút Outlined chia đều 50/50 đúng chuẩn Ảnh 1 */
+.threads-profile-btn-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+}
+
+@media (max-width: 359px) {
+    .threads-profile-btn-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.threads-outline-action-btn {
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color, rgba(128, 128, 128, 0.25));
+    background-color: transparent;
+    color: var(--text-primary, inherit);
+    font-size: 0.875rem; /* 14px */
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.threads-outline-action-btn:hover {
+    background-color: var(--bg-subtle, rgba(128, 128, 128, 0.06));
+    color: var(--text-primary, inherit);
+    text-decoration: none;
+}
+
+/* 4. Thanh Tabs ngang (Bài viết | Đã lưu | Tương tác) giống Ảnh 1 */
+.threads-profile-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.16));
+    margin-top: 4px;
+}
+
+.threads-profile-tab {
+    position: relative;
+    height: 46px;
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary, #6b7280);
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 0 8px;
+    white-space: nowrap;
+    transition: color 0.15s ease;
+}
+
+.threads-profile-tab:hover {
+    color: var(--text-primary, inherit);
+}
+
+.threads-profile-tab.active {
+    color: var(--text-primary, inherit);
+}
+
+.threads-profile-tab.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background-color: currentColor;
+    border-radius: 999px;
+}
+
+/* 5. Thanh Composer "Có gì mới? [Đăng]" giống Ảnh 1 */
+.threads-profile-composer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.16));
+}
+
+@media (min-width: 576px) {
+    .threads-profile-composer {
+        padding: 14px 24px;
+    }
+}
+
+.threads-composer-avatar {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.threads-composer-avatar > *,
+.threads-composer-avatar img,
+.threads-composer-avatar .avatar,
+.threads-composer-avatar .avatar-wrapper,
+.threads-composer-avatar .avatar-inner {
+    width: 36px !important;
+    height: 36px !important;
+    max-width: 36px !important;
+    max-height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    border-radius: 50% !important;
+    object-fit: cover;
+    display: block;
+}
+
+.threads-composer-prompt {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.9375rem;
+    color: var(--text-secondary, #6b7280);
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.threads-composer-prompt:hover {
+    color: var(--text-primary, inherit);
+}
+
+.threads-composer-submit {
+    height: 34px;
+    padding: 0 16px;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color, rgba(128, 128, 128, 0.25));
+    background-color: transparent;
+    color: var(--text-primary, inherit);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s ease;
+}
+
+.threads-composer-submit:hover {
+    background-color: var(--bg-subtle, rgba(128, 128, 128, 0.08));
+    color: var(--text-primary, inherit);
+}
+
+/* 6. Saved Posts & Stats Panels */
+.threads-saved-item {
+    display: block;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.14));
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+}
+
+@media (min-width: 576px) {
+    .threads-saved-item {
+        padding: 16px 24px;
+    }
+}
+
+.threads-saved-item:hover {
+    background-color: var(--bg-subtle, rgba(128, 128, 128, 0.04));
+}
+
+/* ==========================================================================
+   7. Threads-Inspired Profile Edit Modal
+   ========================================================================== */
+.threads-modal-dialog {
+    max-width: 520px;
+    margin: 1.75rem auto;
+}
+
+@media (max-width: 575.98px) {
+    .threads-modal-dialog {
+        max-width: 100%;
+        margin: 0;
+        min-height: 100%;
+        display: flex;
+        align-items: flex-end;
+    }
+}
+
+.threads-modal-content {
+    background-color: var(--color-bg-surface, #121215);
+    color: var(--color-text-primary, #f4f4f5);
+    border: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.2));
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 575.98px) {
+    .threads-modal-content {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-bottom: 0;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+.threads-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.15));
+}
+
+.threads-modal-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-text-primary, inherit);
+}
+
+.threads-modal-body {
+    padding: 0 20px;
+    max-height: calc(85vh - 120px);
+    overflow-y: auto;
+}
+
+.threads-modal-row {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.12));
+}
+
+.threads-modal-row:last-child {
+    border-bottom: none;
+}
+
+.threads-modal-label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-primary, inherit);
+    margin-bottom: 6px;
+}
+
+.threads-modal-input {
+    width: 100%;
+    background-color: var(--color-bg-subtle, rgba(128, 128, 128, 0.06));
+    border: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.2));
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.9375rem;
+    color: var(--color-text-primary, inherit);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.threads-modal-input:focus {
+    border-color: var(--color-interactive, #111);
+    box-shadow: 0 0 0 2px var(--color-interactive-soft, rgba(128, 128, 128, 0.2));
+}
+
+.threads-modal-input.is-invalid {
+    border-color: var(--color-danger, #ef4444) !important;
+}
+
+.threads-modal-input[readonly] {
+    opacity: 0.8;
+    cursor: not-allowed;
+    background-color: var(--color-bg-subtle, rgba(128, 128, 128, 0.04));
+}
+
+.threads-modal-avatar-picker {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    cursor: pointer;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.2));
+    background-color: var(--color-bg-subtle, rgba(128, 128, 128, 0.08));
+}
+
+.threads-modal-avatar-picker img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+.threads-modal-avatar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    border-radius: 50%;
+}
+
+.threads-modal-avatar-picker:hover .threads-modal-avatar-overlay,
+.threads-modal-avatar-picker:focus-visible .threads-modal-avatar-overlay {
+    opacity: 1;
+}
+
+.threads-modal-footer {
+    border-top: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.12));
+}
+
+.threads-modal-save-btn {
+    width: 100%;
+    height: 44px;
+    border-radius: 12px;
+    border: none;
+    background-color: var(--color-interactive, #111111);
+    color: var(--color-accent-fg, #ffffff);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.05s ease;
+}
+
+.threads-modal-save-btn:hover:not(:disabled) {
+    opacity: 0.92;
+}
+
+.threads-modal-save-btn:active:not(:disabled) {
+    transform: scale(0.99);
+}
+
+.threads-modal-save-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+

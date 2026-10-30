@@ -318,4 +318,96 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_profile_show_page_renders_edit_modal_and_trigger_button(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Nguyễn Minh Khôi',
+            'bio' => 'Đây là tiểu sử mẫu',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get(route('profile.show'));
+
+        $response->assertOk();
+        $response->assertSee('id="btn-open-edit-profile"', false);
+        $response->assertSee('data-bs-target="#profileEditModal"', false);
+        $response->assertSee('id="profileEditModal"', false);
+        $response->assertSee('id="profile-edit-modal-form"', false);
+        $response->assertSee('Nguyễn Minh Khôi');
+        $response->assertSee('Đây là tiểu sử mẫu');
+    }
+
+    public function test_user_can_update_name_and_bio_via_ajax_without_email(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Old Name',
+            'email' => 'keep@example.com',
+            'bio' => 'Old Bio',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patchJson(route('profile.update'), [
+                'name' => 'Updated Name',
+                'bio' => 'Updated modern Threads-style bio',
+            ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'status' => 'profile-updated',
+            'email_changed' => false,
+            'user' => [
+                'id' => $user->id,
+                'name' => 'Updated Name',
+                'email' => 'keep@example.com',
+                'bio' => 'Updated modern Threads-style bio',
+            ],
+        ]);
+
+        $user->refresh();
+        $this->assertSame('Updated Name', $user->name);
+        $this->assertSame('Updated modern Threads-style bio', $user->bio);
+        $this->assertSame('keep@example.com', $user->email);
+        $this->assertNotNull($user->email_verified_at);
+    }
+
+    public function test_user_can_update_avatar_via_ajax_modal(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $file = UploadedFile::fake()->image('avatar.jpg', 250, 250);
+
+        $response = $this
+            ->actingAs($user)
+            ->patchJson(route('profile.update'), [
+                'name' => $user->name,
+                'avatar' => $file,
+            ]);
+
+        $response->assertOk();
+        $user->refresh();
+
+        $this->assertNotNull($user->avatar);
+        $this->assertStringStartsWith('avatars/', $user->avatar);
+        Storage::disk('public')->assertExists($user->avatar);
+        $response->assertJsonPath('user.avatar_url', $user->avatar_url);
+    }
+
+    public function test_profile_modal_validation_errors_returned_as_json(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patchJson(route('profile.update'), [
+                'name' => '', // empty name
+                'bio' => str_repeat('a', 501), // exceeds 500 chars
+            ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['name', 'bio']);
+    }
 }

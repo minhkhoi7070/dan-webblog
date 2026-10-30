@@ -18,7 +18,7 @@
                 </button>
             </div>
         </div>
-        <div class="table-responsive admin-users-table-scroll d-none d-md-block" role="region" tabindex="0" aria-label="Bảng người dùng có thể cuộn ngang" aria-describedby="admin-users-table-scroll-hint">
+        <div class="table-responsive d-none d-md-block admin-users-table-scroll" role="region" tabindex="0" aria-label="Bảng người dùng có thể cuộn ngang" aria-describedby="admin-users-table-scroll-hint">
             <table class="table table-hover align-middle mb-0 admin-users-table" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
                 <thead class="border-theme-bottom bg-surface-2">
                     <tr>

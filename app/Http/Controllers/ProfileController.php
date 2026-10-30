@@ -75,10 +75,19 @@ class ProfileController extends Controller
             $user->avatar = $uploadedPath;
         }
 
-        $user->fill([
+        $fillData = [
             'name' => $validated['name'],
-            'email' => $validated['email'],
-        ]);
+        ];
+
+        if (array_key_exists('bio', $validated)) {
+            $fillData['bio'] = $validated['bio'];
+        }
+
+        if (isset($validated['email'])) {
+            $fillData['email'] = $validated['email'];
+        }
+
+        $user->fill($fillData);
 
         $emailChanged = $user->isDirty('email');
         if ($emailChanged) {
@@ -138,7 +147,9 @@ class ProfileController extends Controller
                 'user' => [
                     'id' => $user->id,
                     'name' => $user->name,
+                    'username' => $user->username,
                     'email' => $user->email,
+                    'bio' => $user->bio,
                     'avatar_url' => $user->avatar_url,
                 ],
             ]);

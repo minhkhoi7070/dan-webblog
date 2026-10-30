@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap");
 @import "bootstrap/dist/css/bootstrap.min.css";
+@import "./profile.css";
 
 /* Admin post moderation actions: theme-specific colors with AA text contrast. */
 .admin-post-action--approve {
@@ -1635,15 +1636,47 @@ body.keyboard-open .mobile-bottom-nav {
 .mobile-drawer .offcanvas-body {
   min-height: 0;
   overscroll-behavior-y: contain;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important;
 }
 .mobile-drawer .sidebar-link {
-  justify-content: flex-start;
-  min-width: 0;
-  white-space: nowrap;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  gap: 0.75rem !important; /* 12px unified spacing */
+  padding: 0.5rem 0.75rem !important;
+  box-sizing: border-box !important;
+}
+.mobile-drawer .sidebar-link svg {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  flex-shrink: 0 !important;
+}
+.mobile-drawer .sidebar-link span {
+  text-align: left !important;
+  flex-grow: 1;
+}
+.mobile-drawer .label-uppercase {
+  text-align: left !important;
+  padding-left: 0.75rem !important;
 }
 .mobile-drawer .sidebar-link:focus-visible {
   outline: 2px solid var(--color-interactive);
   outline-offset: 2px;
+}
+
+@media (min-width: 768px) {
+  .offcanvas-backdrop {
+    display: none !important;
+    pointer-events: none !important;
+  }
 }
 .mobile-drawer .btn-close {
   filter: invert(1) grayscale(100%) brightness(200%);
@@ -2524,19 +2557,7 @@ html[data-theme="light"] span.theme-text-dark {
   text-underline-offset: 3px;
 }
 
-/* Editorial Profile Elements */
-.profile-stat-box {
-  background-color: var(--color-surface-1);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 1rem 0.75rem;
-  transition: border-color var(--duration-fast) var(--ease-standard);
-  transform: none !important;
-}
-.profile-stat-box:hover {
-  border-color: var(--color-border-medium);
-  transform: none !important;
-}
+/* Editorial Profile Elements — Moved to profile.css */
 
 .profile-action-link {
   display: flex;

@@ -645,6 +645,40 @@ export function initAppNavigation(root = document) {
                     }, 100);
                 }
             });
+
+            // Ensure drawer closes cleanly and backdrop/scroll-lock is cleaned up when resizing past mobile breakpoint
+            const handleDesktopBreakpoint = () => {
+                if (window.innerWidth >= 768) {
+                    const drawerEl = document.getElementById('mobileAppDrawer');
+                    if (drawerEl) {
+                        drawerEl.classList.remove('show');
+                        drawerEl.style.removeProperty('visibility');
+                        drawerEl.setAttribute('aria-hidden', 'true');
+                        drawerEl.removeAttribute('aria-modal');
+                        drawerEl.removeAttribute('role');
+                        if (window.bootstrap?.Offcanvas) {
+                            const inst = window.bootstrap.Offcanvas.getInstance(drawerEl);
+                            if (inst) {
+                                try {
+                                    inst.hide();
+                                } catch (_) {}
+                            }
+                        }
+                    }
+                    document.querySelectorAll('.offcanvas-backdrop').forEach(el => el.remove());
+                    if (!document.querySelector('.modal.show')) {
+                        document.body.style.removeProperty('overflow');
+                        document.body.style.removeProperty('padding-right');
+                        document.body.classList.remove('modal-open');
+                    }
+                }
+            };
+            window.addEventListener('resize', handleDesktopBreakpoint);
+            if (window.matchMedia) {
+                try {
+                    window.matchMedia('(min-width: 768px)').addEventListener('change', handleDesktopBreakpoint);
+                } catch (_) {}
+            }
         }
     }
 }

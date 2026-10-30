@@ -387,4 +387,3 @@ class AdminDirectPublishTest extends TestCase
         $authorEditResponse->assertDontSee('Đăng bài ngay');
     }
 }
-
