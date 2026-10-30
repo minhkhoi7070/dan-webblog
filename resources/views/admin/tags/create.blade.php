@@ -4,7 +4,7 @@
 
 @section('admin_content')
 <div class="mx-auto" style="max-width: 620px;">
-    <div class="mb-4">
+    <div class="mb-4 d-none d-md-block">
         <a href="{{ route('admin.tags.index') }}" class="small text-theme-secondary hover-accent text-decoration-none d-inline-flex align-items-center gap-1.5 transition-colors">
             <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -24,11 +24,11 @@
         </div>
     @endif
 
-    <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl">
-        <form action="{{ route('admin.tags.store') }}" method="POST" class="d-flex flex-column gap-3">
+    <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl admin-create-card">
+        <form action="{{ route('admin.tags.store') }}" method="POST" class="d-flex flex-column gap-3 admin-tag-create-form">
             @csrf
 
-            <div>
+            <div class="admin-create-field">
                 <label for="name" class="label-uppercase text-theme mb-2 d-block">
                     Tên thẻ <span class="text-danger">*</span>
                 </label>
@@ -45,7 +45,7 @@
                         class="form-control form-control-editorial @error('name') is-invalid @enderror"
                     >
                 </div>
-                <div class="form-text small text-theme-muted mt-2" style="font-size: 11px;">
+                <div class="form-text small text-theme-muted mt-2 admin-create-helper" style="font-size: 11px;">
                     Dấu <code>#</code> thừa hoặc khoảng trắng sẽ tự động được chuẩn hóa.
                 </div>
                 @error('name')
@@ -53,7 +53,7 @@
                 @enderror
             </div>
 
-            <div>
+            <div class="admin-create-field">
                 <label for="slug" class="label-uppercase text-theme mb-2 d-block">
                     Đường dẫn thẻ
                 </label>
@@ -65,7 +65,7 @@
                     placeholder="VD: laravel (để trống nếu muốn hệ thống tự sinh)"
                     class="form-control form-control-editorial font-monospace @error('slug') is-invalid @enderror"
                 >
-                <div class="form-text small text-theme-muted mt-2" style="font-size: 11px;">
+                <div class="form-text small text-theme-muted mt-2 admin-create-helper" style="font-size: 11px;">
                     Chỉ dùng chữ cái thường, số và dấu gạch ngang (-). Nếu để trống, hệ thống sẽ tự động tạo đường dẫn từ tên thẻ.
                 </div>
                 @error('slug')
@@ -73,11 +73,11 @@
                 @enderror
             </div>
 
-            <div class="d-flex align-items-center justify-content-end gap-2 pt-1 border-theme-top mt-0">
-                <a href="{{ route('admin.tags.index') }}" class="btn btn-outline-theme btn-sm rounded-pill px-3.5 py-1.5">
+            <div class="d-flex align-items-center justify-content-end gap-2 pt-1 border-theme-top mt-0 admin-create-actions">
+                <a href="{{ route('admin.tags.index') }}" class="btn btn-outline-theme btn-sm rounded-pill px-3.5 py-1.5 admin-create-cancel">
                     Hủy bỏ
                 </a>
-                <button type="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs">
+                <button type="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs admin-create-submit">
                     Lưu thẻ mới
                 </button>
             </div>

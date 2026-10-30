@@ -1,7 +1,7 @@
 @extends('layouts.public')
 
 @section('content')
-<div class="container-fluid py-4" style="max-width: 1200px;"
+<div class="container-fluid py-4 author-comments-page" style="max-width: 1200px;"
      data-feed-shell
      data-feed-base-url="{{ route('author.comments.index') }}">
     <header class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 pb-3 mb-4 border-theme-bottom">
@@ -12,11 +12,11 @@
         <a href="{{ route('posts.stats') }}" class="btn btn-sm btn-outline-theme rounded-pill px-3">Quản lý bài viết</a>
     </header>
 
-    <div class="card p-3 border-theme bg-theme-surface shadow-xs rounded-xl mb-4">
-        <form action="{{ route('author.comments.index') }}" method="GET" class="row g-2.5 align-items-end" data-feed-filter-form>
+    <div class="card p-3 border-theme bg-theme-surface shadow-xs rounded-xl mb-4 author-comments-filter-card">
+        <form action="{{ route('author.comments.index') }}" method="GET" class="row g-2.5 align-items-end author-comments-filter-form" data-feed-filter-form>
             <div class="col-12 col-md-7">
                 <label for="author-comment-search" class="form-label small text-theme-secondary mb-1" style="font-size: 12px;">Tìm bình luận, người viết hoặc bài viết</label>
-                <input id="author-comment-search" type="search" name="q" value="{{ $search }}" maxlength="255" class="form-control bg-surface-2 border-theme text-theme rounded-pill" style="height: 40px; font-size: 13.5px;" aria-describedby="author-comment-search-error">
+                <input id="author-comment-search" type="search" name="q" value="{{ $search }}" maxlength="255" placeholder="Tìm bình luận..." class="form-control bg-surface-2 border-theme text-theme rounded-pill" style="height: 40px; font-size: 13.5px;" aria-describedby="author-comment-search-error">
                 @error('q')
                     <p id="author-comment-search-error" class="text-danger small mb-0 mt-1" role="alert">{{ $message }}</p>
                 @enderror

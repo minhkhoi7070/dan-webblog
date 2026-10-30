@@ -1,11 +1,11 @@
 @extends('layouts.public')
 
 @section('content')
-<div class="container-fluid py-4" style="max-width: 1200px;">
+<div class="container-fluid py-4 author-post-create-page" style="max-width: 1200px;">
     <!-- Top Publishing Bar (Apple HIG + Medium style) -->
     <div class="editor-top-toolbar d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 pb-3.5 mb-4 border-theme-bottom">
         <div class="editor-toolbar-left d-flex align-items-center gap-2.5 min-w-0" style="flex: 1 1 auto; min-width: 0;">
-            <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 36px; height: 36px;" title="Quay lại danh sách" aria-label="Quay lại danh sách">
+            <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-circle d-none d-md-inline-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 36px; height: 36px;" title="Quay lại danh sách" aria-label="Quay lại danh sách">
                 <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
@@ -97,9 +97,9 @@
         <div class="row g-4">
             <!-- Left Main Writing Canvas (Readable Editor) -->
             <div class="col-12 col-lg-8">
-                <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl mb-4">
+                <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl mb-4 author-post-create-editor-card">
                     <!-- Title Input (Medium / Apple seamless typography) -->
-                    <div class="mb-4">
+                    <div class="mb-4 author-post-create-field">
                         <label for="title" class="visually-hidden">Tiêu đề bài viết</label>
                         <input
                             type="text"
@@ -117,7 +117,7 @@
                     </div>
 
                     <!-- Excerpt Input -->
-                    <div class="mb-4">
+                    <div class="mb-4 author-post-create-field">
                         <label for="excerpt" class="visually-hidden">Mô tả tóm tắt</label>
                         <textarea
                             name="excerpt"
@@ -378,7 +378,7 @@
             <div class="col-12 col-lg-4">
                 <div class="d-flex flex-column" style="gap: 20px;">
                     <!-- Category Selection -->
-                    <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl">
+                    <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl author-post-create-category-card">
                         <label for="category_id" class="form-label fw-semibold text-theme mb-2 d-flex align-items-center gap-1.5" style="font-size: 13.5px;">
                             Chuyên mục <span class="text-danger">*</span>
                         </label>
