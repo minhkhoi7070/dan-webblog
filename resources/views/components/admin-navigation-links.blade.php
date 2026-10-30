@@ -1,4 +1,4 @@
-@php
+    @php
     $isDrawer = $drawer ?? false;
     $groupClass = $isDrawer ? 'border-theme-top pt-2' : 'my-2 border-theme-top pt-2';
     $headingClass = $isDrawer
