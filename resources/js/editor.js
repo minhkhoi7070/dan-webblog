@@ -1038,6 +1038,7 @@ export function initPostEditor(root = document) {
     setupImageUpload(editor, root);
     setupThumbnailUploader(root);
     setupTagSelector(root);
+    setupSlugHandler(root);
     setupFormHandling(editor, root);
 
     updateEditorStats(editor);
@@ -2475,8 +2476,8 @@ function setupFormHandling(editor, root) {
         });
     }
 
-    // Input listeners for title, excerpt, and category
-    ['title', 'excerpt', 'category_id'].forEach((id) => {
+    // Input listeners for title, excerpt, category, and slug
+    ['title', 'excerpt', 'category_id', 'slug'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) {
             const onInput = () => { setPostEditorDirty(true); };
@@ -3082,5 +3083,347 @@ function showEditorToast(message, type = 'info') {
         const toast = new window.bootstrap.Toast(toastEl, { delay: 4500 });
         toast.show();
         toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+    }
+}
+
+// ============================================================================
+// POST SLUG HANDLER (Apple Minimalist SEO Slug Manager)
+// ============================================================================
+
+export function slugifyVietnamese(str) {
+    if (!str) return '';
+    let s = str.toString().toLowerCase();
+
+    // Map specific accented Vietnamese characters
+    s = s
+        .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
+        .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
+        .replace(/[ìíịỉĩ]/g, 'i')
+        .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
+        .replace(/[ùúụủũưừứựửữ]/g, 'u')
+        .replace(/[ỳýỵỷỹ]/g, 'y')
+        .replace(/đ/g, 'd');
+
+    // Decompose any residual combining marks
+    s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // Replace invalid non-alphanumeric characters with hyphens
+    s = s.replace(/[^a-z0-9\s-]/g, '');
+
+    // Collapse whitespace and underscores into single hyphen
+    s = s.replace(/[\s_]+/g, '-');
+
+    // Collapse multiple consecutive hyphens
+    s = s.replace(/-+/g, '-');
+
+    // Trim leading and trailing hyphens
+    s = s.replace(/^-+|-+$/g, '');
+
+    return s;
+}
+
+export function setupSlugHandler(root = document) {
+    const scope = (root && root.querySelector) ? root : document;
+    const container = scope.querySelector('#post-slug-container') || document.getElementById('post-slug-container');
+    if (!container || container.dataset.initialized === 'true') return;
+    container.dataset.initialized = 'true';
+
+    const titleInput = document.getElementById('title');
+    const slugInput = document.getElementById('slug');
+
+    // Sidebar View Mode elements
+    const viewMode = document.getElementById('slug-view-mode');
+    const previewUrl = document.getElementById('slug-preview-url');
+    const displayText = document.getElementById('slug-display-text');
+    const btnEditSlug = document.getElementById('btn-edit-slug');
+    const copyBtn = document.getElementById('btn-copy-slug-url');
+    const copyLabel = document.getElementById('copy-slug-label');
+    const regenerateBtn = document.getElementById('btn-regenerate-slug');
+
+    // Sidebar Edit Mode elements
+    const editMode = document.getElementById('slug-edit-mode');
+    const slugEditInput = document.getElementById('slug-edit-input');
+    const saveBtn = document.getElementById('btn-save-slug');
+    const cancelBtn = document.getElementById('btn-cancel-slug');
+    const regenerateBtnEdit = document.getElementById('btn-regenerate-slug-edit');
+    const errorMsg = document.getElementById('slug-error-msg');
+
+    if (!slugInput) return;
+
+    const baseUrl = container.getAttribute('data-base-url') || (window.location.origin + '/posts');
+    const checkUrl = container.getAttribute('data-check-url') || '/posts/check-slug';
+    const postId = container.getAttribute('data-post-id') || '';
+    let lastSavedSlug = slugInput.value.trim();
+    let isManual = container.getAttribute('data-is-manual') === 'true' || Boolean(lastSavedSlug && postId);
+
+    function updateSlugDisplay(slug) {
+        const clean = (slug || '').trim();
+        if (slugInput) slugInput.value = clean;
+        if (displayText) {
+            if (clean) {
+                displayText.textContent = clean;
+                displayText.classList.remove('opacity-50');
+            } else {
+                displayText.textContent = 'duong-dan-bai-viet';
+                displayText.classList.add('opacity-50');
+            }
+        }
+        if (previewUrl) {
+            previewUrl.href = clean ? `${baseUrl}/${encodeURIComponent(clean)}` : '#';
+        }
+        if (slugEditInput && document.activeElement !== slugEditInput) {
+            slugEditInput.value = clean;
+        }
+    }
+
+    function showError(msg) {
+        if (!errorMsg) return;
+        errorMsg.textContent = msg;
+        errorMsg.style.display = 'block';
+    }
+
+    function clearError() {
+        if (!errorMsg) return;
+        errorMsg.textContent = '';
+        errorMsg.style.display = 'none';
+    }
+
+    function enterEditMode() {
+        if (!viewMode || !editMode) return;
+        if (btnEditSlug) btnEditSlug.classList.add('d-none');
+        if (slugEditInput) {
+            slugEditInput.value = slugInput.value || (titleInput ? slugifyVietnamese(titleInput.value) : '');
+        }
+        clearError();
+        viewMode.classList.add('d-none');
+        editMode.classList.remove('d-none');
+        if (slugEditInput) {
+            slugEditInput.focus();
+            slugEditInput.select();
+        }
+    }
+
+    function exitEditMode() {
+        if (!viewMode || !editMode) return;
+        clearError();
+        editMode.classList.add('d-none');
+        viewMode.classList.remove('d-none');
+        if (btnEditSlug) btnEditSlug.classList.remove('d-none');
+    }
+
+    async function applyCustomSlug() {
+        const raw = slugEditInput ? slugEditInput.value.trim() : slugInput.value.trim();
+        const sanitized = slugifyVietnamese(raw);
+
+        if (!sanitized) {
+            showError('Đường dẫn không được để trống.');
+            if (slugEditInput) slugEditInput.focus();
+            return;
+        }
+
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(sanitized)) {
+            showError('Đường dẫn chỉ được chứa chữ cái thường, số và dấu gạch ngang.');
+            if (slugEditInput) slugEditInput.focus();
+            return;
+        }
+
+        if (saveBtn) saveBtn.disabled = true;
+
+        try {
+            const queryParams = new URLSearchParams({
+                slug: sanitized,
+                ...(postId ? { post_id: postId } : {})
+            });
+
+            const res = await fetch(`${checkUrl}?${queryParams.toString()}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (!data.available) {
+                    showError(data.message || 'Đường dẫn đã tồn tại. Vui lòng chọn đường dẫn khác.');
+                    if (saveBtn) saveBtn.disabled = false;
+                    if (slugEditInput) slugEditInput.focus();
+                    return;
+                }
+            }
+        } catch {
+            // Allow save on network issue if format is valid
+        } finally {
+            if (saveBtn) saveBtn.disabled = false;
+        }
+
+        lastSavedSlug = sanitized;
+        isManual = true;
+        container.setAttribute('data-is-manual', 'true');
+        updateSlugDisplay(sanitized);
+        exitEditMode();
+        setPostEditorDirty(true);
+    }
+
+    function cancelEdit() {
+        if (slugEditInput) slugEditInput.value = lastSavedSlug;
+        if (slugInput) slugInput.value = lastSavedSlug;
+        updateSlugDisplay(lastSavedSlug);
+        exitEditMode();
+    }
+
+    function handleRegenerate() {
+        const titleVal = titleInput ? titleInput.value : '';
+        const freshSlug = slugifyVietnamese(titleVal);
+
+        lastSavedSlug = freshSlug;
+        if (!postId) {
+            isManual = false;
+            container.setAttribute('data-is-manual', 'false');
+        } else {
+            isManual = true;
+            container.setAttribute('data-is-manual', 'true');
+        }
+
+        updateSlugDisplay(freshSlug);
+        clearError();
+        setPostEditorDirty(true);
+    }
+
+    // 1. Title Input Event (Auto-propose slug if not manual)
+    if (titleInput) {
+        titleInput.addEventListener('input', () => {
+            if (!isManual) {
+                const autoSlug = slugifyVietnamese(titleInput.value);
+                lastSavedSlug = autoSlug;
+                updateSlugDisplay(autoSlug);
+                clearError();
+            }
+        });
+    }
+
+    // 2. Button "Chỉnh sửa" click
+    if (btnEditSlug) {
+        btnEditSlug.addEventListener('click', (e) => {
+            e.preventDefault();
+            enterEditMode();
+        });
+    }
+
+    // 3. Edit input events (typing, Enter to save, Esc to cancel)
+    if (slugEditInput) {
+        slugEditInput.addEventListener('input', () => {
+            const raw = slugEditInput.value;
+            const normalized = raw.toLowerCase()
+                .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
+                .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
+                .replace(/[ìíịỉĩ]/g, 'i')
+                .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
+                .replace(/[ùúụủũưừứựửữ]/g, 'u')
+                .replace(/[ỳýỵỷỹ]/g, 'y')
+                .replace(/đ/g, 'd')
+                .replace(/[\s_]+/g, '-')
+                .replace(/[^a-z0-9-]/g, '');
+
+            if (raw !== normalized) {
+                slugEditInput.value = normalized;
+            }
+
+            const clean = slugifyVietnamese(slugEditInput.value);
+            if (slugInput) slugInput.value = clean;
+            clearError();
+        });
+
+        slugEditInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                applyCustomSlug();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                cancelEdit();
+            }
+        });
+    }
+
+    // 4. Save and Cancel buttons in edit mode
+    if (saveBtn) {
+        saveBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            applyCustomSlug();
+        });
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            cancelEdit();
+        });
+    }
+
+    // 5. Regenerate button clicks (both view mode and edit mode)
+    if (regenerateBtn) {
+        regenerateBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleRegenerate();
+            regenerateBtn.classList.add('text-success');
+            setTimeout(() => {
+                regenerateBtn.classList.remove('text-success');
+            }, 600);
+        });
+    }
+
+    if (regenerateBtnEdit) {
+        regenerateBtnEdit.addEventListener('click', (e) => {
+            e.preventDefault();
+            const titleVal = titleInput ? titleInput.value : '';
+            const freshSlug = slugifyVietnamese(titleVal);
+            if (slugEditInput) {
+                slugEditInput.value = freshSlug;
+                slugEditInput.focus();
+            }
+            if (slugInput) slugInput.value = freshSlug;
+            clearError();
+        });
+    }
+
+    // 6. Copy URL Button
+    if (copyBtn) {
+        copyBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const currentSlug = (slugInput ? slugInput.value.trim() : '') || (titleInput ? slugifyVietnamese(titleInput.value) : '');
+            const fullUrl = currentSlug ? `${baseUrl}/${currentSlug}` : baseUrl;
+
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(fullUrl);
+                } else {
+                    const temp = document.createElement('textarea');
+                    temp.value = fullUrl;
+                    document.body.appendChild(temp);
+                    temp.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(temp);
+                }
+
+                if (copyLabel) copyLabel.textContent = 'Đã sao chép';
+                setTimeout(() => {
+                    if (copyLabel) copyLabel.textContent = 'Sao chép URL';
+                }, 1500);
+            } catch {
+                if (window.showToast) window.showToast('Không thể sao chép đường dẫn.', 'warning');
+            }
+        });
+    }
+
+    // 7. Initial sync
+    if (slugInput.value.trim()) {
+        lastSavedSlug = slugInput.value.trim();
+        updateSlugDisplay(lastSavedSlug);
+    } else if (titleInput && titleInput.value.trim() && !postId) {
+        const initialSlug = slugifyVietnamese(titleInput.value);
+        lastSavedSlug = initialSlug;
+        updateSlugDisplay(initialSlug);
+    } else {
+        updateSlugDisplay('');
     }
 }

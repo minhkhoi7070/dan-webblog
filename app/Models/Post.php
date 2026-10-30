@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Post extends Model
 {
@@ -324,5 +325,50 @@ class Post extends Model
                 ->orWhere('excerpt', 'like', "%{$search}%")
                 ->orWhere('body', 'like', "%{$search}%");
         });
+    }
+
+    /**
+     * Retrieve the model for a bound value with legacy ID fallback.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return Model|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $post = parent::resolveRouteBinding($value, $field);
+        if ($post) {
+            return $post;
+        }
+
+        // Backward compatibility: If lookup by slug fails but $value is numeric, check by primary key ID
+        if (($field === 'slug' || $field === null) && is_numeric($value)) {
+            return static::where('id', (int) $value)->first();
+        }
+
+        return null;
+    }
+
+    /**
+     * Generate a unique, SEO-friendly slug for a post.
+     */
+    public static function generateUniqueSlug(string $titleOrSlug, ?int $ignoreId = null): string
+    {
+        $baseSlug = Str::slug($titleOrSlug);
+        if ($baseSlug === '') {
+            $baseSlug = 'bai-viet';
+        }
+
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (static::where('slug', $slug)
+            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+            ->exists()) {
+            $counter++;
+            $slug = "{$baseSlug}-{$counter}";
+        }
+
+        return $slug;
     }
 }

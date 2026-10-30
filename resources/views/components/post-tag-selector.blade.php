@@ -14,7 +14,7 @@
     ]));
 @endphp
 
-<div class="card border-theme bg-theme-surface shadow-xs rounded-xl" style="padding: 22px;"
+<div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl"
      id="tag-manager-component"
      data-form-id="{{ $formId }}"
      data-initial-tags="{{ $initialTagsJson }}"

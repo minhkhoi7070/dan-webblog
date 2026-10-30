@@ -2,30 +2,32 @@
 
 @section('content')
 <div class="container-fluid py-4" style="max-width: 1200px;">
-    <!-- Top Publishing Bar (Ghost + Notion style) -->
-    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 pb-3 mb-4 border-theme-bottom">
-        <div class="d-flex align-items-center gap-3">
-            <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 38px; height: 38px;" title="Quay lại bảng điều khiển" aria-label="Quay lại bảng điều khiển">
+    <!-- Top Publishing Bar (Apple HIG + Medium style) -->
+    <div class="editor-top-toolbar d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 pb-3.5 mb-4 border-theme-bottom">
+        <div class="editor-toolbar-left d-flex align-items-center gap-2.5 min-w-0" style="flex: 1 1 auto; min-width: 0;">
+            <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 36px; height: 36px;" title="Quay lại danh sách" aria-label="Quay lại danh sách">
                 <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
             </a>
-            <div>
-                <div class="d-flex align-items-center gap-2 small text-theme-muted label-uppercase mb-0.5" style="font-size: 11px;">
+            <div class="min-w-0" style="flex: 1; min-width: 0;">
+                <div class="d-flex align-items-center gap-1.5 text-theme-muted mb-0.5 text-truncate" style="font-size: 11.5px;">
                     <a href="{{ route('posts.stats') }}" data-app-nav class="text-decoration-none text-theme-muted hover-accent">Tác giả</a>
-                    <span>&rsaquo;</span>
-                    <span class="text-accent">Soạn thảo mới</span>
+                    <span class="opacity-50">/</span>
+                    <span class="text-theme-secondary text-truncate">Soạn thảo mới</span>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="fw-bold text-theme fs-5">Tạo bài viết mới</span>
-                    <x-badge variant="status-draft" size="xs">
-                        Bản nháp
-                    </x-badge>
+                <div class="d-flex align-items-center gap-2 min-w-0" style="height: 28px;">
+                    <h1 class="fw-bold text-theme fs-5 mb-0 text-truncate" style="letter-spacing: -0.02em; line-height: 1.2;">Tạo bài viết mới</h1>
+                    <div class="flex-shrink-0 d-flex align-items-center">
+                        <x-badge variant="status-draft" size="xs">
+                            Bản nháp
+                        </x-badge>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="editor-toolbar-actions d-flex align-items-center gap-2 flex-shrink-0" style="white-space: nowrap;">
             <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium btn-cancel-action">
                 Hủy bỏ
             </a>
@@ -87,8 +89,8 @@
             <!-- Left Main Writing Canvas (Readable Editor) -->
             <div class="col-12 col-lg-8">
                 <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl mb-4">
-                    <!-- Title Input (Notion / Ghost seamless title) -->
-                    <div class="mb-3">
+                    <!-- Title Input (Medium / Apple seamless typography) -->
+                    <div class="mb-4">
                         <label for="title" class="visually-hidden">Tiêu đề bài viết</label>
                         <input
                             type="text"
@@ -101,7 +103,7 @@
                             class="editor-title-input @error('title') is-invalid @enderror"
                         >
                         @error('title')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -365,20 +367,12 @@
 
             <!-- Right Sidebar: Settings & Metadata Panel -->
             <div class="col-12 col-lg-4">
-                <div class="d-flex flex-column" style="gap: 18px;">
+                <div class="d-flex flex-column" style="gap: 20px;">
                     <!-- Category Selection -->
-                    <div class="card border-theme bg-theme-surface shadow-xs rounded-xl" style="padding: 22px;">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <label for="category_id" class="label-uppercase text-theme mb-0 d-flex align-items-center gap-1.5 fw-bold">
-                                <svg style="width: 14px; height: 14px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                </svg>
-                                Chuyên mục <span class="text-danger">*</span>
-                            </label>
-                            <span class="badge bg-surface-2 text-theme-muted border border-theme font-monospace small" style="font-size: 11px;">
-                                Bắt buộc
-                            </span>
-                        </div>
+                    <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl">
+                        <label for="category_id" class="form-label fw-semibold text-theme mb-2 d-flex align-items-center gap-1.5" style="font-size: 13.5px;">
+                            Chuyên mục <span class="text-danger">*</span>
+                        </label>
                         <select
                             name="category_id"
                             id="category_id"
@@ -395,6 +389,129 @@
                         </select>
                         @error('category_id')
                             <div class="invalid-feedback d-block mt-1.5 small fw-medium">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Post Slug / URL Management Card (Apple Minimalist) -->
+                    <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl sidebar-slug-card"
+                         id="post-slug-container"
+                         data-base-url="{{ url('/posts') }}"
+                         data-display-host="{{ request()->getHost() }}/posts"
+                         data-check-url="{{ route('posts.check-slug') }}"
+                         data-is-manual="{{ old('slug') ? 'true' : 'false' }}">
+
+                        <!-- Card Header -->
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label for="slug" class="form-label fw-semibold text-theme mb-0" style="font-size: 13.5px;">
+                                Đường dẫn bài viết
+                            </label>
+                            <button type="button"
+                                    id="btn-edit-slug"
+                                    class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                    style="font-size: 12px;"
+                                    title="Chỉnh sửa đường dẫn">
+                                <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                                <span id="btn-edit-slug-label">Chỉnh sửa</span>
+                            </button>
+                        </div>
+
+                        <!-- Hidden native input to ALWAYS submit with the form -->
+                        <input
+                            type="hidden"
+                            name="slug"
+                            id="slug"
+                            value="{{ old('slug') }}"
+                            form="create-post-form"
+                        >
+
+                        <!-- 1. VIEW MODE (Default) -->
+                        <div id="slug-view-mode">
+                            <!-- Clean Single-line URL Preview without nested gray border box -->
+                            <div class="py-1 mb-2">
+                                <a href="{{ old('slug') ? url('/posts/'.old('slug')) : '#' }}"
+                                   id="slug-preview-url"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="d-flex align-items-center font-monospace text-theme text-decoration-none fw-medium"
+                                   style="font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                   title="Mở URL bài viết">
+                                    <span class="text-theme-muted flex-shrink-0">/posts/</span><span id="slug-display-text" class="text-truncate flex-grow-1" style="min-width: 0;">{{ old('slug') }}</span>
+                                </a>
+                            </div>
+
+                            <!-- Balanced & Compact View Mode Actions -->
+                            <div class="d-flex align-items-center justify-content-between pt-1 border-theme-top">
+                                <button type="button"
+                                        id="btn-copy-slug-url"
+                                        class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                        style="font-size: 11.5px;"
+                                        title="Sao chép URL">
+                                    <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                    <span id="copy-slug-label">Sao chép URL</span>
+                                </button>
+
+                                <button type="button"
+                                        id="btn-regenerate-slug"
+                                        class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                        style="font-size: 11.5px;"
+                                        title="Tạo lại slug tự động từ tiêu đề">
+                                    <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span>Tạo lại từ tiêu đề</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 2. EDIT MODE (Toggled via "Chỉnh sửa") -->
+                        <div id="slug-edit-mode" class="d-none">
+                            <div class="input-group input-group-sm mb-2" style="max-width: 100%;">
+                                <span class="input-group-text font-monospace bg-surface-2 border-theme text-theme-muted px-2" style="font-size: 12px;">
+                                    /posts/
+                                </span>
+                                <input
+                                    type="text"
+                                    id="slug-edit-input"
+                                    value="{{ old('slug') }}"
+                                    placeholder="duong-dan-bai-viet"
+                                    autocomplete="off"
+                                    spellcheck="false"
+                                    class="form-control font-monospace border-theme px-2"
+                                    style="font-size: 12px; min-width: 0;"
+                                >
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between pt-1">
+                                <button type="button"
+                                        id="btn-regenerate-slug-edit"
+                                        class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                        style="font-size: 11.5px;"
+                                        title="Tạo lại từ tiêu đề">
+                                    <svg style="width: 11px; height: 11px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span>Tạo lại</span>
+                                </button>
+
+                                <div class="d-flex align-items-center gap-1.5">
+                                    <button type="button" id="btn-cancel-slug" class="btn btn-sm btn-outline-theme px-2.5 py-0.5 rounded-pill" style="font-size: 11.5px;">
+                                        Hủy
+                                    </button>
+                                    <button type="button" id="btn-save-slug" class="btn btn-sm btn-editorial-primary px-3 py-0.5 rounded-pill" style="font-size: 11.5px;">
+                                        Áp dụng
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="slug-error-msg" class="text-danger small mt-1.5" style="display: none; font-size: 11.5px;"></div>
+                        </div>
+
+                        @error('slug')
+                            <div class="text-danger small mt-1.5" style="font-size: 11.5px;">{{ $message }}</div>
                         @enderror
                     </div>
 

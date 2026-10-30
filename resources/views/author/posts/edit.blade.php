@@ -2,50 +2,80 @@
 
 @section('content')
 <div class="container-fluid py-4" style="max-width: 1200px;">
-    <!-- Top Publishing Bar (Ghost + Notion style) -->
-    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 pb-3 mb-4 border-theme-bottom">
-        <div class="d-flex align-items-center gap-3">
-            <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 38px; height: 38px;" title="Quay lại bảng điều khiển" aria-label="Quay lại bảng điều khiển">
+    <!-- Top Publishing Bar (Apple HIG + Medium style) -->
+    <div class="editor-top-toolbar d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 pb-3.5 mb-4 border-theme-bottom">
+        <div class="editor-toolbar-left d-flex align-items-center gap-2.5 min-w-0" style="flex: 1 1 auto; min-width: 0;">
+            <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 36px; height: 36px;" title="Quay lại danh sách" aria-label="Quay lại danh sách">
                 <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
             </a>
-            <div>
-                <div class="d-flex align-items-center gap-2 small text-theme-muted label-uppercase mb-0.5" style="font-size: 11px;">
+
+            <!-- Delete Button Form on Left Side (Preserves right action buttons alignment) -->
+            <form action="{{ route('posts.destroy', $post) }}" method="POST" class="d-inline m-0 flex-shrink-0"
+                  data-confirm="true"
+                  data-confirm-title="Xóa bài viết"
+                  data-confirm-message="Bạn có chắc chắn muốn xóa bài viết này không?"
+                  data-confirm-target-name="{{ $post->title }}"
+                  data-confirm-target-meta="Trạng thái: {{ $post->status_label }}"
+                  data-confirm-description="Hành động này không thể hoàn tác. Bản nháp hoặc bài viết này sẽ bị xóa vĩnh viễn."
+                  data-confirm-btn-text="Xóa bài viết"
+                  data-confirm-btn-class="btn-danger"
+                  data-confirm-type="danger">
+                @csrf
+                @method('DELETE')
+                <button
+                    type="submit"
+                    class="btn btn-sm btn-outline-danger rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0"
+                    style="width: 36px; height: 36px;"
+                    title="Xóa bài viết"
+                    aria-label="Xóa bài viết"
+                >
+                    <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span class="visually-hidden">Xóa bài viết</span>
+                </button>
+            </form>
+
+            <div class="min-w-0" style="flex: 1; min-width: 0;">
+                <div class="d-flex align-items-center gap-1.5 text-theme-muted mb-0.5 text-truncate" style="font-size: 11.5px;">
                     <a href="{{ route('posts.stats') }}" data-app-nav class="text-decoration-none text-theme-muted hover-accent">Tác giả</a>
-                    <span>&rsaquo;</span>
-                    <span class="text-accent">Chỉnh sửa bài viết</span>
+                    <span class="opacity-50">/</span>
+                    <span class="text-theme-secondary text-truncate">Chỉnh sửa bài viết</span>
                 </div>
-                <div class="d-flex align-items-center flex-wrap gap-2">
-                    <span class="fw-bold text-theme fs-5">Chỉnh sửa bài viết</span>
+                <div class="d-flex align-items-center gap-2 min-w-0" style="height: 28px;">
+                    <h1 class="fw-bold text-theme fs-5 mb-0 text-truncate" style="letter-spacing: -0.02em; line-height: 1.2;">Chỉnh sửa bài viết</h1>
                     
                     <!-- Status Badge -->
-                    @if($post->status === 'published')
-                        <x-badge variant="status-published" size="xs">
-                            Đã xuất bản (Published)
-                        </x-badge>
-                    @elseif($post->status === 'pending')
-                        <x-badge variant="status-pending" size="xs">
-                            Chờ duyệt (Pending)
-                        </x-badge>
-                    @elseif($post->status === 'rejected')
-                        <x-badge variant="status-rejected" size="xs">
-                            Bị từ chối (Rejected)
-                        </x-badge>
-                    @else
-                        <x-badge variant="status-draft" size="xs">
-                            Bản nháp (Draft)
-                        </x-badge>
-                    @endif
+                    <div class="flex-shrink-0 d-flex align-items-center">
+                        @if($post->status === 'published')
+                            <x-badge variant="status-published" size="xs">
+                                Đã xuất bản
+                            </x-badge>
+                        @elseif($post->status === 'pending')
+                            <x-badge variant="status-pending" size="xs">
+                                Chờ duyệt
+                            </x-badge>
+                        @elseif($post->status === 'rejected')
+                            <x-badge variant="status-rejected" size="xs">
+                                Bị từ chối
+                            </x-badge>
+                        @else
+                            <x-badge variant="status-draft" size="xs">
+                                Bản nháp
+                            </x-badge>
+                        @endif
+                    </div>
 
-                    <span class="small text-theme-muted d-none d-md-inline" style="font-size: 12px;">
-                        &bull; Cập nhật {{ $post->updated_at->diffForHumans() }}
+                    <span class="small text-theme-muted flex-shrink-0 d-none d-xl-inline" style="font-size: 11.5px;">
+                        &bull; {{ $post->updated_at->diffForHumans() }}
                     </span>
                 </div>
             </div>
         </div>
 
-        <div class="d-flex align-items-center flex-wrap gap-2">
+        <div class="editor-toolbar-actions d-flex align-items-center gap-2 flex-shrink-0" style="white-space: nowrap;">
             @if($post->status === 'published')
                 <a href="{{ route('posts.show', $post->slug) }}" target="_blank" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5" title="Mở trang xem bài viết trên website">
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,37 +86,24 @@
             @endif
 
             <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium btn-cancel-action">
-                Quay lại
+                Hủy bỏ
             </a>
 
-            @if($post->status === 'draft')
+            @if(in_array($post->status, ['draft', 'rejected'], true))
                 <button type="submit" form="edit-post-form" name="action" value="draft" class="btn btn-sm btn-outline-theme rounded-pill px-3.5 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5 btn-action-draft">
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                     </svg>
                     <span>Lưu bản nháp</span>
                 </button>
-                <button type="submit" form="edit-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit">
+                <button type="submit" form="edit-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit" title="Gửi bài viết để Admin duyệt">
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                     </svg>
-                    <span>Gửi bài viết để Admin duyệt</span>
-                </button>
-            @elseif($post->status === 'rejected')
-                <button type="submit" form="edit-post-form" name="action" value="draft" class="btn btn-sm btn-outline-theme rounded-pill px-3.5 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5 btn-action-draft">
-                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                    </svg>
-                    <span>Lưu bản nháp</span>
-                </button>
-                <button type="submit" form="edit-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit">
-                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Gửi lại để Admin duyệt (Resubmit)</span>
+                    <span>{{ $post->status === 'rejected' ? 'Gửi lại để Admin duyệt' : 'Gửi bài viết để Admin duyệt' }}</span>
                 </button>
             @else
-                <button type="submit" form="edit-post-form" name="action" value="draft" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-draft">
+                <button type="submit" form="edit-post-form" name="action" value="draft" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-draft" title="Lưu thay đổi bài viết">
                     <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
@@ -136,8 +153,8 @@
                 @method('PUT')
 
                 <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl mb-4">
-                    <!-- Title Input (Notion / Ghost seamless title) -->
-                    <div class="mb-3">
+                    <!-- Title Input (Medium / Apple seamless typography) -->
+                    <div class="mb-4">
                         <label for="title" class="visually-hidden">Tiêu đề bài viết</label>
                         <input
                             type="text"
@@ -149,7 +166,7 @@
                             class="editor-title-input @error('title') is-invalid @enderror"
                         >
                         @error('title')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -414,218 +431,12 @@
 
         <!-- Right Sidebar: Settings & Publishing Panel -->
         <div class="col-12 col-lg-4">
-            <div class="d-flex flex-column gap-3.5">
-                <!-- Publishing & Workflow Box -->
-                <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                    <div class="d-flex align-items-center justify-content-between mb-2.5">
-                        <h2 class="label-uppercase text-theme mb-0 d-flex align-items-center gap-1.5 fw-bold">
-                            <svg style="width: 14px; height: 14px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Quy trình xuất bản
-                        </h2>
-                        <span class="badge rounded-pill font-monospace small px-2.5 py-0.5" style="font-size: 11px;
-                            @if($post->status === 'published') background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3);
-                            @elseif($post->status === 'pending') background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3);
-                            @elseif($post->status === 'rejected') background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);
-                            @else background: var(--color-bg-subtle, #27272a); color: var(--color-text-secondary, #a1a1aa); border: 1px solid var(--color-border-subtle, #3f3f46);
-                            @endif">
-                            {{ $post->status_label }}
-                        </span>
-                    </div>
-
-                    <div class="d-flex flex-column gap-2">
-                        @if($post->status === 'draft')
-                            <div class="p-2.5 rounded-3 bg-surface-2 border border-theme mb-1 small text-theme-secondary">
-                                <div class="d-flex align-items-center gap-1.5 mb-1 text-theme fw-semibold" style="font-size: 12px;">
-                                    <svg style="width: 13px; height: 13px; color: var(--color-accent); flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span>Kiểm duyệt nội dung</span>
-                                </div>
-                                <p class="mb-0 text-theme-muted" style="font-size: 11.5px; line-height: 1.45;">
-                                    Bài viết sẽ được chuyển đến Admin để phê duyệt trước khi hiển thị công khai.
-                                </p>
-                            </div>
-
-                            <button
-                                type="submit"
-                                form="edit-post-form"
-                                name="action"
-                                value="submit"
-                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit"
-                                title="Gửi bài viết để Admin kiểm duyệt và xuất bản"
-                            >
-                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                </svg>
-                                <span>Gửi bài viết để Admin duyệt</span>
-                            </button>
-
-                            <button
-                                type="submit"
-                                form="edit-post-form"
-                                name="action"
-                                value="draft"
-                                class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium d-flex align-items-center justify-content-center gap-2 btn-action-draft"
-                                title="Lưu lại bản nháp để tiếp tục chỉnh sửa sau"
-                            >
-                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                </svg>
-                                <span>Lưu bản nháp</span>
-                            </button>
-
-                            <a
-                                href="{{ route('posts.stats') }}"
-                                data-app-nav
-                                class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
-                            >
-                                Hủy bỏ & Quay lại
-                            </a>
-                        @elseif($post->status === 'rejected')
-                            <div class="p-2.5 rounded-3 bg-surface-2 border border-danger border-opacity-25 mb-1 small text-theme-secondary">
-                                <div class="d-flex align-items-center gap-1.5 mb-1 text-danger fw-semibold" style="font-size: 12px;">
-                                    <svg style="width: 13px; height: 13px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                    </svg>
-                                    <span>Bài viết bị từ chối</span>
-                                </div>
-                                <p class="mb-0 text-theme-muted" style="font-size: 11.5px; line-height: 1.45;">
-                                    Vui lòng chỉnh sửa nội dung theo góp ý và gửi lại để Ban biên tập xét duyệt.
-                                </p>
-                            </div>
-
-                            <button
-                                type="submit"
-                                form="edit-post-form"
-                                name="action"
-                                value="submit"
-                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-submit"
-                                title="Gửi lại bài viết cho Admin kiểm duyệt"
-                            >
-                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Gửi lại để Admin duyệt (Resubmit)</span>
-                            </button>
-
-                            <button
-                                type="submit"
-                                form="edit-post-form"
-                                name="action"
-                                value="draft"
-                                class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium d-flex align-items-center justify-content-center gap-2 btn-action-draft"
-                                title="Lưu tiến trình sửa đổi bản nháp"
-                            >
-                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                </svg>
-                                <span>Lưu bản nháp</span>
-                            </button>
-
-                            <a
-                                href="{{ route('posts.stats') }}"
-                                data-app-nav
-                                class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
-                            >
-                                Hủy bỏ & Quay lại
-                            </a>
-                        @elseif($post->status === 'pending')
-                            <div class="p-2.5 rounded-3 bg-surface-2 border border-warning border-opacity-50 text-warning small text-center mb-1">
-                                <span style="font-size: 11.5px;">Bài viết đang trong hàng đợi kiểm duyệt của Admin.</span>
-                            </div>
-
-                            <button
-                                type="submit"
-                                form="edit-post-form"
-                                name="action"
-                                value="draft"
-                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-draft"
-                                title="Cập nhật nội dung bài viết đang chờ duyệt"
-                            >
-                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span>Lưu thay đổi bài viết</span>
-                            </button>
-
-                            <a
-                                href="{{ route('posts.stats') }}"
-                                data-app-nav
-                                class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
-                            >
-                                Quay lại danh sách
-                            </a>
-                        @else
-                            <div class="p-2.5 rounded-3 bg-surface-2 border border-success border-opacity-30 text-success small text-center mb-1">
-                                <span style="font-size: 11.5px;">Bài viết đang hiển thị công khai.</span>
-                            </div>
-
-                            <button
-                                type="submit"
-                                form="edit-post-form"
-                                name="action"
-                                value="draft"
-                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2 btn-action-draft"
-                                title="Cập nhật trực tiếp bài viết đã xuất bản"
-                            >
-                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span>Lưu thay đổi bài viết</span>
-                            </button>
-
-                            <a
-                                href="{{ route('posts.stats') }}"
-                                data-app-nav
-                                class="btn btn-link text-theme-muted text-decoration-none rounded-pill w-100 py-1.5 small text-center btn-cancel-action"
-                            >
-                                Quay lại danh sách
-                            </a>
-                        @endif
-
-                        <!-- Delete Button Form -->
-                        <div class="pt-2 mt-1 border-theme-top">
-                            <form action="{{ route('posts.destroy', $post) }}" method="POST" class="m-0"
-                                  data-confirm="true"
-                                  data-confirm-title="Xóa bài viết"
-                                  data-confirm-message="Bạn có chắc chắn muốn xóa bài viết này không?"
-                                  data-confirm-target-name="{{ $post->title }}"
-                                  data-confirm-target-meta="Trạng thái: {{ $post->status_label }}"
-                                  data-confirm-description="Hành động này không thể hoàn tác. Bản nháp hoặc bài viết này sẽ bị xóa vĩnh viễn."
-                                  data-confirm-btn-text="Xóa bài viết"
-                                  data-confirm-btn-class="btn-danger"
-                                  data-confirm-type="danger">
-                                @csrf
-                                @method('DELETE')
-                                <button
-                                    type="submit"
-                                    class="btn btn-outline-danger rounded-pill w-100 py-1.5 small d-flex align-items-center justify-content-center gap-1.5"
-                                >
-                                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    Xóa bài viết này
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="d-flex flex-column" style="gap: 20px;">
                 <!-- Category Selection -->
-                <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <label for="category_id" class="label-uppercase text-theme mb-0 d-flex align-items-center gap-1.5 fw-bold">
-                            <svg style="width: 14px; height: 14px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                            </svg>
-                            Chuyên mục <span class="text-danger">*</span>
-                        </label>
-                        <span class="badge bg-surface-2 text-theme-muted border border-theme font-monospace small" style="font-size: 11px;">
-                            Bắt buộc
-                        </span>
-                    </div>
+                <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl">
+                    <label for="category_id" class="form-label fw-semibold text-theme mb-2 d-flex align-items-center gap-1.5" style="font-size: 13.5px;">
+                        Chuyên mục <span class="text-danger">*</span>
+                    </label>
                     <select
                         name="category_id"
                         id="category_id"
@@ -641,7 +452,131 @@
                         @endforeach
                     </select>
                     @error('category_id')
-                        <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+                        <div class="invalid-feedback d-block mt-1.5 small fw-medium">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- Post Slug / URL Management Card (Apple Minimalist) -->
+                <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl sidebar-slug-card"
+                     id="post-slug-container"
+                     data-base-url="{{ url('/posts') }}"
+                     data-display-host="{{ request()->getHost() }}/posts"
+                     data-check-url="{{ route('posts.check-slug') }}"
+                     data-post-id="{{ $post->id }}"
+                     data-is-manual="true">
+
+                    <!-- Card Header -->
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <label for="slug" class="form-label fw-semibold text-theme mb-0" style="font-size: 13.5px;">
+                            Đường dẫn bài viết
+                        </label>
+                        <button type="button"
+                                id="btn-edit-slug"
+                                class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                style="font-size: 12px;"
+                                title="Chỉnh sửa đường dẫn">
+                            <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                            <span id="btn-edit-slug-label">Chỉnh sửa</span>
+                        </button>
+                    </div>
+
+                    <!-- Hidden native input to ALWAYS submit with the form -->
+                    <input
+                        type="hidden"
+                        name="slug"
+                        id="slug"
+                        value="{{ old('slug', $post->slug) }}"
+                        form="edit-post-form"
+                    >
+
+                    <!-- 1. VIEW MODE (Default) -->
+                    <div id="slug-view-mode">
+                        <!-- Clean Single-line URL Preview without nested gray border box -->
+                        <div class="py-1 mb-2">
+                            <a href="{{ url('/posts/'.$post->slug) }}"
+                               id="slug-preview-url"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="d-flex align-items-center font-monospace text-theme text-decoration-none fw-medium"
+                               style="font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                               title="Mở URL bài viết">
+                                <span class="text-theme-muted flex-shrink-0">/posts/</span><span id="slug-display-text" class="text-truncate flex-grow-1" style="min-width: 0;">{{ old('slug', $post->slug) }}</span>
+                            </a>
+                        </div>
+
+                        <!-- Balanced & Compact View Mode Actions -->
+                        <div class="d-flex align-items-center justify-content-between pt-1 border-theme-top">
+                            <button type="button"
+                                    id="btn-copy-slug-url"
+                                    class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                    style="font-size: 11.5px;"
+                                    title="Sao chép URL">
+                                <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                <span id="copy-slug-label">Sao chép URL</span>
+                            </button>
+
+                            <button type="button"
+                                    id="btn-regenerate-slug"
+                                    class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                    style="font-size: 11.5px;"
+                                    title="Tạo lại slug tự động từ tiêu đề">
+                                <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>Tạo lại từ tiêu đề</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. EDIT MODE (Toggled via "Chỉnh sửa") -->
+                    <div id="slug-edit-mode" class="d-none">
+                        <div class="input-group input-group-sm mb-2" style="max-width: 100%;">
+                            <span class="input-group-text font-monospace bg-surface-2 border-theme text-theme-muted px-2" style="font-size: 12px;">
+                                /posts/
+                            </span>
+                            <input
+                                type="text"
+                                id="slug-edit-input"
+                                value="{{ old('slug', $post->slug) }}"
+                                placeholder="duong-dan-bai-viet"
+                                autocomplete="off"
+                                spellcheck="false"
+                                class="form-control font-monospace border-theme px-2"
+                                style="font-size: 12px; min-width: 0;"
+                            >
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between pt-1">
+                            <button type="button"
+                                    id="btn-regenerate-slug-edit"
+                                    class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                    style="font-size: 11.5px;"
+                                    title="Tạo lại từ tiêu đề">
+                                <svg style="width: 11px; height: 11px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>Tạo lại</span>
+                            </button>
+
+                            <div class="d-flex align-items-center gap-1.5">
+                                <button type="button" id="btn-cancel-slug" class="btn btn-sm btn-outline-theme px-2.5 py-0.5 rounded-pill" style="font-size: 11.5px;">
+                                    Hủy
+                                </button>
+                                <button type="button" id="btn-save-slug" class="btn btn-sm btn-editorial-primary px-3 py-0.5 rounded-pill" style="font-size: 11.5px;">
+                                    Áp dụng
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="slug-error-msg" class="text-danger small mt-1.5" style="display: none; font-size: 11.5px;"></div>
+                    </div>
+
+                    @error('slug')
+                        <div class="text-danger small mt-1.5" style="font-size: 11.5px;">{{ $message }}</div>
                     @enderror
                 </div>
 

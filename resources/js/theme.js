@@ -59,6 +59,28 @@ export const BlogMNMTheme = {
     updateAria() {
         if (typeof document === 'undefined') return;
         const resolved = this.getResolvedTheme();
+
+        // Modern SaaS Segmented Buttons in Sidebar
+        const modernLightBtn = document.getElementById('sidebar-theme-btn-light') || document.getElementById('sidebar-guest-theme-btn-light');
+        const modernDarkBtn = document.getElementById('sidebar-theme-btn-dark') || document.getElementById('sidebar-guest-theme-btn-dark');
+        if (modernLightBtn && modernDarkBtn) {
+            modernLightBtn.classList.toggle('active', resolved === 'light');
+            modernLightBtn.setAttribute('aria-pressed', resolved === 'light' ? 'true' : 'false');
+            modernDarkBtn.classList.toggle('active', resolved === 'dark');
+            modernDarkBtn.setAttribute('aria-pressed', resolved === 'dark' ? 'true' : 'false');
+        }
+
+        const sunIcons = document.querySelectorAll('.sidebar-icon-sun');
+        const moonIcons = document.querySelectorAll('.sidebar-icon-moon');
+        if (resolved === 'dark') {
+            sunIcons.forEach(el => el.classList.remove('d-none'));
+            moonIcons.forEach(el => el.classList.add('d-none'));
+        } else {
+            sunIcons.forEach(el => el.classList.add('d-none'));
+            moonIcons.forEach(el => el.classList.remove('d-none'));
+        }
+
+        // Backward compatibility
         const lightBtn = document.querySelector('.sidebar-theme-toggle__btn--light');
         const darkBtn = document.querySelector('.sidebar-theme-toggle__btn--dark');
         const compactBtn = document.querySelector('.sidebar-theme-compact__btn');

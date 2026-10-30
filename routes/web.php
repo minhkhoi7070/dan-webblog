@@ -66,6 +66,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::middleware(['auth', 'role:author,admin'])->group(function () {
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+    Route::get('/posts/check-slug', [PostController::class, 'checkSlug'])->name('posts.check-slug');
     Route::post('/posts/upload-image', [PostController::class, 'uploadImage'])->name('posts.upload-image');
     Route::post('/posts/upload-video', [PostController::class, 'uploadVideo'])->name('posts.upload-video');
     Route::delete('/posts/delete-video', [PostController::class, 'deleteVideo'])->name('posts.delete-video');

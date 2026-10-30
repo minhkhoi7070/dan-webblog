@@ -1,56 +1,97 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div class="macos-profile-header mx-auto d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3" style="max-width: 780px;">
             <div>
-                <h1 class="h4 fw-bold text-theme mb-0 tracking-tight">
+                <h1 class="macos-title mb-1">
                     Cài đặt tài khoản
                 </h1>
+                <p class="macos-subtitle mb-0">
+                    Quản lý thông tin tài khoản, bảo mật mật khẩu và giao diện hệ thống.
+                </p>
             </div>
 
-            <!-- Notion-style Quick Section Jumps -->
-            <nav class="d-flex flex-wrap align-items-center gap-1.5" aria-label="Điều hướng cài đặt">
-                <a href="#appearance" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent" style="font-size: 12px;">
-                    Giao diện
-                </a>
-                <a href="#reading" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent" style="font-size: 12px;">
-                    Trải nghiệm đọc
-                </a>
-                <a href="#profile-info" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent" style="font-size: 12px;">
+            <!-- macOS Native Segmented Control (Only 3 Tabs: Hồ sơ, Bảo mật, Giao diện) -->
+            <div class="macos-segmented-bar" role="tablist" aria-label="Điều hướng cài đặt">
+                <a href="#profile-info" class="macos-segmented-tab active" id="tab-macos-profile" role="tab">
                     Hồ sơ
                 </a>
-                <a href="#security" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 text-theme-secondary hover-accent" style="font-size: 12px;">
+                <a href="#security" class="macos-segmented-tab" id="tab-macos-security" role="tab">
                     Bảo mật
                 </a>
-            </nav>
+                <a href="#appearance" class="macos-segmented-tab" id="tab-macos-appearance" role="tab">
+                    Giao diện
+                </a>
+            </div>
         </div>
     </x-slot>
 
-    <!-- Main Settings Body (Centered Notion/Readwise Document Feel) -->
-    <div class="mx-auto d-flex flex-column gap-4 pb-5" style="max-width: 780px;">
-        <!-- 1. Appearance / Theme Settings -->
-        <div class="settings-section-card">
-            @include('profile.partials.appearance-settings')
-        </div>
+    <!-- macOS System Settings Content Container (Centered 780px) -->
+    <div class="macos-profile-page mx-auto pb-5" style="max-width: 780px;">
+        <div class="d-flex flex-column gap-3.5">
+            <!-- 1. Apple Account Style Profile Group -->
+            <div class="macos-card" id="profile-info-group">
+                @include('profile.partials.update-profile-information-form')
+            </div>
 
-        <!-- 2. Reading Experience Settings (Font Size & Content Width) -->
-        <div class="settings-section-card">
-            @include('profile.partials.reading-settings')
-        </div>
+            <!-- 2. Password & Security Group -->
+            <div class="macos-card" id="security-group">
+                @include('profile.partials.update-password-form')
+            </div>
 
-        <!-- 3. Profile Information -->
-        <div class="settings-section-card">
-            @include('profile.partials.update-profile-information-form')
-        </div>
+            <!-- 3. Appearance Settings Group -->
+            <div class="macos-card" id="appearance-group">
+                @include('profile.partials.appearance-settings')
+            </div>
 
-        <!-- 4. Security & Password Update -->
-        <div class="settings-section-card">
-            @include('profile.partials.update-password-form')
-        </div>
-
-        <!-- 5. Session & Danger Zone (Logout + Delete Account) -->
-        <div class="settings-section-card">
-            @include('profile.partials.delete-user-form')
+            <!-- 4. Session & Danger Zone Group -->
+            <div class="macos-card" id="account-actions-group">
+                @include('profile.partials.delete-user-form')
+            </div>
         </div>
     </div>
-</x-app-layout>
 
+    <!-- Smooth Tab Highlighting Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = [
+                { id: 'profile-info-group', link: document.getElementById('tab-macos-profile') },
+                { id: 'security-group', link: document.getElementById('tab-macos-security') },
+                { id: 'appearance-group', link: document.getElementById('tab-macos-appearance') }
+            ];
+
+            function syncActiveTab() {
+                const scrollPos = window.scrollY + 140;
+                let activeSet = false;
+
+                for (let i = tabs.length - 1; i >= 0; i--) {
+                    const section = document.getElementById(tabs[i].id);
+                    if (section && section.offsetTop <= scrollPos) {
+                        tabs.forEach(t => t.link?.classList.remove('active'));
+                        tabs[i].link?.classList.add('active');
+                        activeSet = true;
+                        break;
+                    }
+                }
+
+                if (!activeSet && tabs[0].link) {
+                    tabs[0].link.classList.add('active');
+                }
+            }
+
+            window.addEventListener('scroll', syncActiveTab, { passive: true });
+
+            tabs.forEach(tab => {
+                tab.link?.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    tabs.forEach(t => t.link?.classList.remove('active'));
+                    tab.link.classList.add('active');
+                    const target = document.getElementById(tab.id);
+                    if (target) {
+                        const targetY = target.getBoundingClientRect().top + window.pageYOffset - 90;
+                        window.scrollTo({ top: targetY, behavior: 'smooth' });
+                    }
+                });
+            });
+        });
+    </script>
+</x-app-layout>

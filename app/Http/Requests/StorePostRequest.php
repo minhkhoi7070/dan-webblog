@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Post;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class StorePostRequest extends FormRequest
 {
@@ -30,6 +33,16 @@ class StorePostRequest extends FormRequest
             $this->merge(['content' => $this->input('body')]);
         }
 
+        // Sanitize and normalize slug if provided
+        if ($this->has('slug')) {
+            $rawSlug = $this->input('slug');
+            if (is_string($rawSlug) && trim($rawSlug) !== '') {
+                $this->merge(['slug' => Str::slug($rawSlug)]);
+            } else {
+                $this->merge(['slug' => null]);
+            }
+        }
+
         // Security rule: Never trust workflow fields from request input for authors
         if ($this->user() && ! $this->user()->isAdmin()) {
             $this->request->remove('status');
@@ -46,8 +59,18 @@ class StorePostRequest extends FormRequest
      */
     public function rules(): array
     {
+        $post = $this->route('post');
+        $postId = $post instanceof Post ? $post->id : (is_numeric($post) ? (int) $post : null);
+
         return [
             'title' => ['required', 'string', 'max:255'],
+            'slug' => [
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                Rule::unique('posts', 'slug')->ignore($postId),
+            ],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'excerpt' => ['nullable', 'string', 'max:500'],
             'content' => ['required_without:body', 'nullable', 'string'],
@@ -69,6 +92,9 @@ class StorePostRequest extends FormRequest
     {
         return [
             'title.required' => 'Vui lòng nhập tiêu đề bài viết.',
+            'slug.regex' => 'Đường dẫn (slug) chỉ được chứa chữ cái thường, số và dấu gạch ngang (không bắt đầu, kết thúc hoặc có 2 dấu gạch ngang liên tiếp).',
+            'slug.unique' => 'Đường dẫn (slug) này đã tồn tại trong hệ thống. Vui lòng chọn đường dẫn khác.',
+            'slug.max' => 'Đường dẫn (slug) không được vượt quá 255 ký tự.',
             'category_id.required' => 'Vui lòng chọn chuyên mục bài viết.',
             'category_id.exists' => 'Chuyên mục được chọn không hợp lệ.',
             'content.required_without' => 'Vui lòng nhập nội dung bài viết.',

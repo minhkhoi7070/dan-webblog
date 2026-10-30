@@ -97,11 +97,17 @@ class PostController extends Controller
     /**
      * Display the specified post and increment its view count.
      */
-    public function show(Post $post, Request $request): View
+    public function show(Post $post, Request $request): View|RedirectResponse
     {
         // Enforce guest access: unpublished posts return 404 for guests and non-authorized users
         if ($post->status !== 'published' && Gate::denies('view', $post)) {
             abort(404);
+        }
+
+        // Backward compatibility: If post was accessed via legacy numeric ID in URL, 301 redirect to canonical slug URL
+        $pathSegment = $request->segment(2);
+        if ($pathSegment && is_numeric($pathSegment) && $post->slug && $pathSegment !== $post->slug) {
+            return redirect()->to(route('posts.show', array_merge(['post' => $post->slug], $request->query())), 301);
         }
 
         // Increment view count
@@ -238,7 +244,8 @@ class PostController extends Controller
         $body = $request->input('body') ?? $request->input('content');
         $body = PostContentService::cleanHtml($body);
         $excerpt = $request->validated('excerpt') ?: Str::limit(strip_tags($body), 150);
-        $slug = Str::slug($request->validated('title')).'-'.Str::lower(Str::random(6));
+        $rawSlug = $request->validated('slug');
+        $slug = $rawSlug ?: Post::generateUniqueSlug($request->validated('title'));
 
         $action = $request->input('action');
         $status = ($action === 'submit') ? 'pending' : 'draft';
@@ -269,6 +276,58 @@ class PostController extends Controller
 
         return redirect()->route('posts.edit', $post)
             ->with('success', 'Bài viết đã được tạo thành công dưới dạng Bản nháp (Draft).');
+    }
+
+    /**
+     * Check slug availability and validity via AJAX.
+     */
+    public function checkSlug(Request $request): JsonResponse
+    {
+        Gate::authorize('create', Post::class);
+
+        $rawSlug = (string) $request->query('slug', '');
+        $postId = $request->query('post_id');
+        $postId = is_numeric($postId) ? (int) $postId : null;
+
+        $slug = Str::slug($rawSlug);
+
+        if ($slug === '') {
+            return response()->json([
+                'valid' => false,
+                'available' => false,
+                'slug' => '',
+                'message' => 'Đường dẫn không được để trống.',
+            ]);
+        }
+
+        if (mb_strlen($slug) > 255) {
+            return response()->json([
+                'valid' => false,
+                'available' => false,
+                'slug' => $slug,
+                'message' => 'Đường dẫn vượt quá giới hạn 255 ký tự.',
+            ]);
+        }
+
+        $isTaken = Post::where('slug', $slug)
+            ->when($postId, fn ($q) => $q->where('id', '!=', $postId))
+            ->exists();
+
+        if ($isTaken) {
+            return response()->json([
+                'valid' => true,
+                'available' => false,
+                'slug' => $slug,
+                'message' => 'Đường dẫn này đã được sử dụng bởi một bài viết khác.',
+            ]);
+        }
+
+        return response()->json([
+            'valid' => true,
+            'available' => true,
+            'slug' => $slug,
+            'message' => 'Đường dẫn hợp lệ và có thể sử dụng.',
+        ]);
     }
 
     /**
@@ -476,6 +535,13 @@ class PostController extends Controller
         $post->category_id = $request->validated('category_id');
         $post->excerpt = $excerpt;
         $post->body = $body;
+
+        if ($request->has('slug')) {
+            $customSlug = $request->validated('slug');
+            $post->slug = $customSlug ?: Post::generateUniqueSlug($post->title, $post->id);
+        } elseif (empty($post->slug)) {
+            $post->slug = Post::generateUniqueSlug($post->title, $post->id);
+        }
 
         $action = $request->input('action');
         if ($action === 'submit' && in_array($post->status, ['draft', 'rejected'], true)) {
