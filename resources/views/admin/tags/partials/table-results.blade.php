@@ -121,8 +121,8 @@
     </div>
 
         @if($tags->hasPages())
-            <div data-feed-pagination class="p-3 border-theme-top bg-surface-2 d-flex justify-content-center">
-                {{ $tags->links() }}
+            <div data-feed-pagination class="admin-tags-pagination px-3 px-sm-4 py-3 border-theme-top bg-theme-surface">
+                {{ $tags->onEachSide(1)->links('admin.tags.partials.pagination') }}
             </div>
         @endif
     </div>

@@ -1,10 +1,13 @@
 const cardSelector = '.admin-users-table-card';
 const scrollSelector = '.admin-users-table-scroll';
+let initialized = false;
 
 export function initAdminUsersTableScroll() {
-    if (!document.querySelector(cardSelector)) {
+    if (initialized) {
         return;
     }
+
+    initialized = true;
 
     const observedElements = new Set();
     let scheduledFrame = null;
@@ -118,7 +121,7 @@ export function initAdminUsersTableScroll() {
 
     window.addEventListener('resize', scheduleRefresh);
 
-    const mutationRoot = document.querySelector('[data-feed-shell]') || document.body;
+    const mutationRoot = document.querySelector('main[data-app-content], #main-content') || document.body;
     const mutationObserver = new MutationObserver(scheduleRefresh);
     mutationObserver.observe(mutationRoot, { childList: true, subtree: true });
 

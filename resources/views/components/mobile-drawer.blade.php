@@ -19,7 +19,7 @@
                     <div class="fw-bold text-theme text-truncate" style="font-size: 14.5px;">{{ Auth::user()->name }}</div>
                     <div class="small text-theme-muted text-truncate" style="font-size: 12px;">{{ '@' . (Auth::user()->username ?? strtolower(str_replace(' ', '', Auth::user()->name))) }}</div>
                 </div>
-                <span class="badge {{ Auth::user()->isAdmin() ? 'bg-primary-subtle text-primary border border-primary' : (Auth::user()->isAuthor() ? 'bg-info-subtle text-info border border-info' : 'bg-surface-2 text-theme-secondary border border-theme') }} rounded-pill" style="font-size: 10.5px;">
+                <span class="sidebar-account__badge {{ Auth::user()->isAdmin() ? 'sidebar-account__badge--admin' : (Auth::user()->isAuthor() ? 'sidebar-account__badge--author' : 'sidebar-account__badge--viewer') }}">
                     {{ Auth::user()->isAdmin() ? 'Admin' : (Auth::user()->isAuthor() ? 'Tác giả' : 'Độc giả') }}
                 </span>
             </a>
@@ -69,7 +69,7 @@
                             <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
-                            <span class="small">Nhật ký hoạt động</span>
+                            <span class="small">Hoạt động</span>
                         </a>
                         <a href="{{ route('profile.show') }}" class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none sidebar-link {{ request()->routeIs('profile.show') ? 'active' : '' }}" data-bs-dismiss="offcanvas" data-app-nav>
                             <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,13 +77,15 @@
                             </svg>
                             <span class="small">Trang cá nhân</span>
                         </a>
-                        <a href="{{ route('profile.edit') }}" class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none sidebar-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" data-bs-dismiss="offcanvas" data-app-nav>
+                        @if(!Auth::user()->isAdmin())
+                        <a href="{{ route('profile.edit') }}" class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" data-bs-dismiss="offcanvas" data-app-nav>
                             <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <span class="small">Cài đặt tài khoản</span>
+                            <span class="small">Cài đặt</span>
                         </a>
+                        @endif
                     </div>
                 </div>
 
@@ -114,49 +116,8 @@
                     </div>
                 @endif
 
-                <!-- 4. Trung tâm Quản trị (Admin Only) -->
                 @if(Auth::user()->isAdmin())
-                    <div class="border-theme-top pt-2">
-                        <div class="px-2 py-1 label-uppercase text-theme-muted" style="font-size: 10px; letter-spacing: 0.08em;">Quản trị hệ thống</div>
-                        <div class="d-flex flex-column gap-1 mt-1">
-                            <a href="{{ route('admin.dashboard') }}" class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" data-bs-dismiss="offcanvas" data-app-nav>
-                                <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                                </svg>
-                                <span class="small">Bảng điều khiển</span>
-                            </a>
-                            <a href="{{ route('admin.posts.index') }}" class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none sidebar-link {{ request()->routeIs('admin.posts.*') ? 'active' : '' }}" data-bs-dismiss="offcanvas" data-app-nav>
-                                <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                <span class="small">Kiểm duyệt bài viết</span>
-                            </a>
-                            <a href="{{ route('admin.users.index') }}" class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none sidebar-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" data-bs-dismiss="offcanvas" data-app-nav>
-                                <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                                <span class="small">Quản lý người dùng</span>
-                            </a>
-                            <a href="{{ route('admin.categories.index') }}" class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none sidebar-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" data-bs-dismiss="offcanvas" data-app-nav>
-                                <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                </svg>
-                                <span class="small">Chuyên mục</span>
-                            </a>
-                            <a href="{{ route('admin.tags.index') }}" class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none sidebar-link {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}" data-bs-dismiss="offcanvas" data-app-nav>
-                                <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                                </svg>
-                                <span class="small">Thẻ bài viết</span>
-                            </a>
-                            <a href="{{ route('admin.comments.index') }}" class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none sidebar-link {{ request()->routeIs('admin.comments.*') ? 'active' : '' }}" data-bs-dismiss="offcanvas" data-app-nav>
-                                <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                                </svg>
-                                <span class="small">Bình luận</span>
-                            </a>
-                        </div>
-                    </div>
+                    @include('components.admin-navigation-links', ['drawer' => true])
                 @endif
 
                 @if(Auth::user()->role === 'viewer')
@@ -190,7 +151,7 @@
         <!-- Drawer Footer: Theme & Logout -->
         <div class="border-theme-top pt-3 mt-auto">
             <div class="d-flex align-items-center justify-content-between mb-2 px-1">
-                <span class="small text-theme-muted">Giao diện</span>
+                <span class="small text-theme-muted">Chế độ giao diện</span>
                 <button type="button" onclick="window.BlogMNMTheme && window.BlogMNMTheme.toggle()" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1 d-flex align-items-center gap-2" aria-label="Chuyển đổi giao diện sáng/tối">
                     <svg class="theme-icon-light" style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />

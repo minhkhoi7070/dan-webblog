@@ -11,9 +11,9 @@
         </div>
 
         <div class="admin-users-pagination__links">
-            <ul class="pagination mb-0" aria-label="Các trang">
+            <ul class="pagination mb-0 admin-pagination-compact" aria-label="Các trang">
                 @if ($paginator->onFirstPage())
-                    <li class="page-item disabled" aria-disabled="true">
+                    <li class="page-item disabled" aria-disabled="true" aria-label="Trang trước">
                         <span class="page-link" aria-hidden="true">&lsaquo;</span>
                     </li>
                 @else
@@ -22,28 +22,23 @@
                     </li>
                 @endif
 
-                @foreach ($elements as $element)
-                    @if (is_string($element))
-                        <li class="page-item disabled" aria-disabled="true"><span class="page-link">{{ $element }}</span></li>
-                    @endif
-
-                    @if (is_array($element))
-                        @foreach ($element as $page => $url)
-                            @if ($page == $paginator->currentPage())
-                                <li class="page-item active" aria-current="page"><span class="page-link">{{ $page }}</span></li>
-                            @else
-                                <li class="page-item"><a class="page-link" href="{{ $url }}">{{ $page }}</a></li>
-                            @endif
-                        @endforeach
-                    @endif
-                @endforeach
+                <li class="admin-pagination-compact__position">
+                    <span class="admin-pagination-compact__current" aria-current="page">
+                        <span class="visually-hidden">Trang hiện tại </span>{{ $paginator->currentPage() }}
+                    </span>
+                    <span class="admin-pagination-compact__total">
+                        <span aria-hidden="true">/</span>
+                        <span class="visually-hidden">trên tổng số </span>{{ $paginator->lastPage() }}
+                        <span class="visually-hidden"> trang</span>
+                    </span>
+                </li>
 
                 @if ($paginator->hasMorePages())
                     <li class="page-item">
                         <a class="page-link" href="{{ $paginator->nextPageUrl() }}" rel="next" aria-label="Trang sau">&rsaquo;</a>
                     </li>
                 @else
-                    <li class="page-item disabled" aria-disabled="true">
+                    <li class="page-item disabled" aria-disabled="true" aria-label="Trang sau">
                         <span class="page-link" aria-hidden="true">&rsaquo;</span>
                     </li>
                 @endif

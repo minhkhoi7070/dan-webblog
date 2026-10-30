@@ -5,8 +5,21 @@
      data-feed-counts='@json($statusCounts ?? [])'>
 
     <!-- Posts Moderation Table (High Information Density) -->
-    <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4">
-        <div class="table-responsive">
+    <div class="card border-theme bg-theme-surface shadow-xs rounded-xl overflow-hidden mb-4 admin-posts-table-card">
+        <div class="admin-posts-table-scroll-tools" data-posts-table-scroll-tools>
+            <p id="admin-posts-table-scroll-hint" class="admin-posts-table-scroll-hint small text-theme-muted mb-0">
+                Cuộn ngang để xem các cột còn lại.
+            </p>
+            <div class="admin-posts-table-scroll-controls" role="group" aria-label="Điều khiển cuộn ngang bảng bài viết">
+                <button type="button" class="btn btn-sm btn-outline-theme" data-posts-table-scroll="left" aria-label="Cuộn bảng bài viết sang trái" disabled>
+                    <span aria-hidden="true">&lsaquo;</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-theme" data-posts-table-scroll="right" aria-label="Cuộn bảng bài viết sang phải" disabled>
+                    <span aria-hidden="true">&rsaquo;</span>
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive admin-posts-table-scroll" role="region" tabindex="0" aria-label="Bảng bài viết có thể cuộn ngang" aria-describedby="admin-posts-table-scroll-hint">
             <table class="table table-hover align-middle mb-0 ap-table" style="--bs-table-bg: transparent; --bs-table-hover-bg: var(--color-surface-2);">
                 <colgroup>
                     <col class="col-post">
@@ -50,7 +63,7 @@
                             </td>
 
                             <!-- Author (Unified Single-Line Avatar + Name) -->
-                            <td class="ap-col py-3 col-author text-start">
+                            <td class="ap-col py-3 col-author text-start" data-label="Tác giả">
                                 <div class="ap-author-wrap">
                                     <div class="flex-shrink-0">
                                         <x-avatar :user="$post->user" size="xs" />
@@ -65,14 +78,14 @@
                             </td>
 
                             <!-- Category -->
-                            <td class="ap-col py-3 col-cat text-center">
+                            <td class="ap-col py-3 col-cat text-center" data-label="Chuyên mục">
                                 <span class="badge bg-surface-2 border border-theme text-theme-secondary rounded-pill fw-medium ap-badge" style="font-size: 11px;" title="{{ $post->category->name }}">
                                     {{ $post->category->name }}
                                 </span>
                             </td>
 
                             <!-- Status Badge -->
-                            <td class="ap-col py-3 col-status text-center">
+                            <td class="ap-col py-3 col-status text-center" data-label="Trạng thái">
                                 @if($post->status === 'published')
                                     <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill ap-badge" style="font-size: 11px;">
                                         Đã xuất bản
@@ -93,7 +106,7 @@
                             </td>
 
                             <!-- Interactions (Centered Vertical Stack) -->
-                            <td class="ap-col py-3 col-interact text-center">
+                            <td class="ap-col py-3 col-interact text-center" data-label="Tương tác">
                                 <div class="ap-interact text-theme-secondary">
                                     <span>{{ number_format($post->views) }} views</span>
                                     <span>{{ number_format($post->likers_count) }} likes</span>
@@ -102,7 +115,7 @@
                             </td>
 
                             <!-- Moderation Actions -->
-                            <td class="ap-col py-3 col-actions text-center">
+                            <td class="ap-col py-3 col-actions text-center" data-label="Thao tác">
                                 <div class="ap-actions-wrap">
                                     @if($post->status === 'pending')
                                         <!-- Approve Form -->
@@ -186,8 +199,8 @@
         </div>
 
         @if($posts->hasPages())
-            <div data-feed-pagination class="px-3 px-sm-4 py-3 border-theme-top bg-theme-surface d-flex justify-content-center">
-                {{ $posts->links() }}
+            <div data-feed-pagination class="admin-posts-pagination px-3 px-sm-4 py-3 border-theme-top bg-theme-surface">
+                {{ $posts->onEachSide(1)->links('admin.posts.partials.pagination') }}
             </div>
         @endif
     </div>

@@ -105,7 +105,7 @@
 
             <!-- Excerpt -->
             @if($post->excerpt)
-                <div class="p-3.5 rounded-xl bg-surface-2 border border-theme text-theme-secondary small fst-italic mb-4" style="line-height: 1.6;">
+                <div class="rounded-xl bg-surface-2 border border-theme text-theme-secondary small fst-italic mb-4" style="padding: 12px; line-height: 1.6; overflow-wrap: anywhere;">
                     {{ $post->excerpt }}
                 </div>
             @endif
