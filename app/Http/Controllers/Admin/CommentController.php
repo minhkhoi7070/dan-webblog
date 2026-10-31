@@ -7,6 +7,7 @@ use App\Models\Comment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class CommentController extends Controller
@@ -14,7 +15,7 @@ class CommentController extends Controller
     /**
      * Display a listing of comments for moderation.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|Response
     {
         $status = $request->query('status');
         $search = $request->query('q');
@@ -23,8 +24,10 @@ class CommentController extends Controller
             ->with(['user', 'post'])
             ->when($status, fn ($q) => $q->where('status', $status))
             ->when($search, function ($query, $term) {
-                $query->where('body', 'like', "%{$term}%")
-                    ->orWhereHas('user', fn ($q) => $q->where('name', 'like', "%{$term}%"));
+                $query->where(function ($query) use ($term) {
+                    $query->where('body', 'like', "%{$term}%")
+                        ->orWhereHas('user', fn ($q) => $q->where('name', 'like', "%{$term}%"));
+                });
             })
             ->latest()
             ->paginate(20)
@@ -36,6 +39,19 @@ class CommentController extends Controller
             'approved' => Comment::where('status', 'approved')->count(),
             'spam' => Comment::where('status', 'spam')->count(),
         ];
+
+        if ($request->header('X-BlogMNM-Feed')) {
+            return response()
+                ->view('admin.comments.partials.table-results', [
+                    'comments' => $comments,
+                    'currentStatus' => $status,
+                    'search' => $search,
+                    'statusCounts' => $statusCounts,
+                ])
+                ->header('X-BlogMNM-Feed', '1')
+                ->header('Vary', 'X-BlogMNM-Feed')
+                ->header('Cache-Control', 'private, no-store');
+        }
 
         return view('admin.comments.index', [
             'comments' => $comments,

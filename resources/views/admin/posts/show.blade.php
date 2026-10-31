@@ -27,12 +27,12 @@
                   data-confirm-message="Bạn có chắc chắn muốn duyệt và xuất bản ngay bài viết này?"
                   data-confirm-target-name="{{ $post->title }}"
                   data-confirm-target-meta="Tác giả: {{ $post->user->name }}"
-                  data-confirm-description="Bài viết sẽ được chuyển sang trạng thái đã xuất bản và hiển thị công khai trên BlogMNM."
+                  data-confirm-description="Bài viết sẽ được chuyển sang trạng thái đã xuất bản và hiển thị công khai trên CloudBlog."
                   data-confirm-btn-text="Duyệt bài viết"
                   data-confirm-btn-class="btn-success"
                   data-confirm-type="success">
                 @csrf
-                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 py-1 fw-semibold" style="font-size: 12.5px;">
+                <button type="submit" class="btn btn-success admin-post-action--approve btn-sm rounded-pill px-3 py-1 fw-semibold" style="font-size: 12.5px;">
                     Duyệt & Xuất bản
                 </button>
             </form>
@@ -56,7 +56,7 @@
                   data-confirm-type="warning">
                 @csrf
                 <input type="hidden" name="rejection_reason" value="">
-                <button type="submit" class="btn btn-outline-warning btn-sm rounded-pill px-3 py-1 fw-semibold" style="font-size: 12.5px;">
+                <button type="submit" class="btn btn-outline-warning admin-post-action--reject btn-sm rounded-pill px-3 py-1 fw-semibold" style="font-size: 12.5px;">
                     Từ chối duyệt
                 </button>
             </form>
@@ -99,13 +99,13 @@
     <div class="col-12 col-lg-8">
         <article class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl">
             <!-- Title -->
-            <h1 class="h3 fw-bold text-theme mb-3 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif); line-height: 1.35;">
+            <h1 class="h3 fw-bold text-theme mb-3 tracking-tight" style="line-height: 1.35;">
                 {{ $post->title }}
             </h1>
 
             <!-- Excerpt -->
             @if($post->excerpt)
-                <div class="p-3.5 rounded-xl bg-surface-2 border border-theme text-theme-secondary small fst-italic mb-4" style="line-height: 1.6;">
+                <div class="rounded-xl bg-surface-2 border border-theme text-theme-secondary small fst-italic mb-4" style="padding: 12px; line-height: 1.6; overflow-wrap: anywhere;">
                     {{ $post->excerpt }}
                 </div>
             @endif
@@ -118,15 +118,15 @@
             @endif
 
             <!-- Article Body -->
-            <div class="text-theme border-theme-top pt-4 fs-base" style="white-space: pre-line; line-height: 1.85; font-size: 15.5px;">
-                {{ $post->body }}
+            <div class="text-theme border-theme-top pt-4 fs-base editorial-content" style="line-height: 1.85; font-size: 15.5px;">
+                {!! $post->rendered_body !!}
             </div>
         </article>
     </div>
 
     <!-- Right Sidebar Metadata & Quick Actions -->
     <div class="col-12 col-lg-4">
-        <div class="d-flex flex-column gap-3.5">
+        <div class="d-flex flex-column gap-3">
             <!-- Metadata Card -->
             <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl">
                 <h3 class="label-uppercase text-theme-muted mb-3.5" style="font-size: 11px;">Thông tin Thẩm định</h3>
@@ -135,19 +135,19 @@
                     <span class="small text-theme-muted d-block mb-1" style="font-size: 12px;">Trạng thái hiện tại:</span>
                     @if($post->status === 'published')
                         <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill" style="font-size: 11.5px;">
-                            Đã xuất bản (Published)
+                            Đã xuất bản
                         </span>
                     @elseif($post->status === 'pending')
-                        <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-25 rounded-pill" style="font-size: 11.5px;">
-                            Chờ thẩm định (Pending)
+                        <span class="badge admin-post-status-pending bg-warning-subtle text-warning border border-warning border-opacity-25 rounded-pill" style="font-size: 11.5px;">
+                            Chờ thẩm định
                         </span>
                     @elseif($post->status === 'rejected')
                         <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill" style="font-size: 11.5px;">
-                            Bị từ chối (Rejected)
+                            Bị từ chối
                         </span>
                     @else
                         <span class="badge bg-surface-2 text-theme-muted border border-theme rounded-pill" style="font-size: 11.5px;">
-                            Bản nháp (Draft)
+                            Bản nháp
                         </span>
                     @endif
                 </div>
@@ -219,7 +219,7 @@
                         ></textarea>
                         <button
                             type="submit"
-                            class="btn btn-outline-warning btn-sm rounded-pill fw-semibold w-100"
+                            class="btn btn-outline-warning admin-post-action--reject btn-sm rounded-pill fw-semibold w-100"
                             style="font-size: 12px;"
                         >
                             Gửi lý do & Từ chối duyệt

@@ -4,11 +4,12 @@
 
 @section('body')
         <div class="card p-4 p-sm-5 border-theme text-center rounded-2xl w-100 shadow-sm" style="max-width: 460px;">
-            <div class="rounded-4 brand-gradient text-white mx-auto d-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 54px; height: 54px; font-weight: 800; font-size: 1.5rem;" data-theme-preserve>
-                B
+            <div class="mb-3 d-flex justify-content-center">
+                <a href="{{ route('posts.index') }}" class="brand-link inline-flex items-center gap-2.5 font-bold text-2xl tracking-tight text-decoration-none" aria-label="CloudBlog Trang chủ">
+                    <x-logo class="w-14 h-14" />
+                    <span class="brand-text">CloudBlog</span>
+                </a>
             </div>
-            <h1 class="h4 fw-bold text-theme mb-2">Blog<span class="text-accent">MNM</span></h1>
-            <p class="small text-theme-secondary mb-4 leading-relaxed">Nền tảng xuất bản nội dung xã hội hiện đại. Đọc sâu, viết thật, kết nối ý nghĩa.</p>
             <div class="d-flex justify-content-center gap-2">
                 <a href="{{ route('home') }}" class="btn btn-editorial-primary rounded-pill px-4 fw-semibold small">
                     Trang chủ

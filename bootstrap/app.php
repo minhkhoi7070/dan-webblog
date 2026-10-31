@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\StartScopedSession;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,8 +16,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(replace: [
+            StartSession::class => StartScopedSession::class,
+        ]);
+
+        $middleware->redirectGuestsTo(fn (Request $request): string => route($request->is('admin', 'admin/*') ? 'admin.login' : 'login'));
+        $middleware->redirectUsersTo(fn (Request $request): string => route($request->is('admin', 'admin/*') ? 'admin.dashboard' : 'home'));
+
         $middleware->alias([
             'role' => RoleMiddleware::class,
+            'verified' => EnsureEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

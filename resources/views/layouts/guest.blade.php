@@ -1,7 +1,7 @@
 @extends('layouts.base')
-@section('title', config('app.name', 'BlogMNM') . ' - ' . ($title ?? 'Đăng nhập & Đăng ký'))
+@section('title', config('app.name', 'CloudBlog') . ' - ' . ($title ?? 'Đăng nhập & Đăng ký'))
 @section('html_class', 'h-100')
-@section('body_class', 'd-flex flex-column justify-content-center align-items-center min-vh-100 px-3 py-5 bg-theme text-theme position-relative')
+@section('body_class', 'd-flex flex-column justify-content-center align-items-center min-vh-100 px-3 py-5 bg-theme text-theme position-relative' . (request()->routeIs('register') ? ' register-page-body' : ''))
 
 @section('body')
     <!-- Accessibility Skip to Main Content Link -->
@@ -30,13 +30,9 @@
     <main id="main-content" class="w-100 d-flex flex-column align-items-center">
         <!-- Brand Logo Header -->
         <div class="mb-4 text-center user-select-none">
-            <a href="{{ route('home') }}" class="d-inline-flex align-items-center gap-2.5 text-decoration-none group">
-                <div class="d-flex align-items-center justify-content-center rounded-3 bg-theme-surface border border-theme text-theme fw-bold shadow-xs" style="width: 40px; height: 40px; font-size: 20px; font-family: var(--font-serif, 'Lora', Georgia, serif);">
-                    B
-                </div>
-                <span class="fs-4 fw-bold text-theme m-0 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
-                    Blog<span class="text-accent">MNM</span>
-                </span>
+            <a href="{{ route('posts.index') }}" class="brand-link inline-flex items-center gap-2.5 font-bold text-2xl tracking-tight text-decoration-none group" aria-label="CloudBlog Trang chủ">
+                <x-logo class="w-12 h-12" />
+                <span class="brand-text">CloudBlog</span>
             </a>
         </div>
 
@@ -54,7 +50,7 @@
                 <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                Quay lại trang chủ BlogMNM
+                Quay lại trang chủ CloudBlog
             </a>
         </div>
         <!-- Global Bootstrap Toast Notifications -->

@@ -5,11 +5,17 @@ use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\AuthorCommentController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\FollowingController;
 use App\Http\Controllers\InteractionController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TagController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -18,16 +24,28 @@ use Illuminate\Support\Facades\Route;
 // Admin Authentication (Public Guest/Admin)
 // =============================================================================
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/login', [AdminAuthController::class, 'create'])->name('login');
-    Route::post('/login', [AdminAuthController::class, 'store'])->name('login.store');
+    Route::get('/login', [AdminAuthController::class, 'create'])->middleware('guest:admin')->name('login');
+    Route::post('/login', [AdminAuthController::class, 'store'])->middleware('guest:admin')->name('login.store');
+    Route::post('/logout', [AdminAuthController::class, 'destroy'])->middleware('auth:admin')->name('logout');
+
+    Route::middleware('auth:admin')->group(function () {
+        Route::get('/verify-email', EmailVerificationPromptController::class)->name('verification.notice');
+        Route::post('/verify-email', [VerifyEmailController::class, 'verifyOtp'])
+            ->middleware('throttle:10,1')->name('verification.otp.verify');
+        Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+            ->middleware('throttle:6,1')->name('verification.send');
+        Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
+            ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+    });
 });
 
 // =============================================================================
 // Admin Routes (Sprint 4: Admin Only)
 // =============================================================================
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth:admin', 'verified:admin.verification.notice', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/metrics/realtime', [DashboardController::class, 'realtimeMetrics'])->name('metrics.realtime');
 
     // User management
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -37,6 +55,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Category CRUD
     Route::resource('categories', CategoryController::class);
+
+    // Tag CRUD
+    Route::resource('tags', App\Http\Controllers\Admin\TagController::class)->except(['show']);
 
     // Post moderation
     Route::get('/posts', [App\Http\Controllers\Admin\PostController::class, 'index'])->name('posts.index');
@@ -56,15 +77,22 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 // Author CMS Routes (Sprint 3: Author & Admin)
 // Note: Declared before wildcard /posts/{post:slug} to prevent route conflicts
 // =============================================================================
-Route::middleware(['auth', 'role:author,admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:author,admin'])->group(function () {
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+    Route::get('/posts/check-slug', [PostController::class, 'checkSlug'])->name('posts.check-slug');
+    Route::post('/posts/upload-image', [PostController::class, 'uploadImage'])->name('posts.upload-image');
+    Route::post('/posts/upload-video', [PostController::class, 'uploadVideo'])->name('posts.upload-video');
+    Route::delete('/posts/delete-video', [PostController::class, 'deleteVideo'])->name('posts.delete-video');
     Route::get('/posts/stats', [PostController::class, 'stats'])->name('posts.stats');
     Route::get('/author/posts/stats', [PostController::class, 'stats'])->name('author.posts.stats');
+    Route::get('/author/comments', [AuthorCommentController::class, 'index'])->name('author.comments.index');
     Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
     Route::match(['put', 'patch'], '/posts/{post}', [PostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
     Route::post('/posts/{post}/submit', [PostController::class, 'submit'])->name('posts.submit');
+    Route::post('/tags', [TagController::class, 'store'])->name('tags.store');
+    Route::get('/tags/search', [TagController::class, 'search'])->name('tags.search');
 });
 
 // =============================================================================
@@ -80,28 +108,32 @@ Route::get('/posts/author/{user}', [PostController::class, 'byAuthor'])->name('p
 // Authenticated Viewer Routes (Sprint 2)
 // =============================================================================
 Route::middleware('auth')->group(function () {
-    // Interactions (Like, Favorite, Follow)
-    Route::post('/posts/{post}/like', [InteractionController::class, 'like'])->name('posts.like');
-    Route::post('/posts/{post}/favorite', [InteractionController::class, 'favorite'])->name('posts.favorite');
-    Route::post('/authors/{user}/follow', [InteractionController::class, 'follow'])->name('authors.follow');
+    // Protected Interactions (Require Verified Email)
+    Route::middleware('verified')->group(function () {
+        // Interactions (Like, Favorite, Follow)
+        Route::match(['get', 'post'], '/posts/{post}/like', [InteractionController::class, 'like'])->name('posts.like');
+        Route::match(['get', 'post'], '/posts/{post}/favorite', [InteractionController::class, 'favorite'])->name('posts.favorite');
+        Route::match(['get', 'post'], '/authors/{user}/follow', [InteractionController::class, 'follow'])->name('authors.follow');
 
-    // Comments & Replies
-    Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
-    Route::post('/comments', [CommentController::class, 'store'])->name('comments.store.direct');
-    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+        // Comments & Replies
+        Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
+        Route::post('/comments', [CommentController::class, 'store'])->name('comments.store.direct');
+        Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
-    // Viewer Personal Pages
+        // Viewer to Author Upgrade
+        Route::post('/become-author', [ProfileController::class, 'becomeAuthor'])->name('author.become');
+    });
+
+    // Viewer Personal Pages (Accessible for browsing)
+    Route::get('/following', [FollowingController::class, 'index'])->name('following.index');
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::get('/activity', [ActivityController::class, 'index'])->name('activity.index');
 
-    // Profile Management
+    // Profile Management (Accessible for unverified users to update email)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::get('/profile/overview', [ProfileController::class, 'show'])->name('profile.show');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Viewer to Author Upgrade
-    Route::post('/become-author', [ProfileController::class, 'becomeAuthor'])->name('author.become');
 });
 
 Route::get('/dashboard', function () {

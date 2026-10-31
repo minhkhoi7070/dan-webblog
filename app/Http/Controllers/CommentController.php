@@ -23,12 +23,29 @@ class CommentController extends Controller
 
         abort_if(! $post || $post->status !== 'published', 404, 'Post not found or unavailable.');
 
-        $comment = $post->comments()->create([
+        $parentId = $request->validated('parent_id');
+        $attributes = [
+            'post_id' => $post->id,
             'user_id' => $request->user()->id,
-            'parent_id' => $request->validated('parent_id'),
+            'parent_id' => $parentId ? (int) $parentId : null,
             'body' => $request->validated('body'),
             'status' => 'approved',
-        ]);
+        ];
+
+        $requestId = $request->validated('client_request_id');
+        if ($requestId) {
+            $comment = Comment::firstOrCreate(['client_request_id' => $requestId], $attributes);
+            abort_if(
+                (int) $comment->user_id !== (int) $attributes['user_id']
+                || (int) $comment->post_id !== (int) $attributes['post_id']
+                || $comment->parent_id !== $attributes['parent_id']
+                || $comment->body !== $attributes['body'],
+                422,
+                'Request ID belongs to another comment.'
+            );
+        } else {
+            $comment = $post->comments()->create($attributes);
+        }
 
         $comment->load('user');
 
@@ -36,6 +53,7 @@ class CommentController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Comment posted successfully.',
+                'comments_count' => $post->comments()->approved()->count(),
                 'comment' => [
                     'id' => $comment->id,
                     'post_id' => $comment->post_id,

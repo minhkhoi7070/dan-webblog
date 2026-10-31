@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -38,28 +39,49 @@ class LoginRequest extends FormRequest
      *
      * @throws ValidationException
      */
-    public function authenticate(): void
+    public function authenticate(string $guard = 'web', bool $requireAdmin = false): void
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $message = trans('auth.failed');
+
+        if ($guard === 'web' && User::query()->where('email', $this->string('email')->toString())->value('role') === 'admin') {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => $message,
             ]);
         }
 
-        if (Auth::user()?->is_locked) {
-            Auth::logout();
+        $guardInstance = Auth::guard($guard);
 
-            $this->session()->invalidate();
-            $this->session()->regenerateToken();
+        $authenticated = $guardInstance->attempt(
+            $this->only('email', 'password'),
+            $this->boolean('remember'),
+        );
 
+        if ($authenticated) {
+            /** @var User $user */
+            $user = $guardInstance->user();
+
+            if ($user->is_locked) {
+                $message = 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.';
+                $authenticated = false;
+            } elseif ($requireAdmin && ! $user->isAdmin()) {
+                $message = 'Tài khoản này không có quyền quản trị.';
+                $authenticated = false;
+            }
+
+            if (! $authenticated) {
+                $guardInstance->logout();
+            }
+        }
+
+        if (! $authenticated) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.',
+                'email' => $message,
             ]);
         }
 

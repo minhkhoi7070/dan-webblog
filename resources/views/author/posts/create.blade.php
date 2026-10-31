@@ -1,42 +1,63 @@
 @extends('layouts.public')
 
 @section('content')
-<div class="container-fluid py-4" style="max-width: 1200px;">
-    <!-- Top Publishing Bar (Ghost + Notion style) -->
-    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 pb-3 mb-4 border-theme-bottom">
-        <div class="d-flex align-items-center gap-3">
-            <a href="{{ route('posts.stats') }}" class="btn btn-sm btn-outline-theme rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 38px; height: 38px;" title="Quay lại bảng điều khiển" aria-label="Quay lại bảng điều khiển">
+<div class="container-fluid py-4 author-post-create-page" style="max-width: 1200px;">
+    <!-- Top Publishing Bar (Apple HIG + Medium style) -->
+    <div class="editor-top-toolbar d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 pb-3.5 mb-4 border-theme-bottom">
+        <div class="editor-toolbar-left d-flex align-items-center gap-2.5 min-w-0" style="flex: 1 1 auto; min-width: 0;">
+            <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-circle d-none d-md-inline-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 36px; height: 36px;" title="Quay lại danh sách" aria-label="Quay lại danh sách">
                 <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
             </a>
-            <div>
-                <div class="d-flex align-items-center gap-2 small text-theme-muted label-uppercase mb-0.5" style="font-size: 11px;">
-                    <a href="{{ route('posts.stats') }}" class="text-decoration-none text-theme-muted hover-accent">Tác giả</a>
-                    <span>&rsaquo;</span>
-                    <span class="text-accent">Soạn thảo mới</span>
+            <div class="min-w-0" style="flex: 1; min-width: 0;">
+                <div class="d-flex align-items-center gap-1.5 text-theme-muted mb-0.5 text-truncate" style="font-size: 11.5px;">
+                    <a href="{{ route('posts.stats') }}" data-app-nav class="text-decoration-none text-theme-muted hover-accent">{{ auth()->user()?->isAdmin() ? 'Quản trị' : 'Tác giả' }}</a>
+                    <span class="opacity-50">/</span>
+                    <span class="text-theme-secondary text-truncate">Soạn thảo mới</span>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="fw-bold text-theme fs-5" style="font-family: var(--font-serif, 'Lora', serif);">Tạo bài viết mới</span>
-                    <x-badge variant="status-draft" size="xs">
-                        Bản nháp (Draft)
-                    </x-badge>
+                <div class="d-flex align-items-center gap-2 min-w-0" style="height: 28px;">
+                    <h1 class="fw-bold text-theme fs-5 mb-0 text-truncate" style="letter-spacing: -0.02em; line-height: 1.2;">Tạo bài viết mới</h1>
                 </div>
             </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('posts.stats') }}" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium">
+        <div class="editor-toolbar-actions d-flex align-items-center flex-wrap gap-2 justify-content-end" style="white-space: nowrap;">
+            <a href="{{ route('posts.stats') }}" data-app-nav class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium btn-cancel-action">
                 Hủy bỏ
             </a>
-            <button type="submit" form="create-post-form" class="btn btn-editorial-primary btn-sm rounded-pill px-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5">
-                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button type="submit" form="create-post-form" name="action" value="draft" class="btn btn-sm btn-outline-theme rounded-pill px-3 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5 btn-action-draft">
+                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                 </svg>
-                Lưu bản nháp
+                <span><span class="d-none d-sm-inline">Lưu bản nháp</span><span class="d-inline d-sm-none">Lưu nháp</span></span>
             </button>
+            @if(auth()->user()?->isAdmin())
+                <button type="submit" form="create-post-form" name="action" value="publish" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit btn-action-publish" title="Đăng bài ngay">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span><span class="d-none d-sm-inline">Đăng bài ngay</span><span class="d-inline d-sm-none">Đăng ngay</span></span>
+                </button>
+            @else
+                <button type="submit" form="create-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit editor-toolbar-compact-primary" title="Gửi bài viết để ban quản trị duyệt">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    <span>Gửi bài viết</span>
+                </button>
+            @endif
         </div>
     </div>
+
+    @if (session('error'))
+        <div class="alert alert-danger mb-4 shadow-xs border border-danger border-opacity-25 rounded-3 d-flex align-items-center gap-2" role="alert">
+            <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span class="small fw-medium">{{ session('error') }}</span>
+        </div>
+    @endif
 
     <!-- Error Summary Alert -->
     @if ($errors->any())
@@ -55,15 +76,27 @@
         </div>
     @endif
 
+    @if ($latestDraft)
+        <div class="alert alert-info mb-4 shadow-xs border border-info border-opacity-25 rounded-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3" role="status">
+            <div>
+                <div class="fw-semibold">Bạn có bản nháp đã lưu</div>
+                <div class="small">{{ $latestDraft->title }} · Cập nhật {{ $latestDraft->updated_at->diffForHumans() }}</div>
+            </div>
+            <a href="{{ route('posts.edit', $latestDraft) }}" data-app-nav class="btn btn-sm btn-editorial-primary rounded-pill px-3 flex-shrink-0 editor-toolbar-compact-primary">
+                Tiếp tục viết
+            </a>
+        </div>
+    @endif
+
     <form id="create-post-form" action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <div class="row g-4">
             <!-- Left Main Writing Canvas (Readable Editor) -->
             <div class="col-12 col-lg-8">
-                <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl mb-4">
-                    <!-- Title Input (Notion / Ghost seamless title) -->
-                    <div class="mb-3">
+                <div class="card p-4 p-sm-5 border-theme bg-theme-surface shadow-xs rounded-xl mb-4 author-post-create-editor-card">
+                    <!-- Title Input (Medium / Apple seamless typography) -->
+                    <div class="mb-4 author-post-create-field">
                         <label for="title" class="visually-hidden">Tiêu đề bài viết</label>
                         <input
                             type="text"
@@ -76,13 +109,13 @@
                             class="editor-title-input @error('title') is-invalid @enderror"
                         >
                         @error('title')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <!-- Excerpt Input -->
-                    <div class="mb-4">
-                        <label for="excerpt" class="visually-hidden">Mô tả tóm tắt (Excerpt)</label>
+                    <div class="mb-4 author-post-create-field">
+                        <label for="excerpt" class="visually-hidden">Mô tả tóm tắt</label>
                         <textarea
                             name="excerpt"
                             id="excerpt"
@@ -95,52 +128,226 @@
                         @enderror
                     </div>
 
-                    <!-- Minimal Formatting Toolbar -->
-                    <div class="editor-toolbar" role="toolbar" aria-label="Định dạng Markdown">
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('bold')" title="Chữ đậm (Ctrl+B)" aria-label="In đậm (Bold)">
+                    <!-- WYSIWYG Formatting Toolbar -->
+                    <div class="editor-toolbar" role="toolbar" aria-label="Định dạng bài viết">
+                        <!-- History: Undo / Redo -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="undo" title="Hoàn tác" aria-label="Hoàn tác">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a5 5 0 015 5v2m-15-7l4-4m-4 4l4 4" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="redo" title="Làm lại" aria-label="Làm lại">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a5 5 0 00-5 5v2m15-7l-4-4m4 4l-4 4" />
+                            </svg>
+                        </button>
+
+                        <div class="editor-toolbar-divider"></div>
+
+                        <!-- Block Format Dropdown -->
+                        <div class="dropdown d-inline-block">
+                            <button class="editor-toolbar-btn dropdown-toggle d-inline-flex align-items-center gap-1.5 px-2" type="button" id="editor-block-dropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Chọn kiểu văn bản">
+                                <span id="editor-current-block-label">Đoạn văn</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark shadow-lg border-theme py-1" aria-labelledby="editor-block-dropdown" style="min-width: 210px; font-size: 13px;">
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="p"><span>Đoạn văn</span><span class="text-theme-muted small">Ctrl+Alt+7</span></button></li>
+                                <li><hr class="dropdown-divider my-1 border-theme"></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h1"><span class="fw-bold fs-6">Tiêu đề 1</span><span class="text-theme-muted small">Ctrl+Alt+1</span></button></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h2"><span class="fw-bold" style="font-size: 0.95rem;">Tiêu đề 2</span><span class="text-theme-muted small">Ctrl+Alt+2</span></button></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h3"><span class="fw-semibold" style="font-size: 0.9rem;">Tiêu đề 3</span><span class="text-theme-muted small">Ctrl+Alt+3</span></button></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h4"><span>Tiêu đề 4</span><span class="text-theme-muted small">Ctrl+Alt+4</span></button></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h5"><span class="small">Tiêu đề 5</span><span class="text-theme-muted small">Ctrl+Alt+5</span></button></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="h6"><span class="small text-uppercase">Tiêu đề 6</span><span class="text-theme-muted small">Ctrl+Alt+6</span></button></li>
+                                <li><hr class="dropdown-divider my-1 border-theme"></li>
+                                <li><button type="button" class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between" data-editor-block="quote"><span>Trích dẫn</span><span class="text-theme-muted small">Ctrl+Alt+Q</span></button></li>
+                            </ul>
+                        </div>
+
+                        <div class="editor-toolbar-divider"></div>
+
+                        <!-- Character Formatting -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="bold" title="In đậm" aria-label="In đậm">
                             <strong>B</strong>
                         </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('italic')" title="Chữ nghiêng (Ctrl+I)" aria-label="In nghiêng (Italic)">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="italic" title="In nghiêng" aria-label="In nghiêng">
                             <em>I</em>
                         </button>
-                        <div class="editor-toolbar-divider"></div>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('h2')" title="Tiêu đề 2" aria-label="Tiêu đề 2 (Heading 2)">
-                            H2
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="underline" title="Gạch chân" aria-label="Gạch chân">
+                            <u>U</u>
                         </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('h3')" title="Tiêu đề 3" aria-label="Tiêu đề 3 (Heading 3)">
-                            H3
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="strike" title="Gạch ngang chữ" aria-label="Gạch ngang chữ">
+                            <s>S</s>
                         </button>
+
+                        <!-- Text Color Picker Dropdown -->
+                        <div class="dropdown d-inline-block">
+                            <button class="editor-toolbar-btn dropdown-toggle d-inline-flex align-items-center gap-1" type="button" id="editor-color-dropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Màu chữ">
+                                <span class="fw-bold" style="border-bottom: 2.5px solid #3b82f6; line-height: 1;">A</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-dark shadow-lg border-theme p-2.5" aria-labelledby="editor-color-dropdown" style="min-width: 175px;">
+                                <div class="small fw-semibold text-theme-secondary mb-1.5">Màu chữ</div>
+                                <div class="d-flex flex-wrap gap-1.5 mb-2">
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #f8fafc;" data-editor-color="#f8fafc" title="Trắng sáng"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #94a3b8;" data-editor-color="#94a3b8" title="Xám"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #ef4444;" data-editor-color="#ef4444" title="Đỏ"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #f97316;" data-editor-color="#f97316" title="Cam"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #eab308;" data-editor-color="#eab308" title="Vàng"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #10b981;" data-editor-color="#10b981" title="Xanh lá"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #3b82f6;" data-editor-color="#3b82f6" title="Xanh dương"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #8b5cf6;" data-editor-color="#8b5cf6" title="Tím"></button>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between pt-1 border-top border-theme">
+                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 small text-theme-muted" data-editor-color="reset">Xóa màu chữ</button>
+                                    <label class="btn btn-sm btn-outline-secondary p-0 px-1.5 small d-flex align-items-center gap-1 m-0" style="cursor: pointer; font-size: 11px;">
+                                        Tùy chọn
+                                        <input type="color" id="editor-custom-color-picker" class="visually-hidden" value="#3b82f6">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Highlight Dropdown -->
+                        <div class="dropdown d-inline-block">
+                            <button class="editor-toolbar-btn dropdown-toggle d-inline-flex align-items-center gap-1" type="button" id="editor-highlight-dropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Tô màu nền chữ">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-dark shadow-lg border-theme p-2.5" aria-labelledby="editor-highlight-dropdown" style="min-width: 175px;">
+                                <div class="small fw-semibold text-theme-secondary mb-1.5">Màu nền chữ</div>
+                                <div class="d-flex flex-wrap gap-1.5 mb-2">
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #fef08a;" data-editor-highlight="#fef08a" title="Vàng nhạt"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #bbf7d0;" data-editor-highlight="#bbf7d0" title="Xanh lá nhạt"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #bfdbfe;" data-editor-highlight="#bfdbfe" title="Xanh dương nhạt"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #fbcfe8;" data-editor-highlight="#fbcfe8" title="Hồng nhạt"></button>
+                                    <button type="button" class="btn btn-sm p-0 rounded-circle border border-secondary" style="width: 22px; height: 22px; background-color: #e9d5ff;" data-editor-highlight="#e9d5ff" title="Tím nhạt"></button>
+                                </div>
+                                <div class="pt-1 border-top border-theme">
+                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 small text-theme-muted" data-editor-highlight="reset">Xóa màu nền</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Clear Formatting -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="clear-format" title="Xóa định dạng" aria-label="Xóa định dạng">
+                            <span style="font-family: serif; font-size: 13px; text-decoration: line-through;">T</span><small style="font-size: 9px; margin-left: 1px;">x</small>
+                        </button>
+
                         <div class="editor-toolbar-divider"></div>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('quote')" title="Trích dẫn" aria-label="Trích dẫn (Quote)">
+
+                        <!-- Alignment Buttons -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="align-left" title="Căn trái" aria-label="Căn trái">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h14" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="align-center" title="Căn giữa" aria-label="Căn giữa">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10M5 18h14" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="align-right" title="Căn phải" aria-label="Căn phải">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M10 12h10M6 18h14" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="align-justify" title="Căn đều" aria-label="Căn đều">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+
+                        <div class="editor-toolbar-divider"></div>
+
+                        <!-- Lists & Indent Group -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="bullet-list" title="Danh sách dấu chấm" aria-label="Danh sách dấu chấm">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h.01M4 12h.01M4 18h.01M8 6h12M8 12h12M8 18h12" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="ordered-list" title="Danh sách số thứ tự" aria-label="Danh sách số thứ tự">
+                            <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="10" y1="6" x2="21" y2="6"></line>
+                                <line x1="10" y1="12" x2="21" y2="12"></line>
+                                <line x1="10" y1="18" x2="21" y2="18"></line>
+                                <path d="M4 6h1v4"></path>
+                                <path d="M4 10h2"></path>
+                                <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path>
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="indent" title="Tăng thụt lề" aria-label="Tăng thụt lề">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16m-4-9l4 3-4 3" />
+                            </svg>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="outdent" title="Giảm thụt lề" aria-label="Giảm thụt lề">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16m4-9l-4 3 4 3" />
+                            </svg>
+                        </button>
+
+                        <div class="editor-toolbar-divider"></div>
+
+                        <!-- Blockquote, Code & HR -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="quote" title="Trích dẫn" aria-label="Trích dẫn">
                             <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                             </svg>
                         </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('code')" title="Khối mã nguồn" aria-label="Khối mã nguồn (Code block)">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="code" title="Khối mã nguồn" aria-label="Khối mã nguồn">
                             &lt;/&gt;
                         </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('list')" title="Danh sách" aria-label="Danh sách (List)">
-                            &bull; List
-                        </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('link')" title="Chèn liên kết" aria-label="Chèn liên kết (Link)">
-                            Link
-                        </button>
-                        <button type="button" class="editor-toolbar-btn" onclick="formatDoc('hr')" title="Đường phân tách" aria-label="Đường phân tách ngang (Horizontal rule)">
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="hr" title="Đường kẻ phân cách" aria-label="Đường kẻ phân cách">
                             &mdash;
+                        </button>
+
+                        <div class="editor-toolbar-divider"></div>
+
+                        <!-- Insert: Link, Image & Video -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="link" title="Chèn hoặc sửa liên kết" aria-label="Chèn liên kết">
+                            <svg style="width: 14px; height: 14px; margin-right: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                            Liên kết
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="image" title="Chèn hình ảnh từ máy tính" aria-label="Chèn ảnh">
+                            <svg style="width: 14px; height: 14px; margin-right: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Ảnh
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="video" title="Chèn video YouTube" aria-label="Chèn video">
+                            <svg style="width: 14px; height: 14px; margin-right: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            Video
+                        </button>
+
+                        <div class="editor-toolbar-divider"></div>
+
+                        <!-- Utilities: Paste Plain Text & Keyboard Shortcuts Modal -->
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="paste-text" title="Dán văn bản thuần" aria-label="Dán văn bản thuần">
+                            <span class="small fw-semibold" style="font-size: 11.5px;">Văn bản</span>
+                        </button>
+                        <button type="button" class="editor-toolbar-btn" data-editor-action="shortcuts-help" title="Danh sách phím tắt" aria-label="Trợ giúp phím tắt">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                         </button>
                     </div>
 
-                    <!-- Body / Content Textarea -->
+                    <!-- Hidden file input for uploading images directly into editor content -->
+                    <input type="file" id="editor-image-file-input" accept="image/jpeg,image/png,image/jpg,image/webp,image/gif" class="d-none">
+
+                    <!-- WYSIWYG Editor Surface -->
                     <div>
-                        <label for="content" class="visually-hidden">Nội dung chi tiết</label>
+                        <div id="tiptap-editor" class="editor-wysiwyg-surface"></div>
+
+                        <!-- Hidden sync textarea for native form submission & validation -->
                         <textarea
                             name="content"
                             id="content"
-                            rows="18"
-                            placeholder="Bắt đầu chia sẻ kiến thức, kinh nghiệm và câu chuyện của bạn tại đây..."
-                            required
-                            class="editor-textarea w-100 @error('content') is-invalid @enderror @error('body') is-invalid @enderror"
-                            oninput="updateEditorStats()"
+                            class="d-none @error('content') is-invalid @enderror @error('body') is-invalid @enderror"
                         >{{ old('content', old('body')) }}</textarea>
                         @error('content')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -159,56 +366,23 @@
                             <span>&bull;</span>
                             <span id="stat-reading">~0 phút đọc</span>
                         </div>
-                        <span class="opacity-75">Hỗ trợ Markdown</span>
+                        <span class="opacity-75">Trình soạn thảo trực quan</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Sidebar: Settings & Publishing Panel -->
+            <!-- Right Sidebar: Settings & Metadata Panel -->
             <div class="col-12 col-lg-4">
-                <div class="d-flex flex-column gap-3.5">
-                    <!-- Publishing Workflow Card -->
-                    <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                        <h2 class="label-uppercase text-theme mb-3 d-flex align-items-center gap-1.5">
-                            <svg style="width: 14px; height: 14px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Quy trình xuất bản
-                        </h2>
-
-                        <div class="p-3 rounded-3 bg-surface-2 border border-theme mb-3 small text-theme-secondary">
-                            <p class="fw-semibold text-theme mb-1">Luồng kiểm duyệt bài viết:</p>
-                            Bài viết mới luôn được lưu ở trạng thái <strong>Bản nháp (Draft)</strong>. Sau khi soạn xong, bạn có thể gửi cho Ban biên tập xét duyệt (Pending) từ trang chỉnh sửa bài viết.
-                        </div>
-
-                        <div class="d-flex flex-column gap-2">
-                            <button
-                                type="submit"
-                                class="btn btn-editorial-primary w-100 py-2.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-2"
-                            >
-                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                </svg>
-                                Lưu bản nháp (Draft)
-                            </button>
-
-                            <a
-                                href="{{ route('posts.stats') }}"
-                                class="btn btn-outline-theme rounded-pill w-100 py-2 small fw-medium"
-                            >
-                                Hủy bỏ & Quay lại
-                            </a>
-                        </div>
-                    </div>
-
+                <div class="d-flex flex-column" style="gap: 20px;">
                     <!-- Category Selection -->
-                    <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                        <label for="category_id" class="label-uppercase text-theme mb-2 d-block">
+                    <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl author-post-create-category-card">
+                        <label for="category_id" class="form-label fw-semibold text-theme mb-2 d-flex align-items-center gap-1.5" style="font-size: 13.5px;">
                             Chuyên mục <span class="text-danger">*</span>
                         </label>
                         <select
                             name="category_id"
                             id="category_id"
+                            form="create-post-form"
                             required
                             class="form-select form-control-editorial @error('category_id') is-invalid @enderror"
                         >
@@ -220,160 +394,435 @@
                             @endforeach
                         </select>
                         @error('category_id')
-                            <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+                            <div class="invalid-feedback d-block mt-1.5 small fw-medium">{{ $message }}</div>
                         @enderror
                     </div>
 
-                    <!-- Thumbnail Upload (Featured Image) -->
-                    <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                        <label class="label-uppercase text-theme mb-2 d-block">
-                            Ảnh bìa đại diện (Thumbnail)
-                        </label>
+                    <!-- Post Slug / URL Management Card (Apple Minimalist) -->
+                    <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl sidebar-slug-card"
+                         id="post-slug-container"
+                         data-base-url="{{ url('/posts') }}"
+                         data-display-host="{{ request()->getHost() }}/posts"
+                         data-check-url="{{ route('posts.check-slug') }}"
+                         data-is-manual="{{ old('slug') ? 'true' : 'false' }}">
 
-                        <div
-                            id="drop-zone"
-                            class="border border-2 border-dashed border-theme rounded-3 p-3 text-center position-relative bg-surface-2 transition-colors"
-                            style="cursor: pointer;"
-                        >
-                            <input
-                                type="file"
-                                name="thumbnail"
-                                id="thumbnail"
-                                accept="image/jpeg,image/png,image/webp,image/jpg"
-                                class="position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer"
-                                onchange="previewThumbnail(event)"
-                            >
-                            <div id="upload-placeholder" class="py-3">
-                                <svg class="mx-auto mb-2 text-theme-muted" style="width: 28px; height: 28px;" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <!-- Card Header -->
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label for="slug" class="form-label fw-semibold text-theme mb-0" style="font-size: 13.5px;">
+                                Đường dẫn bài viết
+                            </label>
+                            <button type="button"
+                                    id="btn-edit-slug"
+                                    class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                    style="font-size: 12px;"
+                                    title="Chỉnh sửa đường dẫn">
+                                <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                 </svg>
-                                <p class="small text-theme fw-medium mb-1">Tải ảnh bìa lên bài viết</p>
-                                <p class="small text-theme-muted mb-0" style="font-size: 11px;">JPG, PNG, WEBP tối đa 2MB</p>
+                                <span id="btn-edit-slug-label">Chỉnh sửa</span>
+                            </button>
+                        </div>
+
+                        <!-- Hidden native input to ALWAYS submit with the form -->
+                        <input
+                            type="hidden"
+                            name="slug"
+                            id="slug"
+                            value="{{ old('slug') }}"
+                            form="create-post-form"
+                        >
+
+                        <!-- 1. VIEW MODE (Default) -->
+                        <div id="slug-view-mode">
+                            <!-- Clean Single-line URL Preview without nested gray border box -->
+                            <div class="py-1 mb-2">
+                                <a href="{{ old('slug') ? url('/posts/'.old('slug')) : '#' }}"
+                                   id="slug-preview-url"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="d-flex align-items-center font-monospace text-theme text-decoration-none fw-medium"
+                                   style="font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                   title="Mở URL bài viết">
+                                    <span class="text-theme-muted flex-shrink-0">/posts/</span><span id="slug-display-text" class="text-truncate flex-grow-1" style="min-width: 0;">{{ old('slug') }}</span>
+                                </a>
                             </div>
 
-                            <div id="preview-container" class="d-none">
-                                <img id="image-preview" src="#" alt="Thumbnail preview" class="img-fluid rounded-3 mb-2" style="max-height: 160px; object-fit: cover;">
-                                <p class="small mb-0 text-accent" style="font-size: 11px;">Bấm để đổi ảnh khác</p>
+                            <!-- Balanced & Compact View Mode Actions -->
+                            <div class="d-flex align-items-center justify-content-between pt-1 border-theme-top">
+                                <button type="button"
+                                        id="btn-copy-slug-url"
+                                        class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                        style="font-size: 11.5px;"
+                                        title="Sao chép URL">
+                                    <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                    <span id="copy-slug-label">Sao chép URL</span>
+                                </button>
+
+                                <button type="button"
+                                        id="btn-regenerate-slug"
+                                        class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                        style="font-size: 11.5px;"
+                                        title="Tạo lại slug tự động từ tiêu đề">
+                                    <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span>Tạo lại từ tiêu đề</span>
+                                </button>
                             </div>
                         </div>
-                        @error('thumbnail')
-                            <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+
+                        <!-- 2. EDIT MODE (Toggled via "Chỉnh sửa") -->
+                        <div id="slug-edit-mode" class="d-none">
+                            <div class="input-group input-group-sm mb-2" style="max-width: 100%;">
+                                <span class="input-group-text font-monospace bg-surface-2 border-theme text-theme-muted px-2" style="font-size: 12px;">
+                                    /posts/
+                                </span>
+                                <input
+                                    type="text"
+                                    id="slug-edit-input"
+                                    value="{{ old('slug') }}"
+                                    placeholder="duong-dan-bai-viet"
+                                    autocomplete="off"
+                                    spellcheck="false"
+                                    class="form-control font-monospace border-theme px-2"
+                                    style="font-size: 12px; min-width: 0;"
+                                >
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between pt-1">
+                                <button type="button"
+                                        id="btn-regenerate-slug-edit"
+                                        class="btn btn-sm btn-link p-0 text-theme-muted hover-accent text-decoration-none d-inline-flex align-items-center gap-1"
+                                        style="font-size: 11.5px;"
+                                        title="Tạo lại từ tiêu đề">
+                                    <svg style="width: 11px; height: 11px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span>Tạo lại</span>
+                                </button>
+
+                                <div class="d-flex align-items-center gap-1.5">
+                                    <button type="button" id="btn-cancel-slug" class="btn btn-sm btn-outline-theme px-2.5 py-0.5 rounded-pill" style="font-size: 11.5px;">
+                                        Hủy
+                                    </button>
+                                    <button type="button" id="btn-save-slug" class="btn btn-sm btn-editorial-primary px-3 py-0.5 rounded-pill" style="font-size: 11.5px;">
+                                        Áp dụng
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="slug-error-msg" class="text-danger small mt-1.5" style="display: none; font-size: 11.5px;"></div>
+                        </div>
+
+                        @error('slug')
+                            <div class="text-danger small mt-1.5" style="font-size: 11.5px;">{{ $message }}</div>
                         @enderror
                     </div>
+
+                    <!-- Thumbnail Upload -->
+                    <x-thumbnail-uploader form-id="create-post-form" />
 
                     <!-- Tags Selection -->
-                    <div class="card p-3.5 p-sm-4 border-theme bg-theme-surface shadow-xs rounded-xl">
-                        <label class="label-uppercase text-theme mb-1 d-block">
-                            Thẻ bài viết (Tags)
-                        </label>
-                        <p class="small text-theme-muted mb-3" style="font-size: 12px;">Gắn các thẻ chủ đề liên quan:</p>
-
-                        @php
-                            $selectedTags = old('tags', []);
-                        @endphp
-
-                        <div class="d-flex flex-wrap gap-1.5 overflow-y-auto no-scrollbar" style="max-height: 190px;">
-                            @foreach ($tags as $tag)
-                                <input
-                                    type="checkbox"
-                                    class="btn-check"
-                                    id="tag-{{ $tag->id }}"
-                                    name="tags[]"
-                                    value="{{ $tag->id }}"
-                                    autocomplete="off"
-                                    @checked(in_array($tag->id, (array)$selectedTags))
-                                >
-                                <label class="btn btn-sm btn-outline-theme rounded-pill py-1 px-2.5 small" for="tag-{{ $tag->id }}" style="font-size: 12px;">
-                                    #{{ $tag->name }}
-                                </label>
-                            @endforeach
-                        </div>
-                        @error('tags')
-                            <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
+                    <x-post-tag-selector :tags="$tags" :selected-tags="old('tags', [])" form-id="create-post-form" />
                 </div>
             </div>
         </div>
     </form>
-</div>
 
-<script>
-function previewThumbnail(event) {
-    const input = event.target;
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('image-preview').src = e.target.result;
-            document.getElementById('upload-placeholder').classList.add('d-none');
-            document.getElementById('preview-container').classList.remove('d-none');
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
+    <!-- Modal Chèn / Sửa Liên Kết -->
+    <div class="modal fade" id="editor-link-modal" tabindex="-1" aria-labelledby="editorLinkModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-theme bg-theme-surface shadow-lg text-theme" style="border-radius: var(--radius-lg, 14px);">
+                <div class="modal-header border-theme-bottom py-2.5 px-3">
+                    <h6 class="modal-title fs-6 fw-bold text-theme m-0" id="editorLinkModalLabel">Chèn hoặc sửa liên kết</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <div class="mb-2">
+                        <label for="editor-link-url" class="form-label small fw-semibold text-theme mb-1">Địa chỉ liên kết:</label>
+                        <input type="url" id="editor-link-url" class="form-control form-control-sm form-control-editorial" placeholder="https://example.com" required>
+                        <div class="form-text small text-theme-muted mt-1" style="font-size: 11px;">Hỗ trợ giao thức web: <code>https://</code> hoặc <code>http://</code>.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-theme-top py-2 px-3 d-flex justify-content-between">
+                    <button type="button" class="btn btn-sm btn-outline-danger d-none rounded-pill px-2.5 py-1" id="editor-link-unlink-btn">Xóa liên kết</button>
+                    <div class="d-flex gap-2 ms-auto">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1 fw-semibold" id="editor-link-save-btn">Áp dụng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-function updateEditorStats() {
-    const textarea = document.getElementById('content');
-    if (!textarea) return;
-    const text = textarea.value.trim();
-    const words = text ? text.split(/\s+/).length : 0;
-    const chars = text.length;
-    const minutes = Math.max(1, Math.ceil(words / 200));
+    <!-- Modal Chỉnh Sửa Thuộc Tính Hình Ảnh & Chú Thích -->
+    <x-editor-image-modal />
 
-    const wordsEl = document.getElementById('stat-words');
-    const charsEl = document.getElementById('stat-chars');
-    const readingEl = document.getElementById('stat-reading');
+    <!-- Modal Chèn Video YouTube -->
+    <x-editor-video-modal />
 
-    if (wordsEl) wordsEl.textContent = words.toLocaleString() + ' từ';
-    if (charsEl) charsEl.textContent = chars.toLocaleString() + ' ký tự';
-    if (readingEl) readingEl.textContent = '~' + minutes + ' phút đọc';
-}
+    <!-- Modal Hướng Dẫn Phím Tắt -->
+    <div class="modal fade" id="editor-shortcuts-modal" tabindex="-1" aria-labelledby="editorShortcutsModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header d-flex align-items-center justify-content-between">
+                    <h5 class="modal-title m-0 d-flex align-items-center gap-2" id="editorShortcutsModalLabel">
+                        <svg style="width: 20px; height: 20px; color: #3b82f6;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        Phím tắt
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        Danh sách các phím tắt được hỗ trợ khi soạn thảo nội dung. Nhấn <kbd>Esc</kbd> hoặc click ra ngoài vùng hộp thoại để đóng.
+                    </p>
 
-function formatDoc(command) {
-    const textarea = document.getElementById('content');
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const sel = textarea.value.substring(start, end);
-    let before = textarea.value.substring(0, start);
-    let after = textarea.value.substring(end);
-    let replace = '';
+                    <!-- 1. Định dạng văn bản -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Định dạng văn bản</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>In đậm</td>
+                                        <td><kbd>⌘ + B</kbd></td>
+                                        <td><kbd>Ctrl + B</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>In nghiêng</td>
+                                        <td><kbd>⌘ + I</kbd></td>
+                                        <td><kbd>Ctrl + I</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Gạch chân</td>
+                                        <td><kbd>⌘ + U</kbd></td>
+                                        <td><kbd>Ctrl + U</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Gạch ngang chữ</td>
+                                        <td><kbd>⌘ + Shift + X</kbd> <span class="text-muted small">hoặc</span> <kbd>⌥ + ⌘ + D</kbd></td>
+                                        <td><kbd>Ctrl + Shift + X</kbd> <span class="text-muted small">hoặc</span> <kbd>Ctrl + Alt + D</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
-    switch(command) {
-        case 'bold':
-            replace = `**${sel || 'văn bản đậm'}**`;
-            break;
-        case 'italic':
-            replace = `*${sel || 'văn bản nghiêng'}*`;
-            break;
-        case 'h2':
-            replace = `\n## ${sel || 'Tiêu đề mục'}\n`;
-            break;
-        case 'h3':
-            replace = `\n### ${sel || 'Tiêu đề phụ'}\n`;
-            break;
-        case 'quote':
-            replace = `\n> ${sel || 'Trích dẫn hay'}\n`;
-            break;
-        case 'code':
-            replace = `\`\`\`\n${sel || '// Viết code tại đây'}\n\`\`\``;
-            break;
-        case 'list':
-            replace = `\n- ${sel || 'Mục danh sách'}\n`;
-            break;
-        case 'link':
-            replace = `[${sel || 'Tiêu đề liên kết'}](https://)`;
-            break;
-        case 'hr':
-            replace = `\n\n---\n\n`;
-            break;
-    }
+                    <!-- 2. Tiêu đề và đoạn văn -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Tiêu đề và đoạn văn</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Đoạn văn</td>
+                                        <td><kbd>⌥ + ⌘ + 7</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 7</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 1</td>
+                                        <td><kbd>⌥ + ⌘ + 1</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 1</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 2</td>
+                                        <td><kbd>⌥ + ⌘ + 2</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 2</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 3</td>
+                                        <td><kbd>⌥ + ⌘ + 3</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 3</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 4</td>
+                                        <td><kbd>⌥ + ⌘ + 4</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 4</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 5</td>
+                                        <td><kbd>⌥ + ⌘ + 5</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 5</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiêu đề 6</td>
+                                        <td><kbd>⌥ + ⌘ + 6</kbd></td>
+                                        <td><kbd>Ctrl + Alt + 6</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
-    textarea.value = before + replace + after;
-    textarea.focus();
-    updateEditorStats();
-}
+                    <!-- 3. Danh sách -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Danh sách & Thụt lề</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Danh sách dấu chấm</td>
+                                        <td><kbd>⌘ + Shift + 8</kbd></td>
+                                        <td><kbd>Ctrl + Shift + 8</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Danh sách số thứ tự</td>
+                                        <td><kbd>⌘ + Shift + 7</kbd></td>
+                                        <td><kbd>Ctrl + Shift + 7</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tăng thụt lề danh sách (Lồng cấp con)</td>
+                                        <td><kbd>Tab</kbd></td>
+                                        <td><kbd>Tab</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Giảm thụt lề danh sách (Đưa lên cấp cha)</td>
+                                        <td><kbd>Shift + Tab</kbd></td>
+                                        <td><kbd>Shift + Tab</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
-document.addEventListener('DOMContentLoaded', updateEditorStats);
-</script>
+                    <!-- 4. Căn lề và trích dẫn -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Căn lề và trích dẫn</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Căn lề trái</td>
+                                        <td><kbd>⌥ + ⌘ + L</kbd></td>
+                                        <td><kbd>Ctrl + Alt + L</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Căn giữa</td>
+                                        <td><kbd>⌥ + ⌘ + E</kbd></td>
+                                        <td><kbd>Ctrl + Alt + E</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Căn lề phải</td>
+                                        <td><kbd>⌥ + ⌘ + R</kbd></td>
+                                        <td><kbd>Ctrl + Alt + R</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Căn đều hai bên</td>
+                                        <td><kbd>⌥ + ⌘ + J</kbd></td>
+                                        <td><kbd>Ctrl + Alt + J</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Khối trích dẫn</td>
+                                        <td><kbd>⌥ + ⌘ + Q</kbd></td>
+                                        <td><kbd>Ctrl + Alt + Q</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 5. Liên kết -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Liên kết</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Chèn hoặc sửa liên kết</td>
+                                        <td><kbd>⌘ + K</kbd></td>
+                                        <td><kbd>Ctrl + K</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 6. Lịch sử thao tác -->
+                    <div class="mb-3">
+                        <span class="shortcut-section-badge mb-2">Lịch sử thao tác</span>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 44%;">Thao tác</th>
+                                        <th style="width: 28%;">macOS</th>
+                                        <th style="width: 28%;">Windows / Linux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Hoàn tác</td>
+                                        <td><kbd>⌘ + Z</kbd></td>
+                                        <td><kbd>Ctrl + Z</kbd></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Làm lại</td>
+                                        <td><kbd>⌘ + Shift + Z</kbd></td>
+                                        <td><kbd>Ctrl + Y</kbd> <span class="text-muted small">hoặc</span> <kbd>Ctrl + Shift + Z</kbd></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 7. Khác & Gõ tắt nhanh -->
+                    <div>
+                        <span class="shortcut-section-badge mb-2">Quy tắc gõ tắt tự động</span>
+                        <div class="p-2.5 rounded bg-light border border-slate-200">
+                            <ul class="mb-0 ps-3 small text-secondary">
+                                <li><code># </code> đến <code>###### </code> + <kbd>Space</kbd>: Chuyển thành Tiêu đề 1 đến 6 tương ứng</li>
+                                <li><code>&gt; </code> + <kbd>Space</kbd>: Tạo khối trích dẫn</li>
+                                <li><code>- </code> hoặc <code>* </code> + <kbd>Space</kbd>: Tạo danh sách dấu chấm</li>
+                                <li><code>1. </code> + <kbd>Space</kbd>: Tạo danh sách số thứ tự</li>
+                                <li><code>---</code> + <kbd>Enter</kbd>: Tạo đường kẻ phân cách ngang</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between align-items-center">
+                    <span class="small text-muted">Nhấn <kbd>Esc</kbd> hoặc click vùng nền tối bên ngoài để đóng</span>
+                    <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3.5 py-1" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

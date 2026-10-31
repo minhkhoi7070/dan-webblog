@@ -21,6 +21,7 @@ class Comment extends Model
         'parent_id',
         'body',
         'status',
+        'client_request_id',
     ];
 
     /**
