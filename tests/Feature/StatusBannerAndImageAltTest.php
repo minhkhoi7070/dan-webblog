@@ -351,7 +351,7 @@ class StatusBannerAndImageAltTest extends TestCase
             'name' => 'Quản trị viên Hệ thống',
         ]);
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.dashboard'));
         $response->assertOk();
 
         $response->assertSee('sidebar-account__name', false);

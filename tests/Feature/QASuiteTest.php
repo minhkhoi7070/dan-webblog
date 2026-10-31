@@ -212,9 +212,9 @@ class QASuiteTest extends TestCase
     {
         $author = User::factory()->author()->create();
 
-        $this->actingAs($author)->get(route('admin.dashboard'))->assertForbidden();
-        $this->actingAs($author)->get(route('admin.users.index'))->assertForbidden();
-        $this->actingAs($author)->get(route('admin.posts.index'))->assertForbidden();
+        $this->actingAs($author, 'admin')->get(route('admin.dashboard'))->assertForbidden();
+        $this->actingAs($author, 'admin')->get(route('admin.users.index'))->assertForbidden();
+        $this->actingAs($author, 'admin')->get(route('admin.posts.index'))->assertForbidden();
     }
 
     public function test_role_11_locked_author_cannot_create_update_submit_or_delete(): void
@@ -353,12 +353,12 @@ class QASuiteTest extends TestCase
         $admin = User::factory()->admin()->create();
         $pendingComment = Comment::factory()->pending()->create(['body' => 'Moderate me.']);
 
-        $response = $this->actingAs($admin)->get(route('admin.comments.index', ['status' => 'pending']));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.comments.index', ['status' => 'pending']));
         $response->assertOk();
         $response->assertSee('Moderate me.');
 
         // Approve
-        $this->actingAs($admin)->post(route('admin.comments.approve', $pendingComment));
+        $this->actingAs($admin, 'admin')->post(route('admin.comments.approve', $pendingComment));
         $this->assertSame('approved', $pendingComment->fresh()->status);
     }
 
@@ -370,7 +370,7 @@ class QASuiteTest extends TestCase
     {
         $admin = User::factory()->admin()->create(['is_locked' => false]);
 
-        $response = $this->actingAs($admin)->post(route('admin.users.lock', $admin));
+        $response = $this->actingAs($admin, 'admin')->post(route('admin.users.lock', $admin));
 
         $response->assertRedirect();
         $response->assertSessionHas('error');
@@ -382,7 +382,7 @@ class QASuiteTest extends TestCase
         $adminA = User::factory()->admin()->create(['name' => 'Admin A', 'is_locked' => false]);
         $adminB = User::factory()->admin()->create(['name' => 'Admin B', 'is_locked' => false]);
 
-        $response = $this->actingAs($adminA)->post(route('admin.users.lock', $adminB));
+        $response = $this->actingAs($adminA, 'admin')->post(route('admin.users.lock', $adminB));
 
         $response->assertRedirect();
         $response->assertSessionHas('error');
@@ -396,15 +396,15 @@ class QASuiteTest extends TestCase
         $viewer = User::factory()->viewer()->create(['is_locked' => false]);
 
         // Lock author
-        $this->actingAs($admin)->post(route('admin.users.lock', $author))->assertRedirect();
+        $this->actingAs($admin, 'admin')->post(route('admin.users.lock', $author))->assertRedirect();
         $this->assertTrue($author->fresh()->is_locked);
 
         // Lock viewer
-        $this->actingAs($admin)->post(route('admin.users.lock', $viewer))->assertRedirect();
+        $this->actingAs($admin, 'admin')->post(route('admin.users.lock', $viewer))->assertRedirect();
         $this->assertTrue($viewer->fresh()->is_locked);
 
         // Unlock author
-        $this->actingAs($admin)->post(route('admin.users.unlock', $author))->assertRedirect();
+        $this->actingAs($admin, 'admin')->post(route('admin.users.unlock', $author))->assertRedirect();
         $this->assertFalse($author->fresh()->is_locked);
     }
 
@@ -417,7 +417,7 @@ class QASuiteTest extends TestCase
         $admin = User::factory()->admin()->create();
         $category = Category::factory()->create(['name' => 'Empty Category']);
 
-        $response = $this->actingAs($admin)->delete(route('admin.categories.destroy', $category));
+        $response = $this->actingAs($admin, 'admin')->delete(route('admin.categories.destroy', $category));
 
         $response->assertRedirect(route('admin.categories.index'));
         $response->assertSessionHas('success');
@@ -433,7 +433,7 @@ class QASuiteTest extends TestCase
             'title' => 'Important Tech Post',
         ]);
 
-        $response = $this->actingAs($admin)->delete(route('admin.categories.destroy', $category));
+        $response = $this->actingAs($admin, 'admin')->delete(route('admin.categories.destroy', $category));
 
         $response->assertRedirect(route('admin.categories.index'));
         $response->assertSessionHas('error');
@@ -551,7 +551,7 @@ class QASuiteTest extends TestCase
         $admin = User::factory()->admin()->create();
         $post = Post::factory()->pending()->create();
 
-        $response = $this->actingAs($admin)->post(route('admin.posts.approve', $post));
+        $response = $this->actingAs($admin, 'admin')->post(route('admin.posts.approve', $post));
 
         $response->assertRedirect();
         $this->assertSame('published', $post->fresh()->status);
@@ -565,7 +565,7 @@ class QASuiteTest extends TestCase
         $admin = User::factory()->admin()->create();
         $post = Post::factory()->pending()->create();
 
-        $response = $this->actingAs($admin)->post(route('admin.posts.reject', $post), [
+        $response = $this->actingAs($admin, 'admin')->post(route('admin.posts.reject', $post), [
             'rejection_reason' => 'Does not meet standards',
         ]);
 

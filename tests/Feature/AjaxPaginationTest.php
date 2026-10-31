@@ -167,7 +167,7 @@ class AjaxPaginationTest extends TestCase
         // 1. Admin Posts
         Post::factory()->count(25)->create(['status' => 'published']);
         $adminPostsUrl = route('admin.posts.index', ['page' => 2, 'status' => 'published']);
-        $ajaxPosts = $this->actingAs($admin)
+        $ajaxPosts = $this->actingAs($admin, 'admin')
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($adminPostsUrl);
         $ajaxPosts->assertOk()
@@ -180,7 +180,7 @@ class AjaxPaginationTest extends TestCase
         // 2. Admin Users
         User::factory()->count(25)->viewer()->create();
         $adminUsersUrl = route('admin.users.index', ['page' => 2, 'role' => 'viewer']);
-        $ajaxUsers = $this->actingAs($admin)
+        $ajaxUsers = $this->actingAs($admin, 'admin')
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($adminUsersUrl);
         $ajaxUsers->assertOk()
@@ -193,7 +193,7 @@ class AjaxPaginationTest extends TestCase
         // 3. Admin Comments
         Comment::factory()->count(25)->create(['status' => 'pending']);
         $adminCommentsUrl = route('admin.comments.index', ['page' => 2, 'status' => 'pending']);
-        $ajaxComments = $this->actingAs($admin)
+        $ajaxComments = $this->actingAs($admin, 'admin')
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($adminCommentsUrl);
         $ajaxComments->assertOk()
@@ -206,7 +206,7 @@ class AjaxPaginationTest extends TestCase
         // 4. Admin Categories
         Category::factory()->count(25)->create();
         $adminCatsUrl = route('admin.categories.index', ['page' => 2, 'q' => 'cat']);
-        $ajaxCats = $this->actingAs($admin)
+        $ajaxCats = $this->actingAs($admin, 'admin')
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($adminCatsUrl);
         $ajaxCats->assertOk()
@@ -219,7 +219,7 @@ class AjaxPaginationTest extends TestCase
         // 5. Admin Tags
         Tag::factory()->count(25)->create();
         $adminTagsUrl = route('admin.tags.index', ['page' => 2, 'q' => 'tag']);
-        $ajaxTags = $this->actingAs($admin)
+        $ajaxTags = $this->actingAs($admin, 'admin')
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($adminTagsUrl);
         $ajaxTags->assertOk()
@@ -254,14 +254,14 @@ class AjaxPaginationTest extends TestCase
         // Guest redirected to login
         $this->withHeader('X-BlogMNM-Feed', '1')
             ->get(route('admin.posts.index', ['page' => 2]))
-            ->assertRedirect(route('login'));
+            ->assertRedirect(route('admin.login'));
 
         $this->withHeader('X-BlogMNM-Feed', '1')
             ->get(route('author.posts.stats', ['page' => 2]))
             ->assertRedirect(route('login'));
 
         // Viewer forbidden from admin
-        $this->actingAs($viewer)
+        $this->actingAs($viewer, 'admin')
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get(route('admin.posts.index', ['page' => 2]))
             ->assertForbidden();
@@ -282,7 +282,7 @@ class AjaxPaginationTest extends TestCase
         $draftPost = Post::factory()->create(['status' => 'draft', 'title' => 'Bài viết bản nháp']);
 
         // 1. Filter by Pending
-        $pendingResponse = $this->actingAs($admin)
+        $pendingResponse = $this->actingAs($admin, 'admin')
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get(route('admin.posts.index', ['status' => 'pending']));
 
@@ -296,7 +296,7 @@ class AjaxPaginationTest extends TestCase
             ->assertDontSee('<!DOCTYPE html>', false);
 
         // 2. Filter by Published
-        $publishedResponse = $this->actingAs($admin)
+        $publishedResponse = $this->actingAs($admin, 'admin')
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get(route('admin.posts.index', ['status' => 'published']));
 
@@ -326,7 +326,7 @@ class AjaxPaginationTest extends TestCase
             'status' => 'published',
         ]);
 
-        $response = $this->actingAs($admin)
+        $response = $this->actingAs($admin, 'admin')
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get(route('admin.posts.index', [
                 'q' => 'công nghệ AI',
@@ -360,7 +360,7 @@ class AjaxPaginationTest extends TestCase
             'page' => 2,
         ]);
 
-        $response = $this->actingAs($admin)
+        $response = $this->actingAs($admin, 'admin')
             ->withHeader('X-BlogMNM-Feed', '1')
             ->get($url);
 

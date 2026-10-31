@@ -18,11 +18,6 @@
                 </div>
                 <div class="d-flex align-items-center gap-2 min-w-0" style="height: 28px;">
                     <h1 class="fw-bold text-theme fs-5 mb-0 text-truncate" style="letter-spacing: -0.02em; line-height: 1.2;">Tạo bài viết mới</h1>
-                    <div class="flex-shrink-0 d-flex align-items-center">
-                        <x-badge variant="status-draft" size="xs">
-                            Bản nháp
-                        </x-badge>
-                    </div>
                 </div>
             </div>
         </div>
@@ -45,11 +40,11 @@
                     <span><span class="d-none d-sm-inline">Đăng bài ngay</span><span class="d-inline d-sm-none">Đăng ngay</span></span>
                 </button>
             @else
-                <button type="submit" form="create-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit" title="Gửi bài viết để Admin duyệt">
+                <button type="submit" form="create-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit editor-toolbar-compact-primary" title="Gửi bài viết để Admin duyệt">
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                     </svg>
-                    <span><span class="d-none d-sm-inline">Gửi bài viết để Admin duyệt</span><span class="d-inline d-sm-none">Gửi duyệt</span></span>
+                    <span>Gửi bài viết</span>
                 </button>
             @endif
         </div>
@@ -88,6 +83,18 @@
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
+        </div>
+    @endif
+
+    @if ($latestDraft)
+        <div class="alert alert-info mb-4 shadow-xs border border-info border-opacity-25 rounded-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3" role="status">
+            <div>
+                <div class="fw-semibold">Bạn có bản nháp đã lưu</div>
+                <div class="small">{{ $latestDraft->title }} · Cập nhật {{ $latestDraft->updated_at->diffForHumans() }}</div>
+            </div>
+            <a href="{{ route('posts.edit', $latestDraft) }}" data-app-nav class="btn btn-sm btn-editorial-primary rounded-pill px-3 flex-shrink-0 editor-toolbar-compact-primary">
+                Tiếp tục viết
+            </a>
         </div>
     @endif
 

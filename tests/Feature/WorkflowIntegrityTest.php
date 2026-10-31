@@ -158,7 +158,7 @@ class WorkflowIntegrityTest extends TestCase
         $admin = User::factory()->admin()->create();
         $post = Post::factory()->create(['status' => $status]);
 
-        $this->actingAs($admin)->postJson(route('admin.posts.approve', $post))->assertUnprocessable();
+        $this->actingAs($admin, 'admin')->postJson(route('admin.posts.approve', $post))->assertUnprocessable();
 
         $this->assertSame($status, $post->fresh()->status);
     }
@@ -169,7 +169,7 @@ class WorkflowIntegrityTest extends TestCase
         $admin = User::factory()->admin()->create();
         $post = Post::factory()->create(['status' => $status]);
 
-        $this->actingAs($admin)->postJson(route('admin.posts.reject', $post), ['rejection_reason' => 'Needs editorial changes.'])->assertUnprocessable();
+        $this->actingAs($admin, 'admin')->postJson(route('admin.posts.reject', $post), ['rejection_reason' => 'Needs editorial changes.'])->assertUnprocessable();
 
         $this->assertSame($status, $post->fresh()->status);
     }
@@ -179,7 +179,7 @@ class WorkflowIntegrityTest extends TestCase
         $admin = User::factory()->admin()->create();
         $post = Post::factory()->pending()->create();
 
-        $this->actingAs($admin)->postJson(route('admin.posts.reject', $post))->assertUnprocessable()->assertJsonValidationErrors(['rejection_reason' => 'Vui lòng nhập lý do từ chối bài viết.']);
+        $this->actingAs($admin, 'admin')->postJson(route('admin.posts.reject', $post))->assertUnprocessable()->assertJsonValidationErrors(['rejection_reason' => 'Vui lòng nhập lý do từ chối bài viết.']);
 
         $this->assertSame('pending', $post->fresh()->status);
     }
@@ -189,7 +189,7 @@ class WorkflowIntegrityTest extends TestCase
         $admin = User::factory()->admin()->create();
         $post = Post::factory()->pending()->create(['rejection_reason' => 'Old rejection.']);
 
-        $this->actingAs($admin)->postJson(route('admin.posts.approve', $post))->assertOk()->assertJsonPath('status', 'published');
+        $this->actingAs($admin, 'admin')->postJson(route('admin.posts.approve', $post))->assertOk()->assertJsonPath('status', 'published');
 
         $this->assertDatabaseHas('posts', ['id' => $post->id, 'status' => 'published', 'rejection_reason' => null, 'reviewed_by' => $admin->id]);
     }
@@ -210,7 +210,7 @@ class WorkflowIntegrityTest extends TestCase
         Comment::factory()->approved()->create(['user_id' => $viewer->id, 'body' => 'Approved comment.']);
         $spam = Comment::factory()->spam()->create(['user_id' => $viewer->id, 'body' => 'Spam comment.']);
 
-        $response = $this->actingAs($admin)->get(route('admin.comments.index', ['status' => 'spam', 'q' => 'Matched Reader']));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.comments.index', ['status' => 'spam', 'q' => 'Matched Reader']));
 
         $response->assertViewHas('comments', fn ($comments): bool => $comments->pluck('id')->all() === [$spam->id]);
     }
@@ -223,7 +223,7 @@ class WorkflowIntegrityTest extends TestCase
         $post = Post::factory()->create(['thumbnail' => 'storage/thumbnails/shared.jpg']);
         $otherPost = Post::factory()->create(['thumbnail' => $post->thumbnail]);
 
-        $this->actingAs($admin)->delete(route('admin.posts.destroy', $post))->assertRedirect(route('admin.posts.index'));
+        $this->actingAs($admin, 'admin')->delete(route('admin.posts.destroy', $post))->assertRedirect(route('admin.posts.index'));
 
         $this->assertModelMissing($post);
         $this->assertModelExists($otherPost);

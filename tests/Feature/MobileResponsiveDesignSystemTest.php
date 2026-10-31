@@ -101,7 +101,7 @@ class MobileResponsiveDesignSystemTest extends TestCase
 
     public function test_admin_mobile_shell_has_five_tab_bottom_nav_with_admin_hub(): void
     {
-        $response = $this->actingAs($this->admin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($this->admin, 'admin')->get(route('admin.dashboard'));
 
         $response->assertOk();
         $response->assertSee('mobile-bottom-nav', false);
@@ -135,7 +135,7 @@ class MobileResponsiveDesignSystemTest extends TestCase
 
     public function test_admin_users_view_renders_both_desktop_table_and_mobile_cards(): void
     {
-        $response = $this->actingAs($this->admin)->get(route('admin.users.index'));
+        $response = $this->actingAs($this->admin, 'admin')->get(route('admin.users.index'));
 
         $response->assertOk();
         $response->assertSee('table-responsive d-none d-md-block', false);
@@ -176,7 +176,7 @@ class MobileResponsiveDesignSystemTest extends TestCase
 
     public function test_admin_control_bar_is_hidden_on_mobile_to_prevent_duplicate_headers(): void
     {
-        $response = $this->actingAs($this->admin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($this->admin, 'admin')->get(route('admin.dashboard'));
 
         $response->assertOk();
         // Admin control bar must be hidden on mobile (d-none d-md-block)

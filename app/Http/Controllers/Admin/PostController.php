@@ -30,11 +30,15 @@ class PostController extends Controller
         if ($status === '') {
             $status = null;
         }
+        if ($status === 'draft') {
+            $status = null;
+        }
 
         $categoryId = $request->query('category_id');
         $categoryId = is_numeric($categoryId) ? (int) $categoryId : null;
 
         $posts = Post::query()
+            ->where('status', '!=', 'draft')
             ->with(['user', 'category', 'reviewer'])
             ->withCount(['comments', 'likers'])
             ->when($status, fn ($q) => $q->where('status', $status))
@@ -48,10 +52,9 @@ class PostController extends Controller
 
         // Status counts for tabs
         $statusCounts = [
-            'all' => Post::count(),
+            'all' => Post::where('status', '!=', 'draft')->count(),
             'pending' => Post::where('status', 'pending')->count(),
             'published' => Post::where('status', 'published')->count(),
-            'draft' => Post::where('status', 'draft')->count(),
             'rejected' => Post::where('status', 'rejected')->count(),
         ];
 

@@ -206,9 +206,9 @@ class EmailVerificationTest extends TestCase
     {
         $unverifiedAdmin = User::factory()->admin()->unverified()->create();
 
-        $response = $this->actingAs($unverifiedAdmin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($unverifiedAdmin, 'admin')->get(route('admin.dashboard'));
 
-        $response->assertRedirect(route('verification.notice'));
+        $response->assertRedirect(route('admin.verification.notice'));
     }
 
     public function test_unverified_user_can_access_profile_to_update_email(): void

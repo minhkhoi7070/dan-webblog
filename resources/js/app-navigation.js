@@ -8,6 +8,7 @@
  */
 
 const cleanPath = (path) => path.replace(/\/+$/, '') || '/';
+const isAdminPath = (path) => /^\/admin(?:\/|$)/.test(path);
 
 const getCurrentLocation = () => {
     if (typeof window !== 'undefined' && window.location) {
@@ -61,6 +62,10 @@ export function isEligibleLink(anchor, event = null) {
 
     // Exclude auth routes (login, register, logout)
     const targetPath = cleanPath(targetUrl.pathname);
+    if (isAdminPath(targetPath) !== isAdminPath(currentUrl.pathname)) {
+        return false;
+    }
+
     if (targetPath === '/login' || targetPath === '/register' || targetPath === '/logout' || targetPath.startsWith('/admin/login')) {
         return false;
     }
@@ -265,6 +270,7 @@ export function createAppNavigator(options = {}) {
     const fetcher = options.fetcher || (typeof window !== 'undefined' ? window.fetch.bind(window) : async () => {});
     const getContentContainer = options.getContentContainer || (() => (typeof document !== 'undefined' ? document.querySelector('main[data-app-content], #main-content') : null));
     const getProgressBar = options.getProgressBar || (() => (typeof document !== 'undefined' ? document.getElementById('app-nav-progress') : null));
+    const documentAdminScope = isAdminPath(getCurrentLocation().pathname);
 
     let activeController = null;
     let navSequence = 0;
@@ -272,6 +278,12 @@ export function createAppNavigator(options = {}) {
     const navigate = async (targetUrl, { historyMode = 'push', scrollX = 0, scrollY = 0 } = {}) => {
         const currentUrl = getCurrentLocation();
         const url = new URL(targetUrl.href, currentUrl.href);
+
+        // Each scope has its own account, persistent shell, and CSRF token.
+        if (isAdminPath(url.pathname) !== documentAdminScope) {
+            window.location.assign(url.href);
+            return null;
+        }
 
         // Abort previous in-flight navigation
         if (activeController) {

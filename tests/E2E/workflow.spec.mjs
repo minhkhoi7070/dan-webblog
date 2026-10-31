@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { assertLocalDiagnostics, assertQaServer, login, monitorBrowser, qaScalar } from './support.mjs';
+import { assertLocalDiagnostics, assertQaServer, login, loginAdmin, monitorBrowser, qaScalar } from './support.mjs';
 
 test.beforeEach(async ({ request }) => {
     await assertQaServer(request);
@@ -55,7 +55,7 @@ test('admin approves an author submission through the moderation UI', async ({ b
     const adminContext = await browser.newContext({ baseURL: testInfo.project.use.baseURL });
     const adminPage = await adminContext.newPage();
     const adminDiagnostics = monitorBrowser(adminPage);
-    await login(adminPage, 'admin@e2e.test');
+    await loginAdmin(adminPage);
     await adminPage.goto(`/admin/posts/${postId}`);
     await adminPage.locator('button.admin-post-action--approve').click();
     await expect(adminPage.locator('#global-confirm-modal')).toBeVisible();
@@ -72,7 +72,7 @@ test('admin submit request cannot move a published author post back to pending',
     const postId = qaScalar("SELECT id FROM posts WHERE slug = 'qa-published-post'");
     const publishedAt = qaScalar(`SELECT published_at FROM posts WHERE id = ${postId}`);
     await login(page, 'admin@e2e.test');
-    await page.goto('/admin/posts');
+    await page.goto('/posts/stats');
 
     const status = await page.evaluate(async (id) => {
         const token = document.querySelector('meta[name="csrf-token"]')?.content;

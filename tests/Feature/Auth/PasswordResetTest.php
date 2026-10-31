@@ -72,6 +72,26 @@ class PasswordResetTest extends TestCase
         $response->assertSee('user@example.com');
     }
 
+    public function test_otp_screen_renders_synchronous_server_and_expires_epoch_attributes(): void
+    {
+        $user = User::factory()->create(['email' => 'user@example.com']);
+        $otpService = app(OtpService::class);
+        $otpService->generate('user@example.com', OtpService::PURPOSE_PASSWORD_RESET, $user);
+
+        $response = $this->withSession(['password_reset_email' => 'user@example.com'])
+            ->get('/forgot-password/otp');
+
+        $response->assertStatus(200);
+        $content = $response->getContent();
+        preg_match('/data-expires-at="(\d+)"/', $content, $expiresMatches);
+        preg_match('/data-server-time="(\d+)"/', $content, $serverMatches);
+        $this->assertNotEmpty($expiresMatches[1] ?? null);
+        $this->assertNotEmpty($serverMatches[1] ?? null);
+        $diffMs = (int) $expiresMatches[1] - (int) $serverMatches[1];
+        $this->assertGreaterThanOrEqual(295000, $diffMs);
+        $this->assertLessThanOrEqual(300000, $diffMs);
+    }
+
     public function test_otp_screen_redirects_to_request_when_no_email_in_session(): void
     {
         $response = $this->get('/forgot-password/otp');

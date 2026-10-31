@@ -169,7 +169,7 @@
             </div>
 
             @auth
-                <form method="POST" action="{{ route('logout') }}" class="m-0">
+                <form method="POST" action="{{ route(Auth::getDefaultDriver() === 'admin' ? 'admin.logout' : 'logout') }}" class="m-0">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill w-100 py-1.5 d-flex align-items-center justify-content-center gap-2">
                         <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">

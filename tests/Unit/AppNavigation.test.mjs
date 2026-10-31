@@ -41,6 +41,16 @@ test('isEligibleLink validates same-origin sidebar navigation links', () => {
     assert.equal(isEligible, true);
 });
 
+test('isEligibleLink requires document navigation when entering the admin session scope', () => {
+    for (const path of ['/admin', '/admin/posts']) {
+        const link = createMockElement('a', ['sidebar-link'], {
+            href: `http://localhost${path}`,
+            'data-in-sidebar': 'true',
+        });
+        assert.equal(isEligibleLink(link, { button: 0 }), false);
+    }
+});
+
 test('isEligibleLink rejects modifier keys (Ctrl/Meta/Shift/Alt)', () => {
     const link = createMockElement('a', ['sidebar-link'], {
         href: 'http://localhost/favorites',

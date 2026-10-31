@@ -477,7 +477,7 @@ class PostEditorTest extends TestCase
         $response2->assertForbidden();
 
         // Admin can access admin post review page
-        $adminResponse = $this->actingAs($admin)->get(route('admin.posts.show', $post));
+        $adminResponse = $this->actingAs($admin, 'admin')->get(route('admin.posts.show', $post));
         $adminResponse->assertOk();
     }
 
@@ -712,7 +712,7 @@ class PostEditorTest extends TestCase
 
         // 4. Admin reviews and approves post
         $admin = User::factory()->admin()->create();
-        $approveResponse = $this->actingAs($admin)->post(route('admin.posts.approve', $post));
+        $approveResponse = $this->actingAs($admin, 'admin')->post(route('admin.posts.approve', $post));
         $approveResponse->assertRedirect();
 
         $post->refresh();
@@ -918,7 +918,7 @@ class PostEditorTest extends TestCase
 
         // 4. Admin approves post
         $admin = User::factory()->admin()->create();
-        $this->actingAs($admin)->post(route('admin.posts.approve', $post))->assertRedirect();
+        $this->actingAs($admin, 'admin')->post(route('admin.posts.approve', $post))->assertRedirect();
 
         $post->refresh();
         $this->assertTrue($post->isPublished());

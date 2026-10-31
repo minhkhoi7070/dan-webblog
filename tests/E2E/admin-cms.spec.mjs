@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { assertLocalDiagnostics, assertQaServer, login, monitorBrowser } from './support.mjs';
+import { assertLocalDiagnostics, assertQaServer, loginAdmin, monitorBrowser } from './support.mjs';
 
 test.beforeEach(async ({ request }) => {
     await assertQaServer(request);
@@ -7,7 +7,7 @@ test.beforeEach(async ({ request }) => {
 
 test('admin can open all CMS index pages with QA records', async ({ page }, testInfo) => {
     const diagnostics = monitorBrowser(page);
-    await login(page, 'admin@e2e.test');
+    await loginAdmin(page);
 
     for (const path of ['/admin', '/admin/users', '/admin/posts', '/admin/categories', '/admin/tags', '/admin/comments']) {
         const response = await page.goto(path);

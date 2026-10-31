@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\EmailOtp;
 use App\Models\User;
 use App\Notifications\PasswordResetOtpNotification;
 use App\Services\OtpService;
@@ -83,13 +84,28 @@ class PasswordResetLinkController extends Controller
 
         /** @var OtpService $otpService */
         $otpService = app(OtpService::class);
-        $cooldown = $otpService->getCooldownRemaining($email, OtpService::PURPOSE_PASSWORD_RESET);
-        $expiry = $otpService->getExpiryRemaining($email, OtpService::PURPOSE_PASSWORD_RESET);
+        $normalizedEmail = strtolower(trim($email));
+        $cooldown = $otpService->getCooldownRemaining($normalizedEmail, OtpService::PURPOSE_PASSWORD_RESET);
+        $expiry = $otpService->getExpiryRemaining($normalizedEmail, OtpService::PURPOSE_PASSWORD_RESET);
+
+        $latestOtp = EmailOtp::query()
+            ->where('email', $normalizedEmail)
+            ->where('purpose', OtpService::PURPOSE_PASSWORD_RESET)
+            ->whereNull('consumed_at')
+            ->latest('id')
+            ->first();
+
+        $expiresAtMs = ($latestOtp && $latestOtp->expires_at && ! $latestOtp->isExpired())
+            ? $latestOtp->expires_at->getTimestamp() * 1000
+            : null;
+        $serverTimeMs = now()->getTimestamp() * 1000;
 
         return view('auth.reset-password-otp', [
             'email' => $email,
             'cooldown' => $cooldown,
             'expiry' => $expiry,
+            'expiresAtMs' => $expiresAtMs,
+            'serverTimeMs' => $serverTimeMs,
         ]);
     }
 

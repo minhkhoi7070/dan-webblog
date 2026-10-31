@@ -76,14 +76,11 @@
                         <span><span class="d-none d-sm-inline">Đăng bài ngay</span><span class="d-inline d-sm-none">Đăng ngay</span></span>
                     </button>
                 @else
-                    <button type="submit" form="edit-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit" title="{{ $post->status === 'rejected' ? 'Gửi lại để Admin duyệt' : 'Gửi bài viết để Admin duyệt' }}">
+                    <button type="submit" form="edit-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit editor-toolbar-compact-primary" title="{{ $post->status === 'rejected' ? 'Gửi lại để Admin duyệt' : 'Gửi bài viết để Admin duyệt' }}">
                         <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>
-                        <span>
-                            <span class="d-none d-sm-inline">{{ $post->status === 'rejected' ? 'Gửi lại để Admin duyệt' : 'Gửi bài viết để Admin duyệt' }}</span>
-                            <span class="d-inline d-sm-none">{{ $post->status === 'rejected' ? 'Gửi lại duyệt' : 'Gửi duyệt' }}</span>
-                        </span>
+                        <span>Gửi bài viết</span>
                     </button>
                 @endif
             @else
@@ -415,7 +412,7 @@
 
         <!-- Right Sidebar: Settings & Publishing Panel -->
         <div class="col-12 col-lg-4">
-            <div class="d-flex flex-column gap-3.5">
+            <div class="d-flex flex-column" style="gap: 20px;">
                 <!-- Category Selection -->
                 <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl">
                     <label for="category_id" class="form-label fw-semibold text-theme mb-2 d-flex align-items-center gap-1.5" style="font-size: 13.5px;">

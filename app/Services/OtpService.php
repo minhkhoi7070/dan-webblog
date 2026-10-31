@@ -68,7 +68,7 @@ class OtpService
 
         $elapsed = $latest->created_at->diffInSeconds(now());
 
-        return max(0, self::COOLDOWN_SECONDS - $elapsed);
+        return (int) max(0, ceil(self::COOLDOWN_SECONDS - $elapsed));
     }
 
     /**
@@ -89,7 +89,7 @@ class OtpService
             return 0;
         }
 
-        return max(0, now()->diffInSeconds($latest->expires_at, false));
+        return (int) max(0, ceil(now()->diffInSeconds($latest->expires_at, false)));
     }
 
     /**

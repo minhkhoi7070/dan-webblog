@@ -126,7 +126,7 @@ class PerformanceIntegrityTest extends TestCase
     public function test_empty_admin_content_metrics_are_zero_and_use_bounded_queries(): void
     {
         $admin = User::factory()->admin()->create();
-        $this->actingAs($admin);
+        $this->actingAs($admin, 'admin');
         DB::enableQueryLog();
         DB::flushQueryLog();
         try {

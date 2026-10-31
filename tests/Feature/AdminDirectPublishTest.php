@@ -295,12 +295,12 @@ class AdminDirectPublishTest extends TestCase
         $post = Post::where('title', 'Admin Direct Public Article')->firstOrFail();
 
         // Check Admin moderation pending queue
-        $pendingResponse = $this->actingAs($admin)->get(route('admin.posts.index', ['status' => 'pending']));
+        $pendingResponse = $this->actingAs($admin, 'admin')->get(route('admin.posts.index', ['status' => 'pending']));
         $pendingResponse->assertOk();
         $pendingResponse->assertDontSee($post->title);
 
         // Check Admin moderation published list
-        $publishedResponse = $this->actingAs($admin)->get(route('admin.posts.index', ['status' => 'published']));
+        $publishedResponse = $this->actingAs($admin, 'admin')->get(route('admin.posts.index', ['status' => 'published']));
         $publishedResponse->assertOk();
         $publishedResponse->assertSee($post->title);
     }

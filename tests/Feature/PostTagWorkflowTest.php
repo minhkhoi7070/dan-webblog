@@ -263,22 +263,22 @@ class PostTagWorkflowTest extends TestCase
         $tag = Tag::factory()->create(['name' => 'TechTag', 'slug' => 'techtag']);
 
         // Author is forbidden from admin tag CRUD
-        $this->actingAs($author)->get(route('admin.tags.index'))->assertForbidden();
-        $this->actingAs($author)->get(route('admin.tags.create'))->assertForbidden();
-        $this->actingAs($author)->post(route('admin.tags.store'), ['name' => 'HackTag'])->assertForbidden();
-        $this->actingAs($author)->get(route('admin.tags.edit', $tag))->assertForbidden();
-        $this->actingAs($author)->put(route('admin.tags.update', $tag), ['name' => 'HackTag'])->assertForbidden();
-        $this->actingAs($author)->delete(route('admin.tags.destroy', $tag))->assertForbidden();
+        $this->actingAs($author, 'admin')->get(route('admin.tags.index'))->assertForbidden();
+        $this->actingAs($author, 'admin')->get(route('admin.tags.create'))->assertForbidden();
+        $this->actingAs($author, 'admin')->post(route('admin.tags.store'), ['name' => 'HackTag'])->assertForbidden();
+        $this->actingAs($author, 'admin')->get(route('admin.tags.edit', $tag))->assertForbidden();
+        $this->actingAs($author, 'admin')->put(route('admin.tags.update', $tag), ['name' => 'HackTag'])->assertForbidden();
+        $this->actingAs($author, 'admin')->delete(route('admin.tags.destroy', $tag))->assertForbidden();
 
         // Viewer is forbidden
-        $this->actingAs($viewer)->get(route('admin.tags.index'))->assertForbidden();
+        $this->actingAs($viewer, 'admin')->get(route('admin.tags.index'))->assertForbidden();
 
         // Admin can access and manage tags
-        $this->actingAs($admin)->get(route('admin.tags.index'))->assertOk()->assertSee('TechTag');
-        $this->actingAs($admin)->get(route('admin.tags.create'))->assertOk();
+        $this->actingAs($admin, 'admin')->get(route('admin.tags.index'))->assertOk()->assertSee('TechTag');
+        $this->actingAs($admin, 'admin')->get(route('admin.tags.create'))->assertOk();
 
         // Admin creates new tag
-        $createResponse = $this->actingAs($admin)->post(route('admin.tags.store'), [
+        $createResponse = $this->actingAs($admin, 'admin')->post(route('admin.tags.store'), [
             'name' => 'AdminCreatedTag',
             'slug' => 'admin-created-tag',
         ]);
@@ -287,7 +287,7 @@ class PostTagWorkflowTest extends TestCase
 
         // Admin updates tag
         $newTag = Tag::where('slug', 'admin-created-tag')->first();
-        $updateResponse = $this->actingAs($admin)->put(route('admin.tags.update', $newTag), [
+        $updateResponse = $this->actingAs($admin, 'admin')->put(route('admin.tags.update', $newTag), [
             'name' => 'AdminUpdatedTag',
             'slug' => 'admin-updated-tag',
         ]);
@@ -295,7 +295,7 @@ class PostTagWorkflowTest extends TestCase
         $this->assertDatabaseHas('tags', ['slug' => 'admin-updated-tag']);
 
         // Admin deletes tag safely
-        $deleteResponse = $this->actingAs($admin)->delete(route('admin.tags.destroy', $newTag));
+        $deleteResponse = $this->actingAs($admin, 'admin')->delete(route('admin.tags.destroy', $newTag));
         $deleteResponse->assertRedirect(route('admin.tags.index'));
         $this->assertDatabaseMissing('tags', ['id' => $newTag->id]);
     }

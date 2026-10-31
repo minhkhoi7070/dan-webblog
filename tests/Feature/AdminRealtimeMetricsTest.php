@@ -24,8 +24,8 @@ class AdminRealtimeMetricsTest extends TestCase
         $viewer = User::factory()->create(['role' => 'viewer']);
         $author = User::factory()->author()->create();
 
-        $this->actingAs($viewer)->getJson(route('admin.metrics.realtime'))->assertForbidden();
-        $this->actingAs($author)->getJson(route('admin.metrics.realtime'))->assertForbidden();
+        $this->actingAs($viewer, 'admin')->getJson(route('admin.metrics.realtime'))->assertForbidden();
+        $this->actingAs($author, 'admin')->getJson(route('admin.metrics.realtime'))->assertForbidden();
     }
 
     public function test_admin_can_retrieve_realtime_metrics(): void
@@ -41,7 +41,7 @@ class AdminRealtimeMetricsTest extends TestCase
             'views' => 15,
         ]);
 
-        $response = $this->actingAs($admin)->getJson(route('admin.metrics.realtime'));
+        $response = $this->actingAs($admin, 'admin')->getJson(route('admin.metrics.realtime'));
 
         $response->assertOk()
             ->assertJsonStructure([

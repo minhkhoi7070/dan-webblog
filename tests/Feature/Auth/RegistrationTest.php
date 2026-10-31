@@ -47,6 +47,15 @@ class RegistrationTest extends TestCase
         $firstPage->assertOk();
         $this->assertMatchesRegularExpression('/id="otp-expiry-container" data-seconds="(?:29[5-9]|300)"/', $firstPage->getContent());
 
+        $firstContent = $firstPage->getContent();
+        preg_match('/data-expires-at="(\d+)"/', $firstContent, $expiresMatches);
+        preg_match('/data-server-time="(\d+)"/', $firstContent, $serverMatches);
+        $this->assertNotEmpty($expiresMatches[1] ?? null);
+        $this->assertNotEmpty($serverMatches[1] ?? null);
+        $diffMs = (int) $expiresMatches[1] - (int) $serverMatches[1];
+        $this->assertGreaterThanOrEqual(295000, $diffMs);
+        $this->assertLessThanOrEqual(300000, $diffMs);
+
         $remaining = app(OtpService::class)->getExpiryRemaining($user->email, OtpService::PURPOSE_EMAIL_VERIFICATION);
         $this->assertGreaterThanOrEqual(295, $remaining);
 

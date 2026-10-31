@@ -55,7 +55,7 @@
             <!-- 3. Viết bài (Author only) -->
             @if(Auth::user()->isAuthor())
                 <a href="{{ route('posts.create') }}"
-                   class="d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none {{ request()->routeIs('posts.create') ? 'active' : '' }}"
+                   class="d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none {{ request()->routeIs('posts.create', 'posts.edit') ? 'active' : '' }}"
                    title="Viết bài mới"
                    aria-label="Viết bài mới">
                     <svg style="width: 20px; height: 20px; flex-shrink: 0; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,7 @@
                         Tác giả
                     </div>
                     <a href="{{ route('posts.stats') }}"
-                       class="d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none {{ request()->routeIs('posts.stats') || request()->routeIs('author.posts.*') || request()->routeIs('posts.edit') ? 'active' : '' }}"
+                       class="d-flex align-items-center sidebar-link gap-3 px-3 py-2 text-decoration-none {{ request()->routeIs('posts.stats') || request()->routeIs('author.posts.*') ? 'active' : '' }}"
                        title="Thống kê bài viết"
                        aria-label="Thống kê bài viết">
                         <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,7 +253,7 @@
                 <div class="sidebar-account__divider"></div>
 
                 <!-- 5. Logout Button -->
-                <form method="POST" action="{{ route('logout') }}" class="w-100 m-0">
+                <form method="POST" action="{{ route(Auth::getDefaultDriver() === 'admin' ? 'admin.logout' : 'logout') }}" class="w-100 m-0">
                     @csrf
                     <button type="submit"
                             aria-label="Đăng xuất khỏi tài khoản"

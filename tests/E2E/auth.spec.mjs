@@ -25,7 +25,7 @@ test('viewer logs in, sees private pages, and logs out', async ({ page }, testIn
 test('viewer cannot open the admin dashboard', async ({ page }, testInfo) => {
     const diagnostics = monitorBrowser(page);
     await login(page);
-    const response = await page.goto('/admin');
-    expect(response.status()).toBe(403);
-    await assertLocalDiagnostics(testInfo, diagnostics, [{ path: '/admin', status: 403 }]);
+    await page.goto('/admin');
+    await expect(page).toHaveURL(/\/admin\/login$/);
+    await assertLocalDiagnostics(testInfo, diagnostics);
 });

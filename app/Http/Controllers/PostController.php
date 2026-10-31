@@ -221,10 +221,17 @@ class PostController extends Controller
 
         $categories = Category::orderBy('name')->get();
         $tags = Tag::orderBy('name')->get();
+        $latestPost = Post::query()
+            ->where('user_id', auth()->id())
+            ->latest('updated_at')
+            ->latest('id')
+            ->first();
+        $latestDraft = $latestPost?->status === 'draft' ? $latestPost : null;
 
         return view('author.posts.create', [
             'categories' => $categories,
             'tags' => $tags,
+            'latestDraft' => $latestDraft,
         ]);
     }
 

@@ -5,6 +5,9 @@ use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\AuthorCommentController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FavoriteController;
@@ -21,14 +24,25 @@ use Illuminate\Support\Facades\Route;
 // Admin Authentication (Public Guest/Admin)
 // =============================================================================
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/login', [AdminAuthController::class, 'create'])->name('login');
-    Route::post('/login', [AdminAuthController::class, 'store'])->name('login.store');
+    Route::get('/login', [AdminAuthController::class, 'create'])->middleware('guest:admin')->name('login');
+    Route::post('/login', [AdminAuthController::class, 'store'])->middleware('guest:admin')->name('login.store');
+    Route::post('/logout', [AdminAuthController::class, 'destroy'])->middleware('auth:admin')->name('logout');
+
+    Route::middleware('auth:admin')->group(function () {
+        Route::get('/verify-email', EmailVerificationPromptController::class)->name('verification.notice');
+        Route::post('/verify-email', [VerifyEmailController::class, 'verifyOtp'])
+            ->middleware('throttle:10,1')->name('verification.otp.verify');
+        Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+            ->middleware('throttle:6,1')->name('verification.send');
+        Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
+            ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+    });
 });
 
 // =============================================================================
 // Admin Routes (Sprint 4: Admin Only)
 // =============================================================================
-Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth:admin', 'verified:admin.verification.notice', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/metrics/realtime', [DashboardController::class, 'realtimeMetrics'])->name('metrics.realtime');

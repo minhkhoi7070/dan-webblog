@@ -51,9 +51,9 @@ class ViewerToAuthorTest extends TestCase
     }
 
     /**
-     * 3. Admin login redirects to route('admin.dashboard')
+     * 3. Public login rejects administrators with the generic credentials message.
      */
-    public function test_03_admin_login_redirects_to_admin_dashboard(): void
+    public function test_03_admin_public_login_is_rejected(): void
     {
         $admin = User::factory()->admin()->create([
             'email' => 'admin@blogmnm.test',
@@ -65,8 +65,8 @@ class ViewerToAuthorTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $this->assertAuthenticatedAs($admin);
-        $response->assertRedirect(route('admin.dashboard', absolute: false));
+        $this->assertGuest('web');
+        $response->assertSessionHasErrors(['email' => 'Email hoặc mật khẩu không hợp lệ.']);
     }
 
     /**
@@ -186,15 +186,15 @@ class ViewerToAuthorTest extends TestCase
         $viewer = User::factory()->viewer()->create();
 
         // Admin can access admin dashboard
-        $adminResponse = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $adminResponse = $this->actingAs($admin, 'admin')->get(route('admin.dashboard'));
         $adminResponse->assertStatus(200);
 
         // Author is forbidden
-        $authorResponse = $this->actingAs($author)->get(route('admin.dashboard'));
+        $authorResponse = $this->actingAs($author, 'admin')->get(route('admin.dashboard'));
         $authorResponse->assertForbidden();
 
         // Viewer is forbidden
-        $viewerResponse = $this->actingAs($viewer)->get(route('admin.dashboard'));
+        $viewerResponse = $this->actingAs($viewer, 'admin')->get(route('admin.dashboard'));
         $viewerResponse->assertForbidden();
 
         // Legacy /dashboard route redirects appropriately

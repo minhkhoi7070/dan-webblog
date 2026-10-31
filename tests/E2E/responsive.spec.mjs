@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { assertLocalDiagnostics, assertQaServer, login, monitorBrowser } from './support.mjs';
+import { assertLocalDiagnostics, assertQaServer, login, loginAdmin, monitorBrowser } from './support.mjs';
 
 const viewports = [
     { width: 390, height: 844 },
@@ -24,7 +24,9 @@ for (const viewport of viewports) {
         test(`${role.name} pages fit ${viewport.width}×${viewport.height}`, async ({ page }, testInfo) => {
             const diagnostics = monitorBrowser(page);
             await page.setViewportSize(viewport);
-            if (role.email) {
+            if (role.name === 'admin') {
+                await loginAdmin(page);
+            } else if (role.email) {
                 await login(page, role.email);
             }
 

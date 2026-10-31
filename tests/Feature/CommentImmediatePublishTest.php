@@ -229,17 +229,17 @@ class CommentImmediatePublishTest extends TestCase
         ]);
 
         // 1. Admin accesses comments list
-        $indexResponse = $this->actingAs($admin)->get(route('admin.comments.index'));
+        $indexResponse = $this->actingAs($admin, 'admin')->get(route('admin.comments.index'));
         $indexResponse->assertOk()
             ->assertSee('Bình luận công khai chờ admin hậu kiểm.');
 
         // 2. Admin marks comment as spam
-        $spamResponse = $this->actingAs($admin)->post(route('admin.comments.spam', $comment));
+        $spamResponse = $this->actingAs($admin, 'admin')->post(route('admin.comments.spam', $comment));
         $spamResponse->assertRedirect();
         $this->assertSame('spam', $comment->fresh()->status);
 
         // 3. Admin deletes the comment
-        $deleteResponse = $this->actingAs($admin)->delete(route('admin.comments.destroy', $comment));
+        $deleteResponse = $this->actingAs($admin, 'admin')->delete(route('admin.comments.destroy', $comment));
         $deleteResponse->assertRedirect();
         $this->assertDatabaseMissing('comments', ['id' => $comment->id]);
     }

@@ -19,7 +19,7 @@ class BootstrapModalConfirmationTest extends TestCase
         $viewer = User::factory()->create(['name' => 'Viewer User', 'role' => 'viewer', 'is_locked' => false]);
         $lockedAuthor = User::factory()->create(['role' => 'author', 'is_locked' => true]);
 
-        $response = $this->actingAs($admin)->get(route('admin.users.index'));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.users.index'));
 
         $response->assertOk();
         $response->assertSee('id="global-confirm-modal"', false);
@@ -39,7 +39,7 @@ class BootstrapModalConfirmationTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $viewer = User::factory()->create(['role' => 'viewer', 'is_locked' => false]);
 
-        $response = $this->actingAs($admin)->get(route('admin.users.show', $viewer));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.users.show', $viewer));
 
         $response->assertOk();
         $response->assertSee('data-confirm="true"', false);
@@ -60,7 +60,7 @@ class BootstrapModalConfirmationTest extends TestCase
             'title' => 'Bài viết chờ duyệt thử nghiệm',
         ]);
 
-        $indexResponse = $this->actingAs($admin)->get(route('admin.posts.index'));
+        $indexResponse = $this->actingAs($admin, 'admin')->get(route('admin.posts.index'));
         $indexResponse->assertOk();
         $indexResponse->assertSee('data-confirm="true"', false);
         $indexResponse->assertSee('data-confirm-title="Duyệt bài viết"', false);
@@ -71,7 +71,7 @@ class BootstrapModalConfirmationTest extends TestCase
         $indexResponse->assertDontSee('prompt(', false);
         $indexResponse->assertDontSee('onsubmit="return confirm', false);
 
-        $showResponse = $this->actingAs($admin)->get(route('admin.posts.show', $post));
+        $showResponse = $this->actingAs($admin, 'admin')->get(route('admin.posts.show', $post));
         $showResponse->assertOk();
         $showResponse->assertSee('data-confirm-title="Duyệt bài viết"', false);
         $showResponse->assertSee('data-confirm-title="Từ chối phê duyệt"', false);
@@ -86,7 +86,7 @@ class BootstrapModalConfirmationTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $category = Category::factory()->create(['name' => 'Công nghệ']);
 
-        $response = $this->actingAs($admin)->get(route('admin.categories.index'));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.categories.index'));
 
         $response->assertOk();
         $response->assertSee('data-confirm="true"', false);
@@ -112,13 +112,13 @@ class BootstrapModalConfirmationTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $commentsResponse = $this->actingAs($admin)->get(route('admin.comments.index'));
+        $commentsResponse = $this->actingAs($admin, 'admin')->get(route('admin.comments.index'));
         $commentsResponse->assertOk();
         $commentsResponse->assertSee('data-confirm="true"', false);
         $commentsResponse->assertSee('data-confirm-title="Xóa bình luận"', false);
         $commentsResponse->assertDontSee('onsubmit="return confirm', false);
 
-        $dashResponse = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $dashResponse = $this->actingAs($admin, 'admin')->get(route('admin.dashboard'));
         $dashResponse->assertOk();
         $dashResponse->assertSee('data-confirm="true"', false);
         $dashResponse->assertSee('data-confirm-title="Xóa bình luận"', false);
@@ -177,13 +177,13 @@ class BootstrapModalConfirmationTest extends TestCase
         $viewer = User::factory()->create(['role' => 'viewer', 'is_locked' => false]);
 
         // Lock user
-        $lockResponse = $this->actingAs($admin)->post(route('admin.users.lock', $viewer));
+        $lockResponse = $this->actingAs($admin, 'admin')->post(route('admin.users.lock', $viewer));
         $lockResponse->assertRedirect();
         $lockResponse->assertSessionHas('success');
         $this->assertTrue($viewer->fresh()->is_locked);
 
         // Unlock user
-        $unlockResponse = $this->actingAs($admin)->post(route('admin.users.unlock', $viewer));
+        $unlockResponse = $this->actingAs($admin, 'admin')->post(route('admin.users.unlock', $viewer));
         $unlockResponse->assertRedirect();
         $unlockResponse->assertSessionHas('success');
         $this->assertFalse($viewer->fresh()->is_locked);

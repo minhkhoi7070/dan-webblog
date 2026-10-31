@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { assertLocalDiagnostics, assertQaServer, login, monitorBrowser, qaScalar } from './support.mjs';
+import { assertLocalDiagnostics, assertQaServer, login, loginAdmin, monitorBrowser, qaScalar } from './support.mjs';
 
 test.beforeEach(async ({ request }) => {
     await assertQaServer(request);
@@ -45,7 +45,7 @@ test('uploaded WebM remains playable after author submission and admin approval'
 
     const adminContext = await browser.newContext({ baseURL: testInfo.project.use.baseURL });
     const adminPage = await adminContext.newPage();
-    await login(adminPage, 'admin@e2e.test');
+    await loginAdmin(adminPage);
     await adminPage.goto(`/admin/posts/${postId}`);
     await adminPage.locator('button.admin-post-action--approve').click();
     await expect(adminPage.locator('#global-confirm-modal')).toBeVisible();

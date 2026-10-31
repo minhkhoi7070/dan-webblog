@@ -114,7 +114,7 @@ class SidebarDesignStandardTest extends TestCase
             'name' => 'Trần Hải Nam',
         ]);
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.dashboard'));
         $response->assertOk();
 
         // 1. Common Nav

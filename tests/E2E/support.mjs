@@ -65,12 +65,16 @@ export function qaScalar(sql) {
     }).trim();
 }
 
-export async function login(page, email = 'viewer@e2e.test', password = testPassword) {
-    await page.goto('/login');
+export async function login(page, email = 'viewer@e2e.test', password = testPassword, path = '/login') {
+    await page.goto(path);
     await page.locator('#email').fill(email);
     await page.locator('#password').fill(password);
-    await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
+    await page.getByRole('button', { name: path === '/admin/login' ? 'Đăng nhập Quản trị viên' : 'Đăng nhập', exact: true }).click();
     await expect(page).not.toHaveURL(/\/login(?:\?|$)/);
+}
+
+export async function loginAdmin(page) {
+    await login(page, 'admin@e2e.test', testPassword, '/admin/login');
 }
 
 export function monitorBrowser(page) {

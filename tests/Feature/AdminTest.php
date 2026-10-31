@@ -19,11 +19,11 @@ class AdminTest extends TestCase
 
     public function test_guest_is_redirected_to_login_when_accessing_admin_routes(): void
     {
-        $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
-        $this->get(route('admin.users.index'))->assertRedirect(route('login'));
-        $this->get(route('admin.categories.index'))->assertRedirect(route('login'));
-        $this->get(route('admin.posts.index'))->assertRedirect(route('login'));
-        $this->get(route('admin.comments.index'))->assertRedirect(route('login'));
+        $this->get(route('admin.dashboard'))->assertRedirect(route('admin.login'));
+        $this->get(route('admin.users.index'))->assertRedirect(route('admin.login'));
+        $this->get(route('admin.categories.index'))->assertRedirect(route('admin.login'));
+        $this->get(route('admin.posts.index'))->assertRedirect(route('admin.login'));
+        $this->get(route('admin.comments.index'))->assertRedirect(route('admin.login'));
     }
 
     public function test_viewer_and_author_receive_403_on_admin_routes(): void
@@ -33,15 +33,15 @@ class AdminTest extends TestCase
         $post = Post::factory()->pending()->create();
 
         foreach ([$viewer, $author] as $user) {
-            $this->actingAs($user)->get(route('admin.dashboard'))->assertForbidden();
-            $this->actingAs($user)->get(route('admin.users.index'))->assertForbidden();
-            $this->actingAs($user)->get(route('admin.categories.index'))->assertForbidden();
-            $this->actingAs($user)->get(route('admin.posts.index'))->assertForbidden();
-            $this->actingAs($user)->get(route('admin.comments.index'))->assertForbidden();
+            $this->actingAs($user, 'admin')->get(route('admin.dashboard'))->assertForbidden();
+            $this->actingAs($user, 'admin')->get(route('admin.users.index'))->assertForbidden();
+            $this->actingAs($user, 'admin')->get(route('admin.categories.index'))->assertForbidden();
+            $this->actingAs($user, 'admin')->get(route('admin.posts.index'))->assertForbidden();
+            $this->actingAs($user, 'admin')->get(route('admin.comments.index'))->assertForbidden();
 
             // Direct moderation attempts
-            $this->actingAs($user)->post(route('admin.posts.approve', $post))->assertForbidden();
-            $this->actingAs($user)->post(route('admin.posts.reject', $post))->assertForbidden();
+            $this->actingAs($user, 'admin')->post(route('admin.posts.approve', $post))->assertForbidden();
+            $this->actingAs($user, 'admin')->post(route('admin.posts.reject', $post))->assertForbidden();
         }
     }
 
@@ -49,7 +49,7 @@ class AdminTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.dashboard'));
         $response->assertOk();
         $response->assertSee('Bảng điều khiển Quản trị');
         $response->assertSee('Chỉ số vận hành');
@@ -79,7 +79,7 @@ class AdminTest extends TestCase
         Comment::factory()->pending()->count(4)->create(['post_id' => $post1->id, 'user_id' => $viewer1->id]);
         Comment::factory()->approved()->count(2)->create(['post_id' => $post1->id, 'user_id' => $viewer2->id]);
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.dashboard'));
 
         $response->assertOk();
         $response->assertViewHas('metrics', function ($metrics) {
@@ -113,7 +113,7 @@ class AdminTest extends TestCase
             'email' => 'tranthib@example.com',
         ]);
 
-        $response = $this->actingAs($admin)->get(route('admin.users.index', ['q' => 'Nguyen Van A']));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.users.index', ['q' => 'Nguyen Van A']));
         $response->assertOk();
         $response->assertSee('nguyenvana@example.com');
         $response->assertDontSee('tranthib@example.com');
@@ -125,12 +125,12 @@ class AdminTest extends TestCase
         $targetUser = User::factory()->create(['is_locked' => false]);
 
         // Lock user
-        $lockResponse = $this->actingAs($admin)->post(route('admin.users.lock', $targetUser));
+        $lockResponse = $this->actingAs($admin, 'admin')->post(route('admin.users.lock', $targetUser));
         $lockResponse->assertRedirect();
         $this->assertTrue($targetUser->fresh()->is_locked);
 
         // Unlock user
-        $unlockResponse = $this->actingAs($admin)->post(route('admin.users.unlock', $targetUser));
+        $unlockResponse = $this->actingAs($admin, 'admin')->post(route('admin.users.unlock', $targetUser));
         $unlockResponse->assertRedirect();
         $this->assertFalse($targetUser->fresh()->is_locked);
     }
@@ -139,7 +139,7 @@ class AdminTest extends TestCase
     {
         $admin = User::factory()->admin()->create(['is_locked' => false]);
 
-        $response = $this->actingAs($admin)->post(route('admin.users.lock', $admin));
+        $response = $this->actingAs($admin, 'admin')->post(route('admin.users.lock', $admin));
 
         $response->assertRedirect();
         $response->assertSessionHas('error');
@@ -155,7 +155,7 @@ class AdminTest extends TestCase
         $admin = User::factory()->admin()->create();
 
         // 1. Create
-        $createResponse = $this->actingAs($admin)->post(route('admin.categories.store'), [
+        $createResponse = $this->actingAs($admin, 'admin')->post(route('admin.categories.store'), [
             'name' => 'Machine Learning',
             'slug' => 'machine-learning',
         ]);
@@ -166,12 +166,12 @@ class AdminTest extends TestCase
         $this->assertNotNull($category);
 
         // 2. Read / Index
-        $this->actingAs($admin)->get(route('admin.categories.index'))
+        $this->actingAs($admin, 'admin')->get(route('admin.categories.index'))
             ->assertOk()
             ->assertSee('Machine Learning');
 
         // 3. Update
-        $updateResponse = $this->actingAs($admin)->put(route('admin.categories.update', $category), [
+        $updateResponse = $this->actingAs($admin, 'admin')->put(route('admin.categories.update', $category), [
             'name' => 'Deep Learning & AI',
             'slug' => 'deep-learning-ai',
         ]);
@@ -179,7 +179,7 @@ class AdminTest extends TestCase
         $this->assertDatabaseHas('categories', ['id' => $category->id, 'name' => 'Deep Learning & AI']);
 
         // 4. Delete
-        $deleteResponse = $this->actingAs($admin)->delete(route('admin.categories.destroy', $category));
+        $deleteResponse = $this->actingAs($admin, 'admin')->delete(route('admin.categories.destroy', $category));
         $deleteResponse->assertRedirect(route('admin.categories.index'));
         $this->assertDatabaseMissing('categories', ['id' => $category->id]);
     }
@@ -189,21 +189,21 @@ class AdminTest extends TestCase
         $admin = User::factory()->admin()->create();
 
         // Missing name
-        $response = $this->actingAs($admin)->post(route('admin.categories.store'), [
+        $response = $this->actingAs($admin, 'admin')->post(route('admin.categories.store'), [
             'name' => '',
         ]);
         $response->assertSessionHasErrors(['name']);
 
         // Duplicate slug
         Category::factory()->create(['name' => 'Existing Category', 'slug' => 'existing-slug']);
-        $dupResponse = $this->actingAs($admin)->post(route('admin.categories.store'), [
+        $dupResponse = $this->actingAs($admin, 'admin')->post(route('admin.categories.store'), [
             'name' => 'New Category',
             'slug' => 'existing-slug',
         ]);
         $dupResponse->assertSessionHasErrors(['slug']);
 
         // Duplicate name
-        $dupNameResponse = $this->actingAs($admin)->post(route('admin.categories.store'), [
+        $dupNameResponse = $this->actingAs($admin, 'admin')->post(route('admin.categories.store'), [
             'name' => 'Existing Category',
         ]);
         $dupNameResponse->assertSessionHasErrors(['name']);
@@ -218,7 +218,7 @@ class AdminTest extends TestCase
         $category2 = Category::factory()->create(['name' => 'Category Two', 'slug' => 'category-two']);
 
         // Unchanged name and slug is valid
-        $response = $this->actingAs($admin)->put(route('admin.categories.update', $category1), [
+        $response = $this->actingAs($admin, 'admin')->put(route('admin.categories.update', $category1), [
             'name' => 'Category One',
             'slug' => 'category-one',
         ]);
@@ -226,13 +226,13 @@ class AdminTest extends TestCase
         $response->assertRedirect();
 
         // Duplicate name (changing to category2's name) is invalid
-        $dupNameResponse = $this->actingAs($admin)->put(route('admin.categories.update', $category1), [
+        $dupNameResponse = $this->actingAs($admin, 'admin')->put(route('admin.categories.update', $category1), [
             'name' => 'Category Two',
         ]);
         $dupNameResponse->assertSessionHasErrors(['name']);
 
         // Changing to a new unique name is valid
-        $validResponse = $this->actingAs($admin)->put(route('admin.categories.update', $category1), [
+        $validResponse = $this->actingAs($admin, 'admin')->put(route('admin.categories.update', $category1), [
             'name' => 'Category Three',
         ]);
         $validResponse->assertSessionHasNoErrors();
@@ -253,7 +253,7 @@ class AdminTest extends TestCase
             'published_at' => null,
         ]);
 
-        $response = $this->actingAs($admin)->post(route('admin.posts.approve', $post));
+        $response = $this->actingAs($admin, 'admin')->post(route('admin.posts.approve', $post));
 
         $response->assertRedirect();
         $post->refresh();
@@ -275,7 +275,7 @@ class AdminTest extends TestCase
 
         $rejectionReason = 'Nội dung bài viết thiếu trích dẫn nguồn uy tín và vi phạm quy chuẩn biên tập.';
 
-        $response = $this->actingAs($admin)->post(route('admin.posts.reject', $post), [
+        $response = $this->actingAs($admin, 'admin')->post(route('admin.posts.reject', $post), [
             'rejection_reason' => $rejectionReason,
         ]);
 
@@ -312,7 +312,7 @@ class AdminTest extends TestCase
         $admin = User::factory()->admin()->create();
         $post = Post::factory()->create();
 
-        $response = $this->actingAs($admin)->delete(route('admin.posts.destroy', $post));
+        $response = $this->actingAs($admin, 'admin')->delete(route('admin.posts.destroy', $post));
 
         $response->assertRedirect(route('admin.posts.index'));
         $this->assertDatabaseMissing('posts', ['id' => $post->id]);
@@ -330,17 +330,17 @@ class AdminTest extends TestCase
         ]);
 
         // 1. Approve
-        $approveResponse = $this->actingAs($admin)->post(route('admin.comments.approve', $comment));
+        $approveResponse = $this->actingAs($admin, 'admin')->post(route('admin.comments.approve', $comment));
         $approveResponse->assertRedirect();
         $this->assertSame('approved', $comment->fresh()->status);
 
         // 2. Spam
-        $spamResponse = $this->actingAs($admin)->post(route('admin.comments.spam', $comment));
+        $spamResponse = $this->actingAs($admin, 'admin')->post(route('admin.comments.spam', $comment));
         $spamResponse->assertRedirect();
         $this->assertSame('spam', $comment->fresh()->status);
 
         // 3. Delete
-        $deleteResponse = $this->actingAs($admin)->delete(route('admin.comments.destroy', $comment));
+        $deleteResponse = $this->actingAs($admin, 'admin')->delete(route('admin.comments.destroy', $comment));
         $deleteResponse->assertRedirect();
         $this->assertDatabaseMissing('comments', ['id' => $comment->id]);
     }

@@ -17,7 +17,7 @@ class VerifyEmailController extends Controller
     public function verifyOtp(Request $request): RedirectResponse
     {
         if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+            return redirect()->intended(route($request->is('admin/*') ? 'admin.dashboard' : 'dashboard', absolute: false).'?verified=1');
         }
 
         $request->validate([
@@ -47,7 +47,7 @@ class VerifyEmailController extends Controller
             event(new Verified($request->user()));
         }
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1')
+        return redirect()->intended(route($request->is('admin/*') ? 'admin.dashboard' : 'dashboard', absolute: false).'?verified=1')
             ->with('success', 'Xác minh email thành công! Tài khoản của bạn đã được kích hoạt đầy đủ.');
     }
 
@@ -57,7 +57,7 @@ class VerifyEmailController extends Controller
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
         if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1')
+            return redirect()->intended(route($request->is('admin/*') ? 'admin.dashboard' : 'dashboard', absolute: false).'?verified=1')
                 ->with('success', 'Địa chỉ email của bạn đã được xác minh trước đó.');
         }
 
@@ -65,7 +65,7 @@ class VerifyEmailController extends Controller
             event(new Verified($request->user()));
         }
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1')
+        return redirect()->intended(route($request->is('admin/*') ? 'admin.dashboard' : 'dashboard', absolute: false).'?verified=1')
             ->with('success', 'Xác minh email thành công! Tài khoản của bạn đã được kích hoạt đầy đủ.');
     }
 }

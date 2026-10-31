@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('admin_title', 'Kiểm duyệt & Quản lý Bài viết')
+@section('admin_title', 'Quản lý bài viết')
 
 @section('admin_content')
 <div data-feed-shell
@@ -9,7 +9,7 @@
      class="position-relative">
 
     <!-- Status Tabs (Horizontal Scrollable Chips on Mobile, Pill Segment Filter) -->
-    <div class="d-flex flex-nowrap overflow-x-auto align-items-center gap-1.5 mb-3 py-1 admin-posts-status-tabs" data-feed-status-tabs tabindex="0" role="region" aria-label="Các trạng thái bài viết, có thể cuộn ngang">
+    <div class="d-flex flex-nowrap overflow-x-auto align-items-center gap-2 mb-3 py-1 admin-posts-status-tabs" data-feed-status-tabs tabindex="0" role="region" aria-label="Các trạng thái bài viết, có thể cuộn ngang">
         <a
             href="{{ route('admin.posts.index', array_filter(['q' => $search, 'category_id' => $currentCategory])) }}"
             data-feed-tab=""
@@ -42,17 +42,6 @@
             @if($currentStatus === 'published') aria-current="page" @endif
         >
             Đã xuất bản <span class="opacity-75 ms-1" data-feed-count="published">({{ number_format($statusCounts['published']) }})</span>
-        </a>
-        <a
-            href="{{ route('admin.posts.index', array_filter(['status' => 'draft', 'q' => $search, 'category_id' => $currentCategory])) }}"
-            data-feed-tab="draft"
-            data-active-class="btn-editorial-primary text-white"
-            data-inactive-class="btn-outline-theme text-theme-muted"
-            class="btn btn-sm rounded-pill px-3 py-1 fw-medium {{ $currentStatus === 'draft' ? 'btn-editorial-primary text-white' : 'btn-outline-theme text-theme-muted' }}"
-            style="font-size: 12.5px;"
-            @if($currentStatus === 'draft') aria-current="page" @endif
-        >
-            Bản nháp <span class="opacity-75 ms-1" data-feed-count="draft">({{ number_format($statusCounts['draft']) }})</span>
         </a>
         <a
             href="{{ route('admin.posts.index', array_filter(['status' => 'rejected', 'q' => $search, 'category_id' => $currentCategory])) }}"

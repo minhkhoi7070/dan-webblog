@@ -66,6 +66,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $validated = $request->validated();
+        $returnToProfile = $request->boolean('return_to_profile');
 
         $oldAvatar = $user->avatar;
         $uploadedPath = null;
@@ -155,7 +156,8 @@ class ProfileController extends Controller
             ]);
         }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route($returnToProfile ? 'profile.show' : 'profile.edit')
+            ->with('status', 'profile-updated');
     }
 
     /**

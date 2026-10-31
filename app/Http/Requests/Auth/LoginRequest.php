@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -34,32 +35,69 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Get the localized login validation messages.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'required' => trans('validation.required', locale: 'vi'),
+            'email' => trans('validation.email', locale: 'vi'),
+            'string' => trans('validation.string', locale: 'vi'),
+        ];
+    }
+
+    /**
+     * Get the localized login field names.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return trans('validation.attributes', locale: 'vi');
+    }
+
+    /**
      * Attempt to authenticate the request's credentials.
      *
      * @throws ValidationException
      */
-    public function authenticate(): void
+    public function authenticate(string $guard = 'web', bool $requireAdmin = false): void
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $message = trans('auth.failed', locale: 'vi');
+
+        $authenticated = Auth::guard($guard)->attemptWhen(
+            $this->only('email', 'password'),
+            function (User $user) use ($guard, $requireAdmin, &$message): bool {
+                if ($guard === 'web' && ! in_array($user->role, ['viewer', 'author'], true)) {
+                    return false;
+                }
+
+                if ($user->is_locked) {
+                    $message = trans('auth.locked', locale: 'vi');
+
+                    return false;
+                }
+
+                if ($requireAdmin && ! $user->isAdmin()) {
+                    $message = trans('auth.admin_only', locale: 'vi');
+
+                    return false;
+                }
+
+                return true;
+            },
+            $this->boolean('remember'),
+        );
+
+        if (! $authenticated) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
-        }
-
-        if (Auth::user()?->is_locked) {
-            Auth::logout();
-
-            $this->session()->invalidate();
-            $this->session()->regenerateToken();
-
-            RateLimiter::hit($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.',
+                'email' => $message,
             ]);
         }
 
@@ -85,7 +123,7 @@ class LoginRequest extends FormRequest
             'email' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
-            ]),
+            ], 'vi'),
         ]);
     }
 

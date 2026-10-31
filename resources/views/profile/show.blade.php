@@ -322,6 +322,7 @@
                       novalidate>
                     @csrf
                     @method('PATCH')
+                    <input type="hidden" name="return_to_profile" value="1">
 
                     <div class="threads-modal-body">
                         <!-- Alert thông báo lỗi chung -->
@@ -590,11 +591,9 @@
                     }
                 }
 
-                // Cleanup when modal closes
-                modalEl.addEventListener('hide.bs.modal', function () {
-                    document.body.classList.remove('modal-open');
-                    document.body.style.removeProperty('overflow');
-                    document.body.style.removeProperty('padding-right');
+                // Let Bootstrap compensate for the page scrollbar without shifting the profile shell.
+                modalEl.addEventListener('show.bs.modal', function () {
+                    document.documentElement.style.setProperty('scrollbar-gutter', 'auto');
                 });
 
                 modalEl.addEventListener('hidden.bs.modal', function () {
@@ -610,9 +609,7 @@
                     if (btnCancelAvatar) {
                         btnCancelAvatar.classList.add('d-none');
                     }
-                    document.body.classList.remove('modal-open');
-                    document.body.style.removeProperty('overflow');
-                    document.body.style.removeProperty('padding-right');
+                    document.documentElement.style.removeProperty('scrollbar-gutter');
 
                     const openBtn = document.getElementById('btn-open-edit-profile');
                     if (openBtn) openBtn.focus();

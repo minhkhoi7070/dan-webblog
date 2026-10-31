@@ -51,13 +51,13 @@
     @endif
 
     <!-- Form Submit OTP -->
-    <form method="POST" action="{{ route('verification.otp.verify') }}" class="mb-3" id="otp-verify-form">
+    <form method="POST" action="{{ route((request()->is('admin/*') ? 'admin.' : '').'verification.otp.verify') }}" class="mb-3" id="otp-verify-form">
         @csrf
 
         <x-otp-input name="otp" :autofocus="true" />
 
         <!-- Expiry countdown timer -->
-        <div class="text-center small text-theme-secondary mb-3" id="otp-expiry-container" data-seconds="{{ $expiry }}" data-has-otp="{{ $hasOtp ? '1' : '0' }}">
+        <div class="text-center small text-theme-secondary mb-3" id="otp-expiry-container" data-seconds="{{ $expiry }}" data-expires-at="{{ $expiresAtMs ?? '' }}" data-server-time="{{ $serverTimeMs ?? '' }}" data-has-otp="{{ $hasOtp ? '1' : '0' }}">
             <span class="d-inline-flex align-items-center gap-1.5">
                 <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -76,7 +76,7 @@
 
     <!-- Resend OTP Form with Cooldown -->
     <div class="d-flex align-items-center justify-content-center mb-3">
-        <form method="POST" action="{{ route('verification.send') }}" class="m-0" id="otp-resend-form">
+        <form method="POST" action="{{ route((request()->is('admin/*') ? 'admin.' : '').'verification.send') }}" class="m-0" id="otp-resend-form">
             @csrf
             <button type="submit"
                     class="btn btn-sm btn-link text-theme-secondary hover-accent text-decoration-none p-0 small"
@@ -93,7 +93,7 @@
             Đổi địa chỉ email
         </a>
 
-        <form method="POST" action="{{ route('logout') }}" class="m-0">
+        <form method="POST" action="{{ route(request()->is('admin/*') ? 'admin.logout' : 'logout') }}" class="m-0">
             @csrf
             <button type="submit" class="btn btn-link text-theme-secondary hover-accent text-decoration-none small p-0">
                 Đăng xuất
@@ -106,46 +106,91 @@
         // Expiry countdown
         var expiryEl = document.getElementById('otp-expiry-timer');
         var expiryContainer = document.getElementById('otp-expiry-container');
-        var expirySeconds = parseInt(expiryContainer?.dataset.seconds || '0', 10);
-        var expiryDeadline = performance.now() + expirySeconds * 1000;
+        if (!expiryEl || !expiryContainer) return;
+
+        var hasOtp = expiryContainer.dataset.hasOtp === '1';
+        if (!hasOtp) return;
+
+        var clientLoadTime = Date.now();
+        var serverTimeRaw = parseInt(expiryContainer.dataset.serverTime || '', 10);
+        var expiresAtRaw = parseInt(expiryContainer.dataset.expiresAt || '', 10);
+        var initialSeconds = parseInt(expiryContainer.dataset.seconds || '0', 10);
+
+        // Calculate clock offset between server and client:
+        // currentServerTime = Date.now() + clockOffset
+        var clockOffset = (!isNaN(serverTimeRaw) && serverTimeRaw > 0) ? (serverTimeRaw - clientLoadTime) : 0;
+        var hasEpoch = (!isNaN(expiresAtRaw) && expiresAtRaw > 0);
+        var fallbackDeadline = performance.now() + (initialSeconds * 1000);
+
+        function formatTime(totalSec) {
+            var m = Math.floor(totalSec / 60);
+            var s = totalSec % 60;
+            return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        function calculateRemainingSeconds() {
+            if (hasEpoch) {
+                var currentServerNow = Date.now() + clockOffset;
+                return Math.max(0, Math.ceil((expiresAtRaw - currentServerNow) / 1000));
+            }
+            return Math.max(0, Math.ceil((fallbackDeadline - performance.now()) / 1000));
+        }
+
+        var timerId = null;
 
         function updateExpiry() {
-            if (!expiryEl?.isConnected) return;
-            if (expiryContainer?.dataset.hasOtp !== '1') return;
-            var remaining = Math.max(0, Math.ceil((expiryDeadline - performance.now()) / 1000));
-            if (remaining <= 0) {
-                if (expiryEl) expiryEl.textContent = '00:00 (Đã hết hạn)';
+            if (!expiryEl || !expiryEl.isConnected) {
+                if (timerId) clearInterval(timerId);
                 return;
             }
-            var m = Math.floor(remaining / 60);
-            var s = remaining % 60;
-            if (expiryEl) {
-                expiryEl.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+
+            var remaining = calculateRemainingSeconds();
+            if (remaining <= 0) {
+                expiryEl.textContent = '00:00 (Đã hết hạn)';
+                if (timerId) {
+                    clearInterval(timerId);
+                    timerId = null;
+                }
+                return;
             }
-            setTimeout(updateExpiry, 1000);
+
+            expiryEl.textContent = formatTime(remaining);
         }
+
         updateExpiry();
+        timerId = setInterval(updateExpiry, 1000);
 
         // Resend cooldown
         var resendBtn = document.getElementById('otp-resend-btn');
         var resendText = document.getElementById('otp-resend-text');
         var cooldown = parseInt(resendBtn?.dataset.cooldown || '0', 10);
+        var cooldownTimerId = null;
 
         function updateCooldown() {
+            if (!resendBtn || !resendBtn.isConnected) {
+                if (cooldownTimerId) clearInterval(cooldownTimerId);
+                return;
+            }
+
             if (cooldown > 0) {
                 resendBtn.disabled = true;
                 resendBtn.classList.add('opacity-50', 'pe-none');
-                resendText.textContent = 'Gửi lại mã (' + cooldown + 's)';
+                if (resendText) resendText.textContent = 'Gửi lại mã (' + cooldown + 's)';
                 cooldown--;
-                setTimeout(updateCooldown, 1000);
             } else {
                 resendBtn.disabled = false;
                 resendBtn.classList.remove('opacity-50', 'pe-none');
-                resendText.textContent = 'Gửi lại mã OTP';
+                if (resendText) resendText.textContent = 'Gửi lại mã OTP';
+                if (cooldownTimerId) {
+                    clearInterval(cooldownTimerId);
+                    cooldownTimerId = null;
+                }
             }
         }
+
         if (cooldown > 0) {
             updateCooldown();
+            cooldownTimerId = setInterval(updateCooldown, 1000);
         }
     })();
     </script>

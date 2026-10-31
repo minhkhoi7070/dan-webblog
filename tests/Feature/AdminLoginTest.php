@@ -38,7 +38,8 @@ class AdminLoginTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $this->assertAuthenticatedAs($admin);
+        $this->assertAuthenticatedAs($admin, 'admin');
+        $this->assertGuest('web');
         $response->assertRedirect(route('admin.dashboard', absolute: false));
     }
 
@@ -57,9 +58,8 @@ class AdminLoginTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $this->assertGuest();
-        $response->assertSessionHasErrors('email');
-        $this->assertSame('Tài khoản này không có quyền quản trị.', session('errors')->first('email'));
+        $this->assertGuest('admin');
+        $response->assertSessionHasErrors(['email' => 'Tài khoản này không có quyền quản trị.']);
     }
 
     /**
@@ -77,9 +77,8 @@ class AdminLoginTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $this->assertGuest();
-        $response->assertSessionHasErrors('email');
-        $this->assertSame('Tài khoản này không có quyền quản trị.', session('errors')->first('email'));
+        $this->assertGuest('admin');
+        $response->assertSessionHasErrors(['email' => 'Tài khoản này không có quyền quản trị.']);
     }
 
     /**
@@ -89,7 +88,7 @@ class AdminLoginTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.dashboard'));
 
         $response->assertStatus(200);
     }
@@ -101,7 +100,7 @@ class AdminLoginTest extends TestCase
     {
         $viewer = User::factory()->viewer()->create();
 
-        $response = $this->actingAs($viewer)->get(route('admin.dashboard'));
+        $response = $this->actingAs($viewer, 'admin')->get(route('admin.dashboard'));
 
         $response->assertForbidden();
     }
@@ -113,7 +112,7 @@ class AdminLoginTest extends TestCase
     {
         $author = User::factory()->author()->create();
 
-        $response = $this->actingAs($author)->get(route('admin.dashboard'));
+        $response = $this->actingAs($author, 'admin')->get(route('admin.dashboard'));
 
         $response->assertForbidden();
     }
@@ -133,7 +132,7 @@ class AdminLoginTest extends TestCase
             'password' => 'incorrect-password',
         ]);
 
-        $this->assertGuest();
+        $this->assertGuest('admin');
         $response->assertSessionHasErrors('email');
     }
 
@@ -152,9 +151,8 @@ class AdminLoginTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $this->assertGuest();
-        $response->assertSessionHasErrors('email');
-        $this->assertStringContainsString('khóa', session('errors')->first('email'));
+        $this->assertGuest('admin');
+        $response->assertSessionHasErrors(['email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.']);
     }
 
     /**

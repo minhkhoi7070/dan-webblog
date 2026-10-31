@@ -9,7 +9,7 @@
         
         <!-- Top Back Bar (Desktop only; Mobile has top app header) -->
         <div class="p-3 px-sm-4 border-theme-bottom d-none d-md-flex align-items-center justify-content-between sticky-top bg-theme-surface" style="z-index: 1020;">
-            <a href="{{ route('posts.index') }}" class="small text-theme-secondary hover-accent text-decoration-none d-inline-flex align-items-center gap-1.5 transition-colors">
+            <a href="{{ route('posts.index') }}" class="small text-theme-secondary hover-accent text-decoration-none d-inline-flex align-items-center gap-2 transition-colors">
                 <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
@@ -37,12 +37,12 @@
 
                 <!-- Avatar -->
                 <div class="flex-shrink-0">
-                    <x-avatar :user="$author" size="2xl" class="border border-theme shadow-xs" />
+                    <x-avatar :user="$author" size="2xl" />
                 </div>
             </div>
 
             <!-- Bio -->
-            <div class="mt-3.5">
+            <div class="mt-3">
                 <p class="text-theme small lh-relaxed mb-0" style="max-width: 540px; font-size: 14.5px;">
                     {{ $author->bio ?: 'Tác giả chưa cập nhật tiểu sử cá nhân trên nền tảng CloudBlog.' }}
                 </p>
@@ -50,11 +50,11 @@
 
             <!-- Metrics / Counters -->
             <div class="mt-4 d-flex align-items-center gap-4 small text-theme-secondary">
-                <div class="d-flex align-items-baseline gap-1.5">
+                <div class="d-flex align-items-baseline gap-2">
                     <span class="fw-bold text-theme fs-6">{{ $author->posts_count }}</span>
                     <span class="opacity-75" style="font-size: 13px;">bài viết</span>
                 </div>
-                <div class="d-flex align-items-baseline gap-1.5">
+                <div class="d-flex align-items-baseline gap-2">
                     <span id="follower-count" data-follower-count data-author-id="{{ $author->id }}" class="fw-bold text-theme fs-6 interaction-count">{{ $author->followers_count }}</span>
                     <span class="opacity-75" style="font-size: 13px;">người theo dõi</span>
                 </div>
@@ -67,7 +67,7 @@
         </div>
 
         <!-- Author Feed Section Header & Search -->
-        <div class="px-4 py-3 border-theme-bottom bg-surface-2 d-flex flex-column flex-sm-row sm-align-items-center justify-content-between gap-3">
+        <div class="px-4 py-3 border-theme-bottom d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
             <div class="label-uppercase m-0">
                 Bài viết đã đăng <span class="text-theme-secondary fw-normal">({{ $posts->total() }})</span>
             </div>
