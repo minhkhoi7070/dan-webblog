@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -18,7 +19,7 @@ class AuthController extends Controller
     public function create(): View|RedirectResponse
     {
         /** @var User|null $user */
-        $user = Auth::user();
+        $user = Auth::guard('admin')->user();
 
         if ($user && $user->isAdmin()) {
             return redirect()->route('admin.dashboard');
@@ -34,25 +35,22 @@ class AuthController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
-
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        // Enforce admin role check strictly via database model
-        if (! $user || ! $user->isAdmin()) {
-            Auth::logout();
-
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
-            throw ValidationException::withMessages([
-                'email' => 'Tài khoản này không có quyền quản trị.',
-            ]);
-        }
+        $request->authenticate('admin', requireAdmin: true);
 
         $request->session()->regenerate();
 
         return redirect()->intended(route('admin.dashboard', absolute: false));
+    }
+
+    /**
+     * Destroy only the dedicated administrator session.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        Auth::guard('admin')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('admin.login');
     }
 }

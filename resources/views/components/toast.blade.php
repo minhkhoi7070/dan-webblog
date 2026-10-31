@@ -12,6 +12,18 @@
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
             </div>
         </div>
+    @elseif(request()->query('verified') == 1)
+        <div class="toast align-items-center border-0 bg-success text-white mb-2 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span>Xác minh email thành công! Tài khoản của bạn đã được kích hoạt đầy đủ.</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
+            </div>
+        </div>
     @endif
 
     @if(session('error'))

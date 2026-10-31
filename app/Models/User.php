@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Notifications\EmailVerificationOtpNotification;
+use App\Services\OtpService;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +17,7 @@ use Illuminate\Support\Str;
 
 #[Fillable(['name', 'email', 'password', 'role', 'avatar', 'bio', 'is_locked'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -58,6 +61,30 @@ class User extends Authenticatable
         ];
 
         return $map[$this->name] ?? (Str::slug($this->name, '') ?: 'user'.$this->id);
+    }
+
+    /**
+     * Get the accessible public URL for the user's avatar.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (! $this->avatar) {
+            return null;
+        }
+
+        if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+            return $this->avatar;
+        }
+
+        if (str_starts_with($this->avatar, 'avatars/')) {
+            return asset('storage/'.$this->avatar);
+        }
+
+        if (str_starts_with($this->avatar, 'storage/')) {
+            return asset($this->avatar);
+        }
+
+        return asset($this->avatar);
     }
 
     /**
@@ -145,6 +172,14 @@ class User extends Authenticatable
      */
     public function isFollowing(User $user): bool
     {
+        if ($this->id === $user->id) {
+            return false;
+        }
+
+        if ($this->relationLoaded('following')) {
+            return $this->following->contains('id', $user->id);
+        }
+
         return $this->following()->where('following_id', $user->id)->exists();
     }
 
@@ -178,5 +213,35 @@ class User extends Authenticatable
     public function isViewer(): bool
     {
         return $this->role === 'viewer';
+    }
+
+    /**
+     * OTP records associated with the user.
+     *
+     * @return HasMany<EmailOtp, $this>
+     */
+    public function emailOtps(): HasMany
+    {
+        return $this->hasMany(EmailOtp::class);
+    }
+
+    /**
+     * Send the email verification notification using a 6-digit OTP.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        /** @var OtpService $otpService */
+        $otpService = app(OtpService::class);
+
+        $otp = $otpService->generate(
+            email: $this->email,
+            purpose: OtpService::PURPOSE_EMAIL_VERIFICATION,
+            user: $this,
+            ip: request()?->ip(),
+            userAgent: request()?->userAgent(),
+            force: true
+        );
+
+        $this->notify(new EmailVerificationOtpNotification($otp));
     }
 }

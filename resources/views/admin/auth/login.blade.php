@@ -5,11 +5,8 @@
             <svg style="width: 14px; height: 14px; color: var(--color-danger, #1e36b9ff);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
-            <span class="label-uppercase text-danger m-0" style="font-size: 10px; letter-spacing: 0.08em;">Quản trị viên</span>
+            <span class="label-uppercase text-danger m-0" style="font-size: 10px; letter-spacing: 0.1em;">Quản trị viên</span>
         </div>
-        <h1 class="h4 fw-bold text-theme mb-1 tracking-tight" style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
-             Admin
-        </h1>
     </div>
 
     <!-- Session Status -->
@@ -31,7 +28,7 @@
         <!-- Email Address -->
         <div class="mb-3">
             <label for="email" class="form-label small fw-medium text-theme mb-1.5 d-block">
-                Tài khoản Email Quản trị
+                Tên đăng nhập
             </label>
             <input
                 id="email"

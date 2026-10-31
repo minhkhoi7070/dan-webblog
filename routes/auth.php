@@ -22,11 +22,24 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
+    // Password Reset via 6-digit OTP (Screens 1 to 4)
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->middleware('throttle:6,1')
         ->name('password.email');
+
+    Route::get('forgot-password/otp', [PasswordResetLinkController::class, 'showOtpForm'])
+        ->name('password.otp');
+
+    Route::post('forgot-password/verify-otp', [PasswordResetLinkController::class, 'verifyOtp'])
+        ->middleware('throttle:10,1')
+        ->name('password.otp.verify');
+
+    Route::post('forgot-password/resend-otp', [PasswordResetLinkController::class, 'resendOtp'])
+        ->middleware('throttle:6,1')
+        ->name('password.otp.resend');
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
         ->name('password.reset');
@@ -38,6 +51,10 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
+
+    Route::post('verify-email', [VerifyEmailController::class, 'verifyOtp'])
+        ->middleware('throttle:10,1')
+        ->name('verification.otp.verify');
 
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
         ->middleware(['signed', 'throttle:6,1'])

@@ -13,6 +13,9 @@
                 data-action="follow"
                 data-url="{{ route('authors.follow', $author->id) }}"
                 data-author-id="{{ $author->id }}"
+                data-author-name="{{ $author->name }}"
+                data-login-url="{{ route('login') }}"
+                aria-pressed="{{ $isFollowing ? 'true' : 'false' }}"
                 aria-label="{{ $isFollowing ? 'Hủy theo dõi ' . $author->name : 'Theo dõi ' . $author->name }}"
                 class="btn rounded-pill fw-semibold {{ $sizeClass }} {{ $isFollowing ? 'btn-outline-theme' : 'btn-primary' }}">
             {{ $isFollowing ? 'Đang theo dõi' : 'Theo dõi' }}

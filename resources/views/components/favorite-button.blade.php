@@ -11,6 +11,8 @@
             data-action="favorite"
             data-url="{{ route('posts.favorite', $post->id) }}"
             data-post-id="{{ $post->id }}"
+            data-login-url="{{ route('login') }}"
+            aria-pressed="{{ $isSaved ? 'true' : 'false' }}"
             aria-label="{{ $isSaved ? 'Xóa khỏi danh sách lưu' : 'Lưu bài viết' }}"
             title="{{ $isSaved ? 'Đã lưu' : 'Lưu bài viết' }}"
             class="btn p-0 border-0 bg-transparent d-flex align-items-center gap-1.5 text-decoration-none cursor-pointer btn-action-interactive {{ $isSaved ? 'text-warning' : 'text-theme-secondary' }}">

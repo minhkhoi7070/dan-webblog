@@ -1,5 +1,5 @@
 @extends('layouts.base')
-@section('title', 'Đăng nhập - ' . config('app.name', 'BlogMNM'))
+@section('title', 'Đăng nhập - ' . config('app.name', 'CloudBlog'))
 @section('html_class', 'h-100')
 @section('body_class', 'login-page-body')
 
@@ -33,32 +33,34 @@
         <main id="main-content" class="login-glass-card mx-auto">
             <!-- Brand Logo Header -->
             <div class="text-center mb-3 user-select-none">
-                <a href="{{ route('home') }}" class="d-inline-flex align-items-center gap-2 text-decoration-none"
-                    aria-label="Trang chủ BlogMNM">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 text-white fw-bold shadow-xs login-glass-logo-badge"
-                        style="width: 38px; height: 38px; font-size: 19px; font-family: var(--font-serif, 'Lora', Georgia, serif);">
-                        B
-                    </div>
-                    <span class="fs-4 fw-bold text-white m-0 tracking-tight"
-                        style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
-                        Blog<span class="text-white opacity-75">MNM</span>
-                    </span>
+                <a href="{{ route('posts.index') }}" class="inline-flex items-center gap-2.5 text-white font-bold text-xl tracking-tight text-decoration-none"
+                    aria-label="Trang chủ CloudBlog">
+                    <x-logo class="w-11 h-11" />
+                    <span>CloudBlog</span>
                 </a>
             </div>
 
             <!-- Heading & Subtitle -->
             <div class="text-center mb-4">
-                <h1 class="h4 fw-bold text-white mb-1.5 tracking-tight login-glass-title"
-                    style="font-family: var(--font-serif, 'Lora', Georgia, serif);">
+                <h1 class="h4 fw-bold text-white mb-1.5 tracking-tight login-glass-title">
                     Chào mừng trở lại
                 </h1>
                 <p class="small text-white-75 mb-0">
-                    Đăng nhập để tiếp tục với BlogMNM
+                    Đăng nhập để tiếp tục với CloudBlog
                 </p>
             </div>
 
             <!-- Session Status Alert -->
             <x-auth-session-status class="mb-3" :status="session('status')" />
+
+            @if(session('url.intended') && str_contains(session('url.intended'), 'verify-email'))
+                <div class="alert alert-info py-2 px-3 small rounded-3 mb-3 d-flex align-items-center gap-2 text-start" role="alert" style="background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #bae6fd;">
+                    <svg style="width: 16px; height: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Vui lòng đăng nhập vào tài khoản của bạn để hoàn tất việc xác minh địa chỉ email.</span>
+                </div>
+            @endif
 
             <!-- Login Form -->
             <form method="POST" action="{{ route('login') }}" class="needs-validation" novalidate>
@@ -137,7 +139,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                Quay lại BlogMNM
+                Quay lại CloudBlog
             </a>
         </div>
     </div>
