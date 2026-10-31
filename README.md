@@ -34,7 +34,13 @@ BlogMNM là website blog xây dựng bằng Laravel, Blade, Bootstrap, JavaScrip
    php artisan migrate --seed
    ```
 
-5. Biên dịch tài nguyên giao diện và khởi động website:
+5. Tạo liên kết công khai để hiển thị ảnh đại diện và ảnh bài viết đã tải lên:
+
+   ```bash
+   php artisan storage:link
+   ```
+
+6. Biên dịch tài nguyên giao diện và khởi động website:
 
    ```bash
    npm run build

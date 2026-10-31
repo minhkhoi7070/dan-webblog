@@ -54,7 +54,7 @@ Route::middleware(['auth:admin', 'verified:admin.verification.notice', 'role:adm
     Route::post('/users/{user}/unlock', [UserController::class, 'unlock'])->name('users.unlock');
 
     // Category CRUD
-    Route::resource('categories', CategoryController::class);
+    Route::resource('categories', CategoryController::class)->except(['show']);
 
     // Tag CRUD
     Route::resource('tags', App\Http\Controllers\Admin\TagController::class)->except(['show']);

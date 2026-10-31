@@ -943,6 +943,8 @@ export function initPostEditor(root = document) {
                     color: '#3b82f6',
                     width: 2,
                 },
+                link: false,
+                underline: false,
             }),
             Underline,
             TextColor,
