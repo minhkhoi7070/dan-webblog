@@ -233,6 +233,59 @@ export function initFeedShell(shell) {
         }
     };
 
+    const adminPostsFilterForm = shell.querySelector('form[data-admin-posts-filter-form]');
+    const adminPostsFromDate = adminPostsFilterForm?.querySelector('[data-admin-posts-from-date]');
+    const adminPostsToDate = adminPostsFilterForm?.querySelector('[data-admin-posts-to-date]');
+    const adminPostsDateToggle = adminPostsFilterForm?.querySelector('[data-admin-posts-date-toggle]');
+    const adminPostsDateFields = adminPostsFilterForm?.querySelector('[data-admin-posts-date-fields]');
+    const adminPostsDateError = adminPostsFilterForm?.querySelector('[data-admin-posts-date-error]');
+
+    const updateAdminPostsDateRange = () => {
+        if (!adminPostsFromDate || !adminPostsToDate) {
+            return;
+        }
+
+        const hasInvalidRange = Boolean(
+            adminPostsFromDate.value
+            && adminPostsToDate.value
+            && adminPostsFromDate.value > adminPostsToDate.value
+        );
+        const message = 'Ngày bắt đầu không được sau ngày kết thúc.';
+
+        [adminPostsFromDate, adminPostsToDate].forEach((input) => {
+            input.setCustomValidity(hasInvalidRange ? message : '');
+            if (hasInvalidRange) {
+                input.setAttribute('aria-invalid', 'true');
+            } else {
+                input.removeAttribute('aria-invalid');
+            }
+        });
+
+        if (adminPostsDateError) {
+            adminPostsDateError.textContent = hasInvalidRange ? message : '';
+            adminPostsDateError.hidden = !hasInvalidRange;
+        }
+
+        if (hasInvalidRange && adminPostsDateFields && adminPostsDateToggle) {
+            adminPostsDateFields.hidden = false;
+            adminPostsDateToggle.setAttribute('aria-expanded', 'true');
+        }
+    };
+
+    const syncAdminPostsDatePanel = () => {
+        if (!adminPostsDateFields || !adminPostsDateToggle) {
+            return;
+        }
+
+        const hasDateFilter = Boolean(adminPostsFromDate?.value || adminPostsToDate?.value);
+        adminPostsDateFields.hidden = !hasDateFilter;
+        adminPostsDateToggle.setAttribute('aria-expanded', String(hasDateFilter));
+        updateAdminPostsDateRange();
+    };
+
+    adminPostsFilterForm?.addEventListener('input', updateAdminPostsDateRange);
+    adminPostsFilterForm?.addEventListener('change', updateAdminPostsDateRange);
+
     /**
      * Synchronize search and select form inputs with target URL parameters
      */
@@ -253,11 +306,20 @@ export function initFeedShell(shell) {
             }
         });
 
+        filterForm.querySelectorAll('[data-feed-filter-param]').forEach((input) => {
+            const val = targetUrl.searchParams.get(input.name) || '';
+            if (input.value !== val) {
+                input.value = val;
+            }
+        });
+
         const status = targetUrl.searchParams.get('status') || '';
         const statusInput = filterForm.querySelector('input[name="status"]');
         if (statusInput && statusInput.value !== status) {
             statusInput.value = status;
         }
+
+        syncAdminPostsDatePanel();
     };
 
     /**
@@ -570,6 +632,24 @@ export function initFeedShell(shell) {
             return;
         }
 
+        const dateFilterToggle = event.target.closest('[data-admin-posts-date-toggle]');
+        if (dateFilterToggle && adminPostsDateFields) {
+            const isExpanded = dateFilterToggle.getAttribute('aria-expanded') === 'true';
+            const hasInvalidRange = Boolean(
+                adminPostsFromDate?.value
+                && adminPostsToDate?.value
+                && adminPostsFromDate.value > adminPostsToDate.value
+            );
+
+            if (isExpanded && hasInvalidRange) {
+                return;
+            }
+
+            adminPostsDateFields.hidden = isExpanded;
+            dateFilterToggle.setAttribute('aria-expanded', String(!isExpanded));
+            return;
+        }
+
         // Retry button click
         const retryBtn = event.target.closest('[data-feed-retry]');
         if (retryBtn) {
@@ -620,16 +700,41 @@ export function initFeedShell(shell) {
         if (tabLink && !tabLink.target && !tabLink.hasAttribute('download')) {
             const url = new URL(tabLink.href, window.location.href);
             if (supportsUrl(url) && !url.hash) {
-                // If filter form has search query or category, ensure it is retained on status switch
+                // Keep active admin post filters when switching status tabs.
                 const filterForm = shell.querySelector('form[data-feed-filter-form]');
                 if (filterForm) {
                     const qInput = filterForm.querySelector('input[name="q"], input[name="search"]');
-                    if (qInput && qInput.value.trim() && !url.searchParams.has('q') && !url.searchParams.has('search')) {
-                        url.searchParams.set(qInput.name || 'q', qInput.value.trim());
-                    }
                     const catSelect = filterForm.querySelector('select[name="category_id"]');
-                    if (catSelect && catSelect.value && !url.searchParams.has('category_id')) {
-                        url.searchParams.set('category_id', catSelect.value);
+
+                    if (filterForm.hasAttribute('data-admin-posts-filter-form')) {
+                        const searchValue = qInput?.value.trim() || '';
+                        url.searchParams.delete('q');
+                        url.searchParams.delete('search');
+                        if (searchValue) {
+                            url.searchParams.set(qInput.name || 'q', searchValue);
+                        }
+
+                        if (catSelect?.value) {
+                            url.searchParams.set('category_id', catSelect.value);
+                        } else {
+                            url.searchParams.delete('category_id');
+                        }
+
+                        filterForm.querySelectorAll('[data-feed-filter-param]').forEach((input) => {
+                            const value = input.value.trim();
+                            if (value) {
+                                url.searchParams.set(input.name, value);
+                            } else {
+                                url.searchParams.delete(input.name);
+                            }
+                        });
+                    } else {
+                        if (qInput && qInput.value.trim() && !url.searchParams.has('q') && !url.searchParams.has('search')) {
+                            url.searchParams.set(qInput.name || 'q', qInput.value.trim());
+                        }
+                        if (catSelect && catSelect.value && !url.searchParams.has('category_id')) {
+                            url.searchParams.set('category_id', catSelect.value);
+                        }
                     }
                 }
 
@@ -669,7 +774,16 @@ export function initFeedShell(shell) {
         // Clear filter link click
         const clearFilterLink = event.target.closest('a[data-feed-clear-filter]');
         if (clearFilterLink && !clearFilterLink.target && !clearFilterLink.hasAttribute('download')) {
-            const url = new URL(clearFilterLink.href, window.location.href);
+            const url = clearFilterLink.hasAttribute('data-feed-clear-current-filters')
+                ? new URL(currentUrl.href)
+                : new URL(clearFilterLink.href, window.location.href);
+
+            if (clearFilterLink.hasAttribute('data-feed-clear-current-filters')) {
+                ['q', 'search', 'category_id', 'author', 'from_date', 'to_date', 'page'].forEach((parameter) => {
+                    url.searchParams.delete(parameter);
+                });
+            }
+
             if (supportsUrl(url) && !url.hash) {
                 event.preventDefault();
                 navigate(url, { historyMode: 'push', isPagination: false });

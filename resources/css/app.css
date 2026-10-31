@@ -2203,6 +2203,11 @@ html[data-theme="light"] span.theme-text-dark {
   color: var(--color-text) !important;
   box-shadow: var(--shadow-lg);
 }
+#global-toast-container .toast-body,
+#global-toast-container .toast-body span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 [data-theme="dark"] .toast.bg-danger {
   background-color: #991b1b !important;
   border: 1px solid #dc2626 !important;

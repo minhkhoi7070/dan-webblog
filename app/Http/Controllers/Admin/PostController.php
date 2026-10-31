@@ -25,6 +25,18 @@ class PostController extends Controller
             $search = null;
         }
 
+        $author = $request->query('author');
+        $author = is_string($author) ? trim($author) : null;
+        if ($author === '') {
+            $author = null;
+        }
+
+        $fromDate = $this->normalizeDateQuery($request->query('from_date'));
+        $toDate = $this->normalizeDateQuery($request->query('to_date'));
+        $dateRangeError = $fromDate !== null && $toDate !== null && $fromDate > $toDate
+            ? 'Ngày bắt đầu không được sau ngày kết thúc.'
+            : null;
+
         $status = $request->query('status');
         $status = is_string($status) ? trim($status) : null;
         if ($status === '') {
@@ -40,6 +52,9 @@ class PostController extends Controller
             ->when($status, fn ($q) => $q->where('status', $status))
             ->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))
             ->when($search, fn ($q) => $q->search($search))
+            ->when($author, fn ($q) => $q->whereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', "%{$author}%")))
+            ->when($fromDate !== null && $dateRangeError === null, fn ($q) => $q->whereDate('created_at', '>=', $fromDate))
+            ->when($toDate !== null && $dateRangeError === null, fn ($q) => $q->whereDate('created_at', '<=', $toDate))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -61,6 +76,10 @@ class PostController extends Controller
             'currentStatus' => $status,
             'currentCategory' => $categoryId,
             'search' => $search,
+            'currentAuthor' => $author,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'dateRangeError' => $dateRangeError,
             'statusCounts' => $statusCounts,
         ];
 
@@ -76,6 +95,27 @@ class PostController extends Controller
             ->view('admin.posts.index', $viewData)
             ->header('Vary', 'X-BlogMNM-Feed')
             ->header('Cache-Control', 'private, no-store');
+    }
+
+    private function normalizeDateQuery(mixed $value): ?string
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        $date = trim($value);
+        $parsedDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+        $dateErrors = \DateTimeImmutable::getLastErrors();
+
+        if (
+            $parsedDate === false
+            || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))
+            || $parsedDate->format('Y-m-d') !== $date
+        ) {
+            return null;
+        }
+
+        return $date;
     }
 
     /**

@@ -1,4 +1,5 @@
 import { InteractionState } from './interaction-state';
+import { Toast as BootstrapToast } from 'bootstrap';
 
 const initializeInteractions = () => {
     const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
@@ -41,7 +42,7 @@ const initializeInteractions = () => {
     };
     window.showToast = showToast;
     document.querySelectorAll('#global-toast-container .toast').forEach((toast) => {
-        window.bootstrap?.Toast?.getOrCreateInstance(toast).show();
+        BootstrapToast.getOrCreateInstance(toast).show();
         toast.addEventListener('hidden.bs.toast', () => toast.remove(), { once: true });
     });
 
