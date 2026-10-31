@@ -35,30 +35,6 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the localized login validation messages.
-     *
-     * @return array<string, string>
-     */
-    public function messages(): array
-    {
-        return [
-            'required' => trans('validation.required', locale: 'vi'),
-            'email' => trans('validation.email', locale: 'vi'),
-            'string' => trans('validation.string', locale: 'vi'),
-        ];
-    }
-
-    /**
-     * Get the localized login field names.
-     *
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        return trans('validation.attributes', locale: 'vi');
-    }
-
-    /**
      * Attempt to authenticate the request's credentials.
      *
      * @throws ValidationException
@@ -67,31 +43,31 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $message = trans('auth.failed', locale: 'vi');
+        $message = trans('auth.failed');
 
-        $authenticated = Auth::guard($guard)->attemptWhen(
+        $guardInstance = Auth::guard($guard);
+
+        $authenticated = $guardInstance->attempt(
             $this->only('email', 'password'),
-            function (User $user) use ($guard, $requireAdmin, &$message): bool {
-                if ($guard === 'web' && ! in_array($user->role, ['viewer', 'author'], true)) {
-                    return false;
-                }
-
-                if ($user->is_locked) {
-                    $message = trans('auth.locked', locale: 'vi');
-
-                    return false;
-                }
-
-                if ($requireAdmin && ! $user->isAdmin()) {
-                    $message = trans('auth.admin_only', locale: 'vi');
-
-                    return false;
-                }
-
-                return true;
-            },
             $this->boolean('remember'),
         );
+
+        if ($authenticated) {
+            /** @var User $user */
+            $user = $guardInstance->user();
+
+            if ($user->is_locked) {
+                $message = 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.';
+                $authenticated = false;
+            } elseif ($requireAdmin && ! $user->isAdmin()) {
+                $message = 'Tài khoản này không có quyền quản trị.';
+                $authenticated = false;
+            }
+
+            if (! $authenticated) {
+                $guardInstance->logout();
+            }
+        }
 
         if (! $authenticated) {
             RateLimiter::hit($this->throttleKey());
@@ -123,7 +99,7 @@ class LoginRequest extends FormRequest
             'email' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
-            ], 'vi'),
+            ]),
         ]);
     }
 
