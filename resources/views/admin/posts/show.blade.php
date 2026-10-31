@@ -126,7 +126,7 @@
 
     <!-- Right Sidebar Metadata & Quick Actions -->
     <div class="col-12 col-lg-4">
-        <div class="d-flex flex-column gap-3.5">
+        <div class="d-flex flex-column gap-3">
             <!-- Metadata Card -->
             <div class="card p-4 border-theme bg-theme-surface shadow-xs rounded-xl">
                 <h3 class="label-uppercase text-theme-muted mb-3.5" style="font-size: 11px;">Thông tin Thẩm định</h3>
@@ -135,19 +135,19 @@
                     <span class="small text-theme-muted d-block mb-1" style="font-size: 12px;">Trạng thái hiện tại:</span>
                     @if($post->status === 'published')
                         <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill" style="font-size: 11.5px;">
-                            Đã xuất bản (Published)
+                            Đã xuất bản
                         </span>
                     @elseif($post->status === 'pending')
-                        <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-25 rounded-pill" style="font-size: 11.5px;">
-                            Chờ thẩm định (Pending)
+                        <span class="badge admin-post-status-pending bg-warning-subtle text-warning border border-warning border-opacity-25 rounded-pill" style="font-size: 11.5px;">
+                            Chờ thẩm định
                         </span>
                     @elseif($post->status === 'rejected')
                         <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill" style="font-size: 11.5px;">
-                            Bị từ chối (Rejected)
+                            Bị từ chối
                         </span>
                     @else
                         <span class="badge bg-surface-2 text-theme-muted border border-theme rounded-pill" style="font-size: 11.5px;">
-                            Bản nháp (Draft)
+                            Bản nháp
                         </span>
                     @endif
                 </div>

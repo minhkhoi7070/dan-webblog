@@ -31,7 +31,7 @@
 
             <div>
                 <label for="name" class="label-uppercase text-theme mb-1.5 d-block">
-                    Tên thẻ (Tag Name) <span class="text-danger">*</span>
+                    Tên thẻ <span class="text-danger">*</span>
                 </label>
                 <div class="input-group">
                     <span class="input-group-text bg-surface-2 border-theme text-theme-muted font-monospace">#</span>
@@ -55,7 +55,7 @@
 
             <div>
                 <label for="slug" class="label-uppercase text-theme mb-1.5 d-block">
-                    Đường dẫn tĩnh (Slug URL) <span class="text-danger">*</span>
+                    Đường dẫn tĩnh <span class="text-danger">*</span>
                 </label>
                 <input
                     type="text"

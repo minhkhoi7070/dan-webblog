@@ -47,12 +47,12 @@
                 </div>
                 <p class="small mb-0 status-banner-desc" style="font-size: 13px; line-height: 1.45;">
                     @if($status === 'pending')
-                        Bài viết đã được gửi đến Admin. Nội dung sẽ hiển thị công khai sau khi được phê duyệt.
+                        Bài viết đã được gửi đến ban quản trị. Nội dung sẽ hiển thị công khai sau khi được phê duyệt.
                     @elseif($status === 'rejected')
                         @if(auth()->user()?->isAdmin())
                             Vui lòng rà soát lại tiêu đề, tóm tắt và nội dung bài viết theo tiêu chuẩn cộng đồng, sau đó nhấn <strong>"Đăng bài ngay"</strong> ở góc phải để xuất bản bài viết.
                         @else
-                            Vui lòng rà soát lại tiêu đề, tóm tắt và nội dung bài viết theo tiêu chuẩn cộng đồng, sau đó nhấn <strong>"Gửi bài viết để Admin duyệt"</strong> ở góc phải để gửi lại cho Ban biên tập.
+                            Vui lòng rà soát lại tiêu đề, tóm tắt và nội dung bài viết theo tiêu chuẩn cộng đồng, sau đó nhấn <strong>"Gửi bài viết để ban quản trị duyệt"</strong> ở góc phải để gửi lại cho Ban biên tập.
                         @endif
                     @elseif($status === 'published')
                         Bài viết đang hiển thị công khai trên CloudBlog. Mọi chỉnh sửa của bạn sẽ được cập nhật trực tiếp.

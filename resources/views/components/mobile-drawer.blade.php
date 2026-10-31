@@ -25,7 +25,7 @@
                 </div>
                 <span class="sidebar-account__badge flex-shrink-0 ms-auto {{ Auth::user()->isAdmin() ? 'sidebar-account__badge--admin' : (Auth::user()->isAuthor() ? 'sidebar-account__badge--author' : 'sidebar-account__badge--viewer') }}"
                       style="margin-left: 10px;">
-                    {{ Auth::user()->isAdmin() ? 'Admin' : (Auth::user()->isAuthor() ? 'Tác giả' : 'Độc giả') }}
+                    {{ Auth::user()->isAdmin() ? 'Quản trị viên' : (Auth::user()->isAuthor() ? 'Tác giả' : 'Độc giả') }}
                 </span>
             </a>
         @endauth

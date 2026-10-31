@@ -2344,6 +2344,11 @@ html[data-theme="light"] span.theme-text-dark {
   color: #facc15 !important;
   border: 1px solid rgba(245, 158, 11, 0.3) !important;
 }
+[data-theme="light"] .badge-status-pending {
+  background-color: #FFFBEB !important;
+  color: #92400E !important;
+  border-color: #FDE68A !important;
+}
 .badge-status-draft {
   background-color: rgba(59, 130, 246, 0.15) !important;
   color: #93c5fd !important;
@@ -2371,6 +2376,11 @@ html[data-theme="light"] span.theme-text-dark {
   border: 1px solid var(--color-border) !important;
   color: var(--color-text) !important;
   box-shadow: var(--shadow-lg);
+}
+#global-toast-container .toast-body,
+#global-toast-container .toast-body span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 [data-theme="dark"] .toast.bg-danger {
   background-color: #991b1b !important;
@@ -3391,6 +3401,9 @@ figcaption.editor-image-caption {
   background-color: var(--color-surface-2);
   box-shadow: 0 0 0 1px var(--color-interactive);
   transform: none !important;
+}
+html[data-theme="light"] .dashboard-stat-pending .text-warning {
+  color: #92400E !important;
 }
 
 /* ------------------------------------------------------------
@@ -6297,6 +6310,19 @@ html.dark .btn-action-delete:hover {
 }
 
 /* Scoped moderation colors; keep Bootstrap sizing and disabled opacity. */
+html[data-theme="light"] .admin-post-status-pending {
+  color: #92400E !important;
+  background-color: #FFFBEB !important;
+  border-color: #FDE68A !important;
+}
+
+html[data-theme="dark"] .admin-post-status-pending,
+html.dark .admin-post-status-pending {
+  color: #FDE68A !important;
+  background-color: #382A16 !important;
+  border-color: #785622 !important;
+}
+
 html[data-theme="light"] .admin-comments-pending {
   color: #92400E !important;
   background-color: #FFFBEB !important;
@@ -7292,6 +7318,10 @@ html.dark .macos-appearance-check {
 }
 
 /* 6. Password Wrap & Eye Toggle */
+.macos-password-wrap .macos-input.is-invalid {
+  background-position: right 2.75rem center !important;
+}
+
 .macos-password-wrap .btn-toggle-password {
   cursor: pointer;
   width: 32px;
@@ -8177,6 +8207,72 @@ html[data-theme="light"] .register-page-body .brand-link > span {
 
   .admin-user-detail__activity-card {
     padding: 18px !important;
+  }
+}
+
+/* Author post edit toolbar: compact mobile layout only. */
+@media (max-width: 767.98px) {
+  .author-post-edit-page .editor-top-toolbar {
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 12px !important;
+  }
+
+  .author-post-edit-page .editor-toolbar-left {
+    width: 100%;
+  }
+
+  .author-post-edit-page .editor-toolbar-left > div > .d-flex:last-child {
+    height: auto !important;
+    min-height: 28px;
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .author-post-edit-page .editor-toolbar-actions {
+    display: flex !important;
+    width: 100%;
+    gap: 8px !important;
+    justify-content: flex-start;
+    overflow: visible !important;
+    padding: 0 !important;
+    white-space: normal !important;
+  }
+
+  .author-post-edit-page .editor-toolbar-actions > .btn {
+    display: inline-flex;
+    flex: 1 1 0;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding-right: 8px !important;
+    padding-left: 8px !important;
+    font-size: 12.5px;
+    white-space: normal;
+  }
+
+  .author-post-edit-page .editor-status-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 4px;
+  }
+
+  .author-post-edit-page .editor-status-bar > .d-flex {
+    flex-wrap: wrap;
+    gap: 4px 8px !important;
+    line-height: 1.4;
+  }
+
+  .author-post-edit-page .editor-status-bar > .d-flex > span {
+    white-space: nowrap;
+  }
+
+  .author-post-edit-page .editor-status-bar > span {
+    max-width: 100%;
+    line-height: 1.4;
   }
 }
 

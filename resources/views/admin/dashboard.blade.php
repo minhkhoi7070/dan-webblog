@@ -414,34 +414,6 @@
         }
     }
 
-    @keyframes realtime-pulse {
-        0% { transform: scale(0.95); opacity: 0.8; }
-        50% { transform: scale(1.2); opacity: 1; }
-        100% { transform: scale(0.95); opacity: 0.8; }
-    }
-
-    .admin-dashboard .realtime-live-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.35rem 0.75rem;
-        border-radius: 999px;
-        background: rgba(22, 163, 74, 0.12);
-        border: 1px solid rgba(22, 163, 74, 0.3);
-        color: #16a34a;
-        font-size: 11px;
-        font-weight: 650;
-        letter-spacing: 0.02em;
-    }
-
-    .admin-dashboard .realtime-live-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 999px;
-        background-color: #16a34a;
-        animation: realtime-pulse 2s infinite ease-in-out;
-    }
-
     .admin-dashboard .metric-value,
     .admin-dashboard .status-value {
         transition: color 0.4s ease, transform 0.4s ease;
@@ -482,10 +454,6 @@
                 <h2 id="overview-heading" class="dashboard-section-title">Chỉ số vận hành</h2>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <div class="realtime-live-badge" title="Hệ thống đang đồng bộ dữ liệu thời gian thực (Real-time)">
-                    <span class="realtime-live-dot" aria-hidden="true"></span>
-                    <span>Real-time</span>
-                </div>
                 {{-- Live Clock: 3-box widget (HH / MM / SS) --}}
                 <div id="admin-live-clock"
                      class="d-flex align-items-center gap-1"

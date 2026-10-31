@@ -38,7 +38,7 @@
                         </a>
                         <span class="text-theme-muted small opacity-50">&bull;</span>
                         <span class="small text-theme-muted flex-shrink-0" title="{{ $post->published_at ? $post->published_at->format('d/m/Y H:i') : $post->created_at->format('d/m/Y H:i') }}">
-                            {{ $post->published_at ? $post->published_at->format('d M, Y') : $post->created_at->format('d M, Y') }}
+                            {{ $post->published_at ? $post->published_at->format('d/m/Y') : $post->created_at->format('d/m/Y') }}
                         </span>
                     </div>
                     <div class="small text-theme-muted text-truncate mt-0.5" style="font-size: 12px;">

@@ -193,14 +193,15 @@ export function updateMobileHeader(targetUrl) {
     }
 
     const isHome = (path === '/' || path === '/posts');
+    const isPostEdit = /^\/posts\/[^/]+\/edit$/.test(path);
     let subTitle = null;
 
-    if (path.startsWith('/posts/') && path !== '/posts/create' && path !== '/posts/stats') {
-        subTitle = 'Chi tiết bài viết';
-    } else if (path === '/posts/create') {
+    if (path === '/posts/create') {
         subTitle = 'Viết bài mới';
-    } else if (path.includes('/edit')) {
-        subTitle = 'Chỉnh sửa bài';
+    } else if (isPostEdit) {
+        subTitle = 'Chỉnh sửa bài viết';
+    } else if (path.startsWith('/posts/') && path !== '/posts/stats') {
+        subTitle = 'Chi tiết bài viết';
     } else if (path === '/posts/stats' || path.startsWith('/author/posts')) {
         subTitle = 'Quản lý bài viết';
     } else if (path.startsWith('/author/comments')) {
@@ -235,9 +236,14 @@ export function updateMobileHeader(targetUrl) {
             </a>
         `;
     } else {
+        const backHref = isPostEdit
+            ? '/posts/stats'
+            : "javascript:history.length > 1 ? history.back() : window.location.href='/'";
+        const backNavigationAttribute = isPostEdit ? 'data-app-nav' : '';
+
         leftEl.innerHTML = `
             <div class="d-flex align-items-center gap-2 min-w-0">
-                <a href="javascript:history.length > 1 ? history.back() : window.location.href='/'"
+                <a href="${backHref}" ${backNavigationAttribute}
                    class="btn btn-sm btn-link text-theme p-0 d-flex align-items-center justify-content-center rounded-3 text-decoration-none flex-shrink-0"
                    style="width: 40px; height: 40px;"
                    aria-label="Quay lại"

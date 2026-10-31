@@ -30,7 +30,7 @@
                             {{ '@' . ($author->username ?? strtolower(str_replace(' ', '', $author->name))) }}
                         </span>
                         <x-badge variant="status-draft" size="xs" class="text-capitalize">
-                            {{ $author->role }}
+                            {{ $author->role === 'admin' ? 'Quản trị viên' : ($author->role === 'author' ? 'Tác giả' : 'Người đọc') }}
                         </x-badge>
                     </div>
                 </div>

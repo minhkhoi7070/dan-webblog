@@ -300,7 +300,7 @@ class PostController extends Controller
         }
 
         return redirect()->route('posts.edit', $post)
-            ->with('success', 'Bài viết đã được tạo thành công dưới dạng Bản nháp (Draft).');
+            ->with('success', 'Bản nháp đã được tạo thành công.');
     }
 
     /**

@@ -3,6 +3,19 @@
 @section('admin_title', 'Quản lý bài viết')
 
 @section('admin_content')
+@php
+    $clearFilterQuery = request()->query();
+    unset(
+        $clearFilterQuery['q'],
+        $clearFilterQuery['search'],
+        $clearFilterQuery['category_id'],
+        $clearFilterQuery['author'],
+        $clearFilterQuery['from_date'],
+        $clearFilterQuery['to_date'],
+        $clearFilterQuery['page']
+    );
+@endphp
+
 <div data-feed-shell
      data-feed-base-url="{{ route('admin.posts.index') }}"
      data-feed-target="#feed-results"
@@ -11,7 +24,7 @@
     <!-- Status Tabs (Horizontal Scrollable Chips on Mobile, Pill Segment Filter) -->
     <div class="d-flex flex-nowrap overflow-x-auto align-items-center gap-2 mb-3 py-1 admin-posts-status-tabs" data-feed-status-tabs tabindex="0" role="region" aria-label="Các trạng thái bài viết, có thể cuộn ngang">
         <a
-            href="{{ route('admin.posts.index', array_filter(['q' => $search, 'category_id' => $currentCategory])) }}"
+            href="{{ route('admin.posts.index', array_filter(['q' => $search, 'category_id' => $currentCategory, 'author' => $currentAuthor, 'from_date' => $fromDate, 'to_date' => $toDate])) }}"
             data-feed-tab=""
             data-active-class="btn-editorial-primary text-white"
             data-inactive-class="btn-outline-theme text-theme-secondary"
@@ -22,7 +35,7 @@
             Tất cả <span class="opacity-75 ms-1" data-feed-count="all">({{ number_format($statusCounts['all']) }})</span>
         </a>
         <a
-            href="{{ route('admin.posts.index', array_filter(['status' => 'pending', 'q' => $search, 'category_id' => $currentCategory])) }}"
+            href="{{ route('admin.posts.index', array_filter(['status' => 'pending', 'q' => $search, 'category_id' => $currentCategory, 'author' => $currentAuthor, 'from_date' => $fromDate, 'to_date' => $toDate])) }}"
             data-feed-tab="pending"
             data-active-class="btn-warning text-dark fw-bold"
             data-inactive-class="btn-outline-theme text-warning"
@@ -33,7 +46,7 @@
             Chờ duyệt <span class="opacity-75 ms-1" data-feed-count="pending">({{ number_format($statusCounts['pending']) }})</span>
         </a>
         <a
-            href="{{ route('admin.posts.index', array_filter(['status' => 'published', 'q' => $search, 'category_id' => $currentCategory])) }}"
+            href="{{ route('admin.posts.index', array_filter(['status' => 'published', 'q' => $search, 'category_id' => $currentCategory, 'author' => $currentAuthor, 'from_date' => $fromDate, 'to_date' => $toDate])) }}"
             data-feed-tab="published"
             data-active-class="btn-success text-white fw-bold"
             data-inactive-class="btn-outline-theme text-success"
@@ -44,7 +57,7 @@
             Đã xuất bản <span class="opacity-75 ms-1" data-feed-count="published">({{ number_format($statusCounts['published']) }})</span>
         </a>
         <a
-            href="{{ route('admin.posts.index', array_filter(['status' => 'rejected', 'q' => $search, 'category_id' => $currentCategory])) }}"
+            href="{{ route('admin.posts.index', array_filter(['status' => 'rejected', 'q' => $search, 'category_id' => $currentCategory, 'author' => $currentAuthor, 'from_date' => $fromDate, 'to_date' => $toDate])) }}"
             data-feed-tab="rejected"
             data-active-class="btn-danger text-white fw-bold"
             data-inactive-class="btn-outline-theme text-danger"
@@ -56,56 +69,32 @@
         </a>
     </div>
 
-    <!-- Search & Category Filters (Unified Height Toolbar) -->
+    <!-- Admin posts filters -->
     <div class="card p-3 border-theme bg-theme-surface shadow-xs rounded-xl mb-4 admin-posts-filter-card">
-        <form action="{{ route('admin.posts.index') }}" method="GET" class="admin-posts-filter-form" data-feed-filter-form>
+        <h2 class="admin-posts-filter-heading">Bộ lọc bài viết</h2>
+
+        <form action="{{ route('admin.posts.index') }}" method="GET" class="admin-posts-filter-form" data-feed-filter-form data-admin-posts-filter-form>
             <input type="hidden" name="status" value="{{ $currentStatus }}">
 
             <div class="admin-posts-filter-search">
+                <label class="admin-posts-filter-label" for="admin-posts-title-search">Tiêu đề bài viết</label>
                 <div class="position-relative w-100">
                     <span
                         class="position-absolute d-flex align-items-center justify-content-center text-theme-muted"
-                        style="
-                            left: 14px;
-                            top: 50%;
-                            width: 18px;
-                            height: 18px;
-                            transform: translateY(-50%);
-                            pointer-events: none;
-                            z-index: 2;
-                        "
+                        style="left: 14px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); pointer-events: none; z-index: 2;"
                         aria-hidden="true"
                     >
-                        <svg
-                            width="16"
-                            height="16"
-                            style="display: block;"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="1.8"
-                                d="m21 21-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
-                            />
+                        <svg width="16" height="16" style="display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m21 21-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </span>
-
                     <input
+                        id="admin-posts-title-search"
                         type="search"
                         name="q"
                         value="{{ $search }}"
                         class="form-control bg-surface-2 border-theme text-theme rounded-pill w-100"
                         placeholder="Tìm theo tiêu đề bài viết..."
-                        style="
-                            height: 40px;
-                            min-height: 40px;
-                            padding-left: 42px;
-                            padding-right: 16px;
-                            font-size: 13.5px;
-                        "
                         autocomplete="off"
                         aria-label="Tìm kiếm bài viết"
                     >
@@ -113,10 +102,11 @@
             </div>
 
             <div class="admin-posts-filter-category">
+                <label class="admin-posts-filter-label" for="admin-posts-category">Chuyên mục</label>
                 <select
+                    id="admin-posts-category"
                     name="category_id"
                     class="form-select form-control-editorial rounded-pill w-100"
-                    style="height: 40px; font-size: 13px; padding-right: 2.75rem; background-position: right 0.9rem center;"
                     aria-label="Chọn chuyên mục"
                 >
                     <option value="">-- Tất cả chuyên mục --</option>
@@ -126,10 +116,91 @@
                 </select>
             </div>
 
-            <div class="admin-posts-filter-submit">
-                <button type="submit" class="btn btn-editorial-primary rounded-pill w-100 fw-semibold d-inline-flex align-items-center justify-content-center" style="height: 40px; font-size: 13px; white-space: nowrap;">
+            <div class="admin-posts-filter-author">
+                <label class="admin-posts-filter-label" for="admin-posts-author">Tên tác giả</label>
+                <input
+                    id="admin-posts-author"
+                    type="search"
+                    name="author"
+                    value="{{ $currentAuthor }}"
+                    class="form-control bg-surface-2 border-theme text-theme rounded-pill w-100"
+                    placeholder="Nhập tên tác giả..."
+                    maxlength="120"
+                    autocomplete="off"
+                    data-feed-filter-param
+                >
+            </div>
+
+            <div class="admin-posts-filter-date-toggle-wrap">
+                <button
+                    type="button"
+                    class="btn btn-outline-theme rounded-pill admin-posts-filter-date-toggle"
+                    data-admin-posts-date-toggle
+                    aria-expanded="{{ $fromDate || $toDate ? 'true' : 'false' }}"
+                    aria-controls="admin-posts-date-fields"
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
+                        <path d="M7.5 3.5v3M16.5 3.5v3M3.5 9.5h17M8 13h.01M12 13h.01M16 13h.01M8 16.5h.01M12 16.5h.01" stroke-linecap="round" />
+                    </svg>
+                    <span>Lọc theo ngày</span>
+                    <svg class="admin-posts-filter-date-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+
+            <div
+                id="admin-posts-date-fields"
+                class="admin-posts-date-fields"
+                data-admin-posts-date-fields
+                @if(! $fromDate && ! $toDate) hidden @endif
+            >
+                <div class="admin-posts-date-field">
+                    <label class="admin-posts-filter-label" for="admin-posts-from-date">Từ ngày</label>
+                    <input
+                        id="admin-posts-from-date"
+                        type="date"
+                        name="from_date"
+                        value="{{ $fromDate }}"
+                        class="form-control bg-surface-2 border-theme text-theme rounded-pill w-100"
+                        data-feed-filter-param
+                        data-admin-posts-from-date
+                    >
+                </div>
+                <div class="admin-posts-date-field">
+                    <label class="admin-posts-filter-label" for="admin-posts-to-date">Đến ngày</label>
+                    <input
+                        id="admin-posts-to-date"
+                        type="date"
+                        name="to_date"
+                        value="{{ $toDate }}"
+                        class="form-control bg-surface-2 border-theme text-theme rounded-pill w-100"
+                        data-feed-filter-param
+                        data-admin-posts-to-date
+                    >
+                </div>
+                <p
+                    class="admin-posts-date-error"
+                    data-admin-posts-date-error
+                    role="alert"
+                    aria-live="polite"
+                    @if(! $dateRangeError) hidden @endif
+                >{{ $dateRangeError }}</p>
+            </div>
+
+            <div class="admin-posts-filter-actions">
+                <button type="submit" class="btn btn-editorial-primary rounded-pill fw-semibold d-inline-flex align-items-center justify-content-center">
                     Lọc kết quả
                 </button>
+                <a
+                    href="{{ route('admin.posts.index', $clearFilterQuery) }}"
+                    data-feed-clear-filter
+                    data-feed-clear-current-filters
+                    class="btn btn-outline-theme rounded-pill fw-semibold d-inline-flex align-items-center justify-content-center"
+                >
+                    Xóa bộ lọc
+                </a>
             </div>
         </form>
     </div>
@@ -171,11 +242,18 @@
         container-name: admin-posts-filter;
         container-type: inline-size;
     }
+    .admin-posts-filter-heading {
+        margin: 0 0 12px;
+        color: var(--color-text);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.4;
+    }
     .admin-posts-filter-form {
         display: grid;
-        grid-template-columns: minmax(0, 6fr) minmax(190px, 4fr) minmax(128px, 2fr);
-        align-items: center;
-        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: end;
+        gap: 12px;
         min-width: 0;
     }
     .admin-posts-filter-form > div {
@@ -185,38 +263,137 @@
     .admin-posts-filter-search .position-relative,
     .admin-posts-filter-search input,
     .admin-posts-filter-category select,
-    .admin-posts-filter-submit button {
+    .admin-posts-filter-author input,
+    .admin-posts-date-field input,
+    .admin-posts-filter-actions .btn {
+        box-sizing: border-box;
+        height: 46px;
+        min-height: 46px;
         min-width: 0;
         max-width: 100%;
     }
+    .admin-posts-filter-label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--color-text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.35;
+    }
+    .admin-posts-filter-search input {
+        padding-right: 16px;
+        padding-left: 42px;
+        font-size: 14px;
+    }
+    .admin-posts-filter-search input::placeholder {
+        color: var(--color-text-secondary);
+        opacity: 1;
+    }
+    .admin-posts-filter-search,
+    .admin-posts-filter-date-toggle-wrap,
+    .admin-posts-date-fields,
+    .admin-posts-filter-actions {
+        grid-column: 1 / -1;
+    }
     .admin-posts-filter-category select {
+        font-size: 14px;
         padding-right: 2.75rem;
         background-position: right 0.9rem center;
     }
-    .admin-posts-filter-submit button {
+    .admin-posts-filter-author input,
+    .admin-posts-date-field input {
+        padding-right: 14px;
+        padding-left: 14px;
+        font-size: 14px;
+    }
+    .admin-posts-filter-author input::placeholder {
+        color: var(--color-text-secondary);
+        opacity: 1;
+    }
+    .admin-posts-filter-date-toggle {
+        display: inline-flex;
+        min-height: 46px;
+        align-items: center;
+        gap: 10px;
+        padding: 0 16px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .admin-posts-filter-date-chevron {
+        margin-left: auto;
+        transition: transform 160ms ease;
+    }
+    .admin-posts-filter-date-toggle[aria-expanded="true"] .admin-posts-filter-date-chevron {
+        transform: rotate(180deg);
+    }
+    .admin-posts-date-fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        min-width: 0;
+        padding: 14px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        background: var(--color-surface-2);
+    }
+    .admin-posts-date-fields[hidden] {
+        display: none;
+    }
+    .admin-posts-date-field {
+        min-width: 0;
+    }
+    .admin-posts-date-error {
+        grid-column: 1 / -1;
+        margin: 0;
+        color: var(--bs-danger);
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    .admin-posts-filter-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        min-width: 0;
+    }
+    .admin-posts-filter-actions .btn {
+        min-width: 152px;
+        padding-right: 10px;
+        padding-left: 10px;
+        font-size: 13px;
         white-space: nowrap;
     }
-    @container admin-posts-filter (max-width: 760px) {
-        .admin-posts-filter-form {
-            grid-template-columns: minmax(0, 1fr) minmax(128px, 0.55fr);
-        }
-        .admin-posts-filter-search {
-            grid-column: 1 / -1;
-        }
-        .admin-posts-filter-category {
-            grid-column: 1;
-        }
-        .admin-posts-filter-submit {
-            grid-column: 2;
-        }
+    .admin-posts-filter-form :is(input, select, .btn):focus-visible {
+        outline: 2px solid var(--color-interactive);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 3px var(--color-interactive-soft);
     }
     @container admin-posts-filter (max-width: 440px) {
         .admin-posts-filter-form {
             grid-template-columns: minmax(0, 1fr);
         }
+        .admin-posts-filter-search input,
+        .admin-posts-filter-category select,
+        .admin-posts-filter-author input,
+        .admin-posts-date-field input {
+            font-size: 16px;
+        }
         .admin-posts-filter-category,
-        .admin-posts-filter-submit {
+        .admin-posts-filter-author,
+        .admin-posts-filter-actions {
             grid-column: 1;
+        }
+        .admin-posts-date-fields {
+            grid-template-columns: minmax(0, 1fr);
+            padding: 12px;
+        }
+        .admin-posts-filter-actions {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .admin-posts-filter-actions .btn {
+            width: 100%;
         }
     }
 

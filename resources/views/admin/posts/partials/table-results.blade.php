@@ -108,9 +108,9 @@
                             <!-- Interactions (Centered Vertical Stack) -->
                             <td class="ap-col py-3 col-interact text-center" data-label="Tương tác">
                                 <div class="ap-interact text-theme-secondary">
-                                    <span>{{ number_format($post->views) }} views</span>
-                                    <span>{{ number_format($post->likers_count) }} likes</span>
-                                    <span>{{ number_format($post->comments_count) }} cmt</span>
+                                    <span>{{ number_format($post->views) }} lượt xem</span>
+                                    <span>{{ number_format($post->likers_count) }} lượt thích</span>
+                                    <span>{{ number_format($post->comments_count) }} bình luận</span>
                                 </div>
                             </td>
 

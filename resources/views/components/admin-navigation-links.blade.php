@@ -19,13 +19,13 @@
     <div class="{{ $listClass }}">
         <a href="{{ route('admin.dashboard') }}"
            class="{{ $linkClass }} {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
-           title="Dashboard Quản trị"
-           aria-label="Dashboard"
+           title="Bảng điều khiển quản trị"
+           aria-label="Bảng điều khiển quản trị"
            @if($isDrawer) data-bs-dismiss="offcanvas" data-app-nav @endif>
             <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
             </svg>
-            <span class="{{ $isDrawer ? 'small' : 'sidebar-label small' }}">Dashboard</span>
+            <span class="{{ $isDrawer ? 'small' : 'sidebar-label small' }}">Bảng điều khiển</span>
         </a>
 
         <a href="{{ route('admin.users.index') }}"
@@ -63,13 +63,13 @@
 
         <a href="{{ route('admin.tags.index') }}"
            class="{{ $linkClass }} {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}"
-           title="Quản lý Tags"
-           aria-label="Quản lý Tags"
+           title="Quản lý thẻ bài viết"
+           aria-label="Quản lý thẻ bài viết"
            @if($isDrawer) data-bs-dismiss="offcanvas" data-app-nav @endif>
             <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
             </svg>
-            <span class="{{ $isDrawer ? 'small' : 'sidebar-label small' }}">Quản lý Tags</span>
+            <span class="{{ $isDrawer ? 'small' : 'sidebar-label small' }}">Quản lý thẻ bài viết</span>
         </a>
 
         <a href="{{ route('admin.comments.index') }}"

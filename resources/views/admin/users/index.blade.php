@@ -73,9 +73,9 @@
                     aria-label="Lọc theo vai trò"
                 >
                     <option value="">-- Tất cả vai trò --</option>
-                    <option value="admin" @selected($roleFilter === 'admin')>Admin (Quản trị)</option>
-                    <option value="author" @selected($roleFilter === 'author')>Author (Tác giả)</option>
-                    <option value="viewer" @selected($roleFilter === 'viewer')>Viewer (Độc giả)</option>
+                    <option value="admin" @selected($roleFilter === 'admin')>Quản trị viên</option>
+                    <option value="author" @selected($roleFilter === 'author')>Tác giả</option>
+                    <option value="viewer" @selected($roleFilter === 'viewer')>Độc giả</option>
                 </select>
             </div>
 

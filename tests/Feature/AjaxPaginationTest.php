@@ -374,4 +374,108 @@ class AjaxPaginationTest extends TestCase
             ->assertSee('category_id='.$cat->id)
             ->assertDontSee('<!DOCTYPE html>', false);
     }
+
+    public function test_admin_posts_filter_by_author_and_date_without_showing_drafts(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $author = User::factory()->author()->create(['name' => 'Merge Writer']);
+        $otherAuthor = User::factory()->author()->create(['name' => 'Other Writer']);
+        $category = Category::factory()->create();
+        $otherCategory = Category::factory()->create();
+
+        $matchingPost = Post::factory()->pending()->create([
+            'user_id' => $author->id,
+            'category_id' => $category->id,
+            'title' => 'Merge target article',
+            'created_at' => '2026-10-20 12:00:00',
+        ]);
+        $draftPost = Post::factory()->create([
+            'user_id' => $author->id,
+            'category_id' => $category->id,
+            'title' => 'Merge private draft',
+            'created_at' => '2026-10-20 12:00:00',
+        ]);
+        $otherAuthorPost = Post::factory()->pending()->create([
+            'user_id' => $otherAuthor->id,
+            'category_id' => $category->id,
+            'title' => 'Merge other author',
+            'created_at' => '2026-10-20 12:00:00',
+        ]);
+        $otherCategoryPost = Post::factory()->pending()->create([
+            'user_id' => $author->id,
+            'category_id' => $otherCategory->id,
+            'title' => 'Merge other category',
+            'created_at' => '2026-10-20 12:00:00',
+        ]);
+        $outsideDatePost = Post::factory()->pending()->create([
+            'user_id' => $author->id,
+            'category_id' => $category->id,
+            'title' => 'Merge outside dates',
+            'created_at' => '2026-10-19 12:00:00',
+        ]);
+
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.posts.index', [
+            'q' => 'Merge',
+            'category_id' => $category->id,
+            'author' => 'Merge Writer',
+            'from_date' => '2026-10-20',
+            'to_date' => '2026-10-21',
+        ]));
+
+        $response->assertOk()
+            ->assertViewIs('admin.posts.index')
+            ->assertSee($matchingPost->title)
+            ->assertDontSee($draftPost->title)
+            ->assertDontSee($otherAuthorPost->title)
+            ->assertDontSee($otherCategoryPost->title)
+            ->assertDontSee($outsideDatePost->title)
+            ->assertDontSee('data-feed-tab="draft"', false)
+            ->assertSee(route('admin.posts.index', [
+                'status' => 'pending',
+                'q' => 'Merge',
+                'category_id' => $category->id,
+                'author' => 'Merge Writer',
+                'from_date' => '2026-10-20',
+                'to_date' => '2026-10-21',
+            ]));
+    }
+
+    public function test_admin_posts_ajax_pagination_keeps_author_and_date_filters(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $author = User::factory()->author()->create(['name' => 'Merge Writer']);
+        $category = Category::factory()->create();
+
+        for ($number = 1; $number <= 16; $number++) {
+            Post::factory()->pending()->create([
+                'user_id' => $author->id,
+                'category_id' => $category->id,
+                'title' => sprintf('Merged page %02d', $number),
+                'created_at' => sprintf('2026-10-20 12:%02d:00', $number),
+            ]);
+        }
+
+        $response = $this->actingAs($admin, 'admin')
+            ->withHeader('X-BlogMNM-Feed', '1')
+            ->get(route('admin.posts.index', [
+                'status' => 'pending',
+                'q' => 'Merged page',
+                'category_id' => $category->id,
+                'author' => 'Merge Writer',
+                'from_date' => '2026-10-20',
+                'to_date' => '2026-10-21',
+                'page' => 2,
+            ]));
+
+        $response->assertOk()
+            ->assertViewIs('admin.posts.partials.table-results')
+            ->assertSee('data-feed-total="16"', false)
+            ->assertSee('Merged page 01')
+            ->assertDontSee('Merged page 16')
+            ->assertSee('status=pending', false)
+            ->assertSee('category_id='.$category->id, false)
+            ->assertSee('author=Merge%20Writer', false)
+            ->assertSee('from_date=2026-10-20', false)
+            ->assertSee('to_date=2026-10-21', false);
+    }
 }

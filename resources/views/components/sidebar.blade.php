@@ -180,7 +180,7 @@
                             </span>
 
                             @if(Auth::user()->role === 'admin')
-                                <span class="sidebar-account__badge sidebar-account__badge--admin">Admin</span>
+                                <span class="sidebar-account__badge sidebar-account__badge--admin">Quản trị viên</span>
                             @elseif(Auth::user()->role === 'author')
                                 <span class="sidebar-account__badge sidebar-account__badge--author">Tác giả</span>
                             @else

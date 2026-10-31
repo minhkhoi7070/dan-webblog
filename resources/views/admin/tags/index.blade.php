@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('admin_title', 'Quản lý Thẻ bài viết (Tags)')
+@section('admin_title', 'Quản lý thẻ bài viết')
 
 @section('admin_content')
 <div data-feed-shell

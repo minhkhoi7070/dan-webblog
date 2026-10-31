@@ -87,9 +87,9 @@
                             <!-- Metrics -->
                             <td class="py-3 small text-theme-secondary">
                                 <div class="author-post-metrics author-post-metrics-table">
-                                    <span>{{ number_format($post->views) }} views</span>
-                                    <span>{{ $post->likers_count }} likes</span>
-                                    <span>{{ $post->comments_count }} cmt</span>
+                                    <span>{{ number_format($post->views) }} lượt xem</span>
+                                    <span>{{ $post->likers_count }} lượt thích</span>
+                                    <span>{{ $post->comments_count }} bình luận</span>
                                 </div>
                             </td>
 
@@ -108,7 +108,7 @@
                                                     <span>Đăng ngay</span>
                                                 </button>
                                             @else
-                                                <button type="submit" class="btn btn-action-table btn-action-submit" title="Gửi bài viết để Admin duyệt" aria-label="Gửi xét duyệt bài viết {{ $post->title }}">
+                                                <button type="submit" class="btn btn-action-table btn-action-submit" title="Gửi bài viết để ban quản trị duyệt" aria-label="Gửi xét duyệt bài viết {{ $post->title }}">
                                                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                                     </svg>
@@ -241,11 +241,11 @@
                     <!-- Stats and Actions -->
                     <div class="author-post-footer border-theme-top">
                         <div class="author-post-metrics small text-theme-muted">
-                            <span>{{ number_format($post->views) }} views</span>
+                            <span>{{ number_format($post->views) }} lượt xem</span>
                             <span>&bull;</span>
-                            <span>{{ $post->likers_count }} likes</span>
+                            <span>{{ $post->likers_count }} lượt thích</span>
                             <span>&bull;</span>
-                            <span>{{ $post->comments_count }} cmt</span>
+                            <span>{{ $post->comments_count }} bình luận</span>
                         </div>
 
                         <div class="author-post-actions author-post-actions-card">

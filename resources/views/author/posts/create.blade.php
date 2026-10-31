@@ -40,7 +40,7 @@
                     <span><span class="d-none d-sm-inline">Đăng bài ngay</span><span class="d-inline d-sm-none">Đăng ngay</span></span>
                 </button>
             @else
-                <button type="submit" form="create-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit editor-toolbar-compact-primary" title="Gửi bài viết để Admin duyệt">
+                <button type="submit" form="create-post-form" name="action" value="submit" class="btn btn-editorial-primary btn-sm rounded-pill px-3.5 px-sm-4 py-1.5 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5 btn-action-submit editor-toolbar-compact-primary" title="Gửi bài viết để ban quản trị duyệt">
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                     </svg>
@@ -49,16 +49,6 @@
             @endif
         </div>
     </div>
-
-    <!-- Success & Status Feedback -->
-    @if (session('success') || session('status'))
-        <div class="alert alert-success mb-4 shadow-xs border border-success border-opacity-25 rounded-3 d-flex align-items-center gap-2" role="alert">
-            <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <span class="small fw-medium">{{ session('success') ?? session('status') }}</span>
-        </div>
-    @endif
 
     @if (session('error'))
         <div class="alert alert-danger mb-4 shadow-xs border border-danger border-opacity-25 rounded-3 d-flex align-items-center gap-2" role="alert">

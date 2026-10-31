@@ -46,7 +46,7 @@ export class InteractionState {
     }
 
     applyServer(result) {
-        if (typeof result.state !== 'boolean') throw new Error('Invalid interaction response.');
+        if (typeof result.state !== 'boolean') throw new Error('Phản hồi tương tác không hợp lệ.');
         const previous = this.confirmed;
         this.confirmed = result.state;
         if (Number.isFinite(result.count)) this.count = Math.max(0, result.count);

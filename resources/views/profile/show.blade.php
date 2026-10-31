@@ -443,30 +443,6 @@
 
     <script>
         (function () {
-            function initProfileTabs() {
-                const tabs = document.querySelectorAll('[data-profile-tab-target]');
-                const panels = document.querySelectorAll('[data-profile-panel]');
-
-                tabs.forEach(function (tab) {
-                    if (tab.dataset.tabsBound) return;
-                    tab.dataset.tabsBound = 'true';
-
-                    tab.addEventListener('click', function () {
-                        const target = tab.getAttribute('data-profile-tab-target');
-
-                        tabs.forEach(function (t) {
-                            const isActive = t === tab;
-                            t.classList.toggle('active', isActive);
-                            t.setAttribute('aria-selected', isActive ? 'true' : 'false');
-                        });
-
-                        panels.forEach(function (panel) {
-                            panel.hidden = panel.getAttribute('data-profile-panel') !== target;
-                        });
-                    });
-                });
-            }
-
             function initProfileEditModal() {
                 const modalEl = document.getElementById('profileEditModal');
                 if (!modalEl || modalEl.dataset.initialized) return;
@@ -751,16 +727,13 @@
             }
 
             document.addEventListener('DOMContentLoaded', function () {
-                initProfileTabs();
                 initProfileEditModal();
             });
             document.addEventListener('blogmnm:page-navigated', function () {
-                initProfileTabs();
                 initProfileEditModal();
             });
 
             if (document.readyState === 'interactive' || document.readyState === 'complete') {
-                initProfileTabs();
                 initProfileEditModal();
             }
         })();

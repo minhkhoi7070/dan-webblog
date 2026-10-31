@@ -24,18 +24,6 @@
         </div>
     </div>
 
-    <!-- Success Feedback Message -->
-    @if(session('success'))
-        <div class="alert alert-success mb-4 shadow-xs border border-success border-opacity-25 rounded-3" role="alert">
-            <div class="d-flex align-items-center gap-2">
-                <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span class="small fw-medium">{{ session('success') }}</span>
-            </div>
-        </div>
-    @endif
-
     <!-- Statistics Grid (All 8 Metrics - Notion & Ghost Style) -->
     <div class="row g-3 mb-4">
         <!-- 1. Total Posts -->
@@ -58,7 +46,7 @@
 
         <!-- 3. Pending -->
         <div class="col-6 col-sm-3 col-xxl">
-            <a href="{{ route('posts.stats', ['status' => 'pending']) }}" class="dashboard-stat-card h-100 {{ $currentStatus === 'pending' ? 'active-filter' : '' }}">
+            <a href="{{ route('posts.stats', ['status' => 'pending']) }}" class="dashboard-stat-card dashboard-stat-pending h-100 {{ $currentStatus === 'pending' ? 'active-filter' : '' }}">
                 <span class="label-uppercase d-block mb-1 text-warning text-3xs">Chờ duyệt</span>
                 <p class="h4 fw-bold text-warning m-0">{{ number_format($stats['pending']) }}</p>
                 <span class="dashboard-stat-desc">Đang xét duyệt</span>

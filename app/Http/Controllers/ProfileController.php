@@ -167,6 +167,8 @@ class ProfileController extends Controller
     {
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
+        ], [
+            'password.current_password' => 'Mật khẩu không chính xác.',
         ]);
 
         $user = $request->user();

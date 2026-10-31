@@ -7,7 +7,7 @@
     } elseif (request()->routeIs('posts.create')) {
         $subpageTitle = 'Viết bài mới';
     } elseif (request()->routeIs('posts.edit')) {
-        $subpageTitle = 'Chỉnh sửa bài';
+        $subpageTitle = 'Chỉnh sửa bài viết';
     } elseif (request()->routeIs('posts.stats') || request()->routeIs('author.posts.*')) {
         $subpageTitle = 'Quản lý bài viết';
     } elseif (request()->routeIs('author.comments.*')) {
@@ -50,7 +50,12 @@
             </a>
         @else
             <div class="d-flex align-items-center gap-2 min-w-0 w-100">
-                <a href="javascript:history.length > 1 ? history.back() : window.location.href='{{ route('home') }}'"
+                <a
+                   @if(request()->routeIs('posts.edit'))
+                       href="{{ route('posts.stats') }}" data-app-nav
+                   @else
+                       href="javascript:history.length > 1 ? history.back() : window.location.href='{{ route('home') }}'"
+                   @endif
                    class="btn btn-sm btn-link text-theme p-0 d-flex align-items-center justify-content-center rounded-3 text-decoration-none flex-shrink-0"
                    style="width: 40px; height: 40px;"
                    aria-label="Quay lại"

@@ -50,15 +50,15 @@
                             <td class="py-3 text-start">
                                 @if($user->role === 'admin')
                                     <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill text-uppercase" style="font-size: 10.5px;">
-                                        Admin
+                                        Quản trị viên
                                     </span>
                                 @elseif($user->role === 'author')
                                     <span class="badge bg-primary-subtle text-primary border border-primary border-opacity-25 rounded-pill text-uppercase" style="font-size: 10.5px;">
-                                        Author
+                                        Tác giả
                                     </span>
                                 @else
                                     <span class="badge bg-surface-2 border border-theme text-theme-secondary rounded-pill text-uppercase" style="font-size: 10.5px;">
-                                        Viewer
+                                        Độc giả
                                     </span>
                                 @endif
                             </td>
@@ -156,15 +156,15 @@
                         <div class="d-flex align-items-center gap-1.5 flex-wrap">
                             @if($user->role === 'admin')
                                 <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill text-uppercase" style="font-size: 10px;">
-                                    Admin
+                                    Quản trị viên
                                 </span>
                             @elseif($user->role === 'author')
                                 <span class="badge bg-primary-subtle text-primary border border-primary border-opacity-25 rounded-pill text-uppercase" style="font-size: 10px;">
-                                    Author
+                                    Tác giả
                                 </span>
                             @else
                                 <span class="badge bg-surface-2 border border-theme text-theme-secondary rounded-pill text-uppercase" style="font-size: 10px;">
-                                    Viewer
+                                    Độc giả
                                 </span>
                             @endif
 
