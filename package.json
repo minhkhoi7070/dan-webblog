@@ -18,6 +18,11 @@
     },
     "dependencies": {
         "@popperjs/core": "^2.11.8",
+        "@tiptap/core": "^3.32.2",
+        "@tiptap/extension-image": "^3.32.2",
+        "@tiptap/extension-link": "^3.32.2",
+        "@tiptap/extension-underline": "^3.32.2",
+        "@tiptap/starter-kit": "^3.32.2",
         "bootstrap": "^5.3.8"
     }
 }
